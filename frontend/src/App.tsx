@@ -86,7 +86,8 @@ function App() {
         {activePage === 'imports' && <ImportsPage onCreated={() => setActivePage('overview')} />}
         {activePage === 'price-locks' && <PriceLocksPage />}
         {activePage === 'exports' && <ExportsPage />}
-        {activePage !== 'overview' && activePage !== 'imports' && activePage !== 'price-locks' && activePage !== 'exports' && <ModulePlaceholder page={activePage} />}
+        {activePage === 'master-data' && <MasterDataPage />}
+        {activePage !== 'overview' && activePage !== 'imports' && activePage !== 'price-locks' && activePage !== 'exports' && activePage !== 'master-data' && <ModulePlaceholder page={activePage} />}
       </main>
       <footer>Business Management · Backend Spring Boot · MySQL</footer>
     </div>
@@ -401,6 +402,77 @@ function ExportsPage() {
     <article className="panel export-list"><div className="panel-heading"><div><p className="eyebrow">THEO DÕI</p><h3>Phiếu bán hiện tại</h3></div><span className="count">{exports.length}</span></div>
       <div className="export-cards">{exports.map((ticket) => <div className="export-card" key={ticket.id}><div className="export-card-head"><div><strong>{ticket.customerName}</strong><span>{ticket.itemName} · {ticket.exportDate}</span></div><span className={`status ${ticket.status.toLowerCase()}`}>{ticket.status}</span></div><div className="export-progress"><div><span>Đã giao</span><strong>{formatKg(ticket.deliveredVolume)}</strong></div><div><span>Còn nợ</span><strong>{formatKg(ticket.remainingVolume)}</strong></div><div><span>Cam kết</span><strong>{formatKg(ticket.committedVolume)}</strong></div></div>{ticket.remainingVolume > 0 && <div className="delivery-entry"><input type="number" min="0.001" max={ticket.remainingVolume} step="0.001" placeholder="Khối lượng giao lần này" value={deliveryVolume[ticket.id] ?? ''} onChange={(event) => setDeliveryVolume({ ...deliveryVolume, [ticket.id]: event.target.value })} /><button className="secondary-button" type="button" disabled={busy} onClick={() => deliver(ticket)}>Ghi nhận giao</button></div>}</div>)}</div>
     </article>
+  </section>
+}
+
+function MasterDataPage() {
+  const [tab, setTab] = useState<'suppliers' | 'customers' | 'items'>('suppliers')
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [items, setItems] = useState<Item[]>([])
+  const [name, setName] = useState('')
+  const [category, setCategory] = useState('')
+  const [phone, setPhone] = useState('')
+  const [notice, setNotice] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  const loadData = () => Promise.all([
+    fetch('/api/suppliers').then((response) => response.json()),
+    fetch('/api/customers').then((response) => response.json()),
+    fetch('/api/items').then((response) => response.json()),
+  ]).then(([supplierData, customerData, itemData]) => {
+    setSuppliers(supplierData)
+    setCustomers(customerData)
+    setItems(itemData)
+  })
+
+  useEffect(() => { loadData().catch(() => setNotice('Không thể tải dữ liệu danh mục.')) }, [])
+
+  const createMasterData = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!name.trim() || (tab === 'items' && !category.trim())) {
+      setNotice(tab === 'items' ? 'Tên và phân loại mặt hàng là bắt buộc.' : 'Tên là bắt buộc.')
+      return
+    }
+    setBusy(true)
+    const endpoint = tab === 'suppliers' ? 'suppliers' : tab === 'customers' ? 'customers' : 'items'
+    const body = tab === 'suppliers'
+      ? { name, phone: phone || 'Chưa cập nhật' }
+      : tab === 'customers' ? { name, phone: phone || null } : { name, category, unit: 'KG' }
+    try {
+      const response = await fetch(`/api/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!response.ok) throw new Error()
+      setName('')
+      setCategory('')
+      setPhone('')
+      setNotice('Đã thêm dữ liệu thành công.')
+      await loadData()
+    } catch { setNotice('Không thể thêm dữ liệu. Vui lòng kiểm tra thông tin.') }
+    finally { setBusy(false) }
+  }
+
+  return <section className="module-page">
+    <div className="page-heading"><div><p className="eyebrow">DANH MỤC</p><h2>Dữ liệu nền</h2><p className="muted">Quản lý các đối tác và mặt hàng sử dụng trong nghiệp vụ.</p></div><button className="secondary-button" type="button" onClick={() => loadData()}>Làm mới</button></div>
+    <div className="master-tabs">{(['suppliers', 'customers', 'items'] as const).map((currentTab) => <button type="button" className={tab === currentTab ? 'active' : ''} key={currentTab} onClick={() => { setTab(currentTab); setNotice(null) }}>{currentTab === 'suppliers' ? 'Nhà cung cấp' : currentTab === 'customers' ? 'Khách hàng' : 'Mặt hàng'}</button>)}</div>
+    <div className="form-grid">
+      <form className="panel form-panel" onSubmit={createMasterData}><div className="panel-heading"><div><p className="eyebrow">TẠO MỚI</p><h3>{tab === 'suppliers' ? 'Nhà cung cấp' : tab === 'customers' ? 'Khách hàng' : 'Mặt hàng'}</h3></div></div>
+        <label>Tên<input value={name} onChange={(event) => setName(event.target.value)} placeholder={tab === 'items' ? 'Cà phê nhân' : tab === 'suppliers' ? 'Tên nhà cung cấp' : 'Tên khách hàng'} /></label>
+        {tab === 'items' && <label>Phân loại<input value={category} onChange={(event) => setCategory(event.target.value)} placeholder="Loại 1" /></label>}
+        {tab !== 'items' && <label>Số điện thoại<input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="0900000000" /></label>}
+        {notice && <p className="form-notice">{notice}</p>}<button className="primary-button" disabled={busy} type="submit">{busy ? 'Đang lưu...' : 'Thêm dữ liệu'}</button>
+      </form>
+      <article className="panel"><div className="panel-heading"><div><p className="eyebrow">DANH SÁCH</p><h3>{tab === 'suppliers' ? 'Nhà cung cấp' : tab === 'customers' ? 'Khách hàng' : 'Mặt hàng'}</h3></div><span className="count">{tab === 'suppliers' ? suppliers.length : tab === 'customers' ? customers.length : items.length}</span></div>
+        <div className="table-wrap"><table><thead><tr><th>Tên</th><th>Thông tin</th></tr></thead><tbody>
+          {tab === 'suppliers' && suppliers.map((supplier) => <tr key={supplier.id}><td><strong>{supplier.name}</strong></td><td>{formatKg(supplier.usableCoffeeKg)} khả dụng</td></tr>)}
+          {tab === 'customers' && customers.map((customer) => <tr key={customer.id}><td><strong>{customer.name}</strong></td><td>{customer.name}</td></tr>)}
+          {tab === 'items' && items.map((item) => <tr key={item.id}><td><strong>{item.name}</strong></td><td>{item.category} · {item.unit}</td></tr>)}
+        </tbody></table></div>
+      </article>
+    </div>
   </section>
 }
 
