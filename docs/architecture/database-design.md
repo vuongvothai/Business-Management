@@ -147,23 +147,39 @@ trực tiếp từ `supplier.usable_coffee_kg`. Backend tính `amount` bằng
 | `created_at` | `DATETIME` | NOT NULL |
 | `updated_at` | `DATETIME` | NOT NULL |
 
-### `export_ticket`
+### `export_ticket` và `export_delivery`
 
-Phiếu xuất có các trạng thái `DRAFT`, `COMPLETED` và `CANCELLED`. Mỗi phiếu
-gắn với đúng một `item_id`. Các trường
-`created_at`, `created_by`, `updated_at` và `updated_by` được lưu để audit.
-`total_volume` là khối lượng xuất của chính mặt hàng đó. Hàng có thể được gom
-từ nhiều lần nhập trước khi xuất; phiếu xuất không phụ thuộc trực tiếp vào
-`IMPORT_TICKET`.
+`export_ticket` là phiếu chốt bán, có thể dùng làm căn cứ lập hóa đơn điện tử.
+Mỗi phiếu gắn với đúng một `item_id` và có các trạng thái `DRAFT`,
+`CONFIRMED`, `PARTIALLY_DELIVERED`, `COMPLETED`, `CANCELLED`.
+`committed_volume` là tổng khối lượng cam kết bán, không phải khối lượng đã
+giao. Phiếu không phụ thuộc trực tiếp vào `IMPORT_TICKET`.
 
-Khi tạo hoặc sửa phiếu xuất, backend phải khóa `item` liên quan trong
-transaction và cập nhật:
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| `export_id` | `BIGINT` | PK |
+| `customer_id` | `BIGINT` | FK, NOT NULL |
+| `item_id` | `BIGINT` | FK, NOT NULL |
+| `committed_volume` | `DECIMAL(14,3)` | NOT NULL, > 0 |
+| `delivery_due_date` | `DATE` | NULL |
 
-`available_kg mới = available_kg hiện tại - tổng khối lượng xuất`
+`export_delivery` lưu từng lần giao hàng thực tế:
 
-`available_kg` có thể âm khi doanh nghiệp xuất theo cam kết giao hàng trước và
-bổ sung hàng sau. Không trả lỗi `INVENTORY_EXCEEDED`; việc khóa dòng vẫn cần
-thiết để hai request đồng thời cập nhật chính xác số dư.
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| `delivery_id` | `BIGINT` | PK |
+| `export_id` | `BIGINT` | FK, NOT NULL |
+| `delivered_volume` | `DECIMAL(14,3)` | NOT NULL, > 0 |
+| `delivery_date` | `DATE` | NOT NULL |
+| `status` | `VARCHAR(20)` | NOT NULL: `CONFIRMED`, `CANCELLED` |
+| `created_by` | `BIGINT` | FK, NOT NULL |
+| `created_at` | `DATETIME` | NOT NULL |
+
+`delivered_volume` được tính bằng tổng các lần giao không bị hủy.
+`remaining_volume = committed_volume - delivered_volume`. Khi xác nhận một
+`EXPORT_DELIVERY`, backend khóa `ITEM` trong transaction và trừ
+`delivered_volume` khỏi `ITEM.available_kg`. Tạo phiếu cam kết không làm thay
+đổi tồn kho. Cam kết bán có thể vượt tồn hiện tại.
 
 ### `expense` và `expense_detail`
 

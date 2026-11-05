@@ -165,15 +165,34 @@ Response `201 Created`:
 Một số dư cà phê của nhà cung cấp có thể được chốt nhiều lần. `amount` là
 giá trị tính từ `lockedVolume * lockedPricePerKg`.
 
-## 4. Quy tắc phiếu xuất
+## 4. Phiếu chốt bán và giao hàng
 
-Khi triển khai `POST /api/exports`, request phải chứa một `itemId` và
-`totalVolume`. Backend phải trừ tồn kho tổng hợp theo mặt hàng:
+### `POST /api/exports`
 
-`availableKg mới = availableKg hiện tại - totalVolume`
+Tạo `EXPORT_TICKET` để chốt bán và làm căn cứ lập hóa đơn điện tử.
+Request chứa `itemId`, `committedVolume`, giá bán và ngày giao dự kiến.
+Việc tạo hoặc xác nhận phiếu chưa trừ tồn kho.
 
-Nếu `availableKg` âm, API vẫn ghi nhận thành công để phản ánh cam kết giao
-hàng trước; frontend phải hiển thị rõ số âm và số lượng cần bổ sung.
+### `POST /api/exports/{exportId}/deliveries`
+
+Ghi nhận một lần giao thực tế:
+
+```json
+{
+  "deliveredVolume": 3000.0,
+  "deliveryDate": "2026-11-06",
+  "note": "Giao lần 1"
+}
+```
+
+Quy tắc:
+
+- `deliveredVolume > 0`.
+- Tổng các lần giao không bị hủy không được vượt `committedVolume`.
+- Khi xác nhận giao, backend trừ `ITEM.available_kg`.
+- Nếu tồn kho sau giao âm, API vẫn ghi nhận thành công.
+- Response phải trả `committedVolume`, `deliveredVolume` và
+  `remainingVolume`.
 
 ## 5. Chi phí theo kỳ
 

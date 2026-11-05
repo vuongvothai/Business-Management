@@ -67,9 +67,13 @@
 ### 3.3 Xuất hàng
 
 1. Kế toán tạo phiếu xuất cho khách hàng.
-2. Kế toán chọn mặt hàng, khối lượng và giá chốt cho người mua.
-3. Hệ thống vẫn cho xuất vượt tồn khả dụng của mặt hàng.
-4. Phiếu xuất hoàn tất khi đủ thông tin và chuyển sang `COMPLETED`.
+2. Kế toán ghi nhận khối lượng cam kết bán, giá bán và thông tin lập hóa đơn
+   điện tử.
+3. Kế toán có thể ghi nhận nhiều lần giao hàng cho cùng một phiếu xuất.
+4. Chỉ khi xác nhận lần giao thực tế, hệ thống mới trừ tồn kho.
+5. Hệ thống vẫn cho phép cam kết bán vượt tồn kho hiện tại.
+6. Phiếu chuyển sang `PARTIALLY_DELIVERED` khi giao một phần và
+   `COMPLETED` khi giao đủ.
 
 ## 4. Yêu cầu chức năng
 
@@ -84,7 +88,7 @@
 | BR-007 | Một lần chốt giá trừ số dư cà phê hữu dụng của nhà cung cấp, không phụ thuộc phiếu nhập cụ thể. |
 | BR-008 | Một số dư nhà cung cấp có thể được chốt nhiều lần cho đến khi hết số dư. |
 | BR-009 | Hiển thị tổng nhập, đã chốt, chưa chốt và tồn kho. |
-| BR-010 | Phiếu xuất có thể gom hàng từ nhiều lần nhập và trừ tồn kho tổng hợp theo mặt hàng. |
+| BR-010 | Phiếu xuất lưu cam kết bán; các lần giao thực tế được lưu riêng và chỉ trừ tồn kho khi xác nhận giao. |
 | BR-011 | Lưu người tạo và thời điểm tạo/cập nhật cho các nghiệp vụ chính. |
 
 ## 5. Yêu cầu phi chức năng
@@ -96,6 +100,7 @@
 - Kiểm tra quyền ở backend, không chỉ ở giao diện.
 - Không để một request làm tổng chốt vượt số cà phê hữu dụng của nhà cung cấp.
 - Cho phép tồn kho mặt hàng âm khi đã phát sinh cam kết xuất vượt số đang có.
+- Theo dõi riêng khối lượng đã cam kết, đã giao và còn phải giao.
 
 ## 6. Tiêu chí thành công
 
@@ -105,6 +110,8 @@
 - Người dùng xem được tồn kho và trạng thái phiếu rõ ràng.
 - Hàng xuất được gom từ tồn kho tổng hợp theo mặt hàng; không bắt buộc gắn
   trực tiếp với một phiếu nhập nguồn.
+- Hóa đơn điện tử có thể dựa trên `EXPORT_TICKET`; số lượng giao thực tế được
+  đối chiếu qua các bản ghi `EXPORT_DELIVERY`.
 
 ## 7. Các quyết định ngoài ra: 
 

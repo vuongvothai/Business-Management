@@ -8,17 +8,16 @@
 - [x] Soạn ERD có dữ liệu mẫu minh họa.
 - [x] Soạn roadmap, kế hoạch triển khai và backlog.
 - [x] Soạn đặc tả API và thiết kế database ở mức tài liệu.
-- [ ] Khởi tạo backend Java.
-- [ ] Tạo migration database.
+- [x] Khởi tạo backend Java tối thiểu và Docker Compose.
+- [x] Chạy migration database trên MySQL Docker.
 - [ ] Khởi tạo frontend React.
 - [ ] Viết test nghiệp vụ.
 
 ## Bước tiếp theo
 
-1. Tạo project backend Spring Boot.
-2. Viết migration database theo ERD.
-3. Seed dữ liệu mẫu.
-4. Triển khai luồng nhập hàng đầu tiên.
+1. Tạo entity/repository cho các bảng master.
+2. Triển khai luồng nhập hàng đầu tiên.
+3. Viết test cho việc tính tổng từ các lần cân.
 
 ## Quy ước cập nhật
 

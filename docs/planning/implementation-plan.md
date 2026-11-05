@@ -1,7 +1,7 @@
 ﻿# Kế hoạch triển khai chi tiết
 
-> Roadmap tổng thể nằm tại [project-roadmap.md](./project-roadmap.md). Tài liệu
-> này phân rã từng giai đoạn thành các công việc kỹ thuật thực hiện được.
+> Roadmap tổng thể nằm tại [project-roadmap.md](./project-roadmap.md).
+> Tài liệu này phân rã từng giai đoạn thành các công việc kỹ thuật thực hiện được.
 
 ## 1. Mục tiêu MVP
 
@@ -16,7 +16,8 @@ mặt hàng, nhập hàng, cân, chốt giá, xuất hàng, tồn kho và chi ph
    [ERD](../architecture/erd.mmd).
 2. Tạo migration MySQL cho `ROLE`, `USER`, `SUPPLIER`, `ITEM`, `CUSTOMER`.
 3. Tạo migration cho `IMPORT_TICKET`, `IMPORT_WEIGHT`, `PRICE_LOCK`,
-   `EXPORT_TICKET`, `EXPENSE`, `EXPENSE_DETAIL`, `MARKET_PRICE`.
+   `EXPORT_TICKET`, `EXPORT_DELIVERY`, `EXPENSE`, `EXPENSE_DETAIL`,
+   `MARKET_PRICE`.
 4. Thêm khóa ngoại, unique key, check constraint và index.
 5. Tạo dữ liệu mẫu cho vai trò, người dùng, mặt hàng và nhà cung cấp.
 
@@ -28,7 +29,8 @@ mặt hàng, nhập hàng, cân, chốt giá, xuất hàng, tồn kho và chi ph
 4. Tính `number_of_bags` và `total_kg` từ `IMPORT_WEIGHT` ở backend.
 5. Xác nhận phiếu nhập và cập nhật số dư nhà cung cấp, tồn kho mặt hàng.
 6. Xây dựng API chốt giá cho một supplier/item; không cho chốt vượt số dư.
-7. Xây dựng API xuất cho một item; cho phép `available_kg` âm.
+7. Xây dựng `EXPORT_TICKET` cho cam kết bán và `EXPORT_DELIVERY` cho các lần
+   giao; chỉ lần giao xác nhận mới trừ `available_kg`.
 8. Xây dựng API tổng hợp tồn kho và API quản lý chi phí.
 9. Áp dụng transaction, khóa dòng và phân quyền ở backend.
 
@@ -40,7 +42,7 @@ mặt hàng, nhập hàng, cân, chốt giá, xuất hàng, tồn kho và chi ph
 4. Làm màn hình nhập hàng và nhập từng lần cân.
 5. Làm màn hình chốt giá, xuất hàng và tồn kho.
 6. Làm màn hình chi phí theo kỳ.
-7. Hiển thị rõ tồn kho âm và số lượng cần bổ sung.
+7. Hiển thị rõ tồn kho âm, khối lượng đã cam kết, đã giao và còn phải giao.
 
 ### Giai đoạn 4 — Kiểm thử và hoàn thiện
 

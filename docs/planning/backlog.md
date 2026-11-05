@@ -3,16 +3,18 @@
 ## P0 — Bắt buộc
 
 - [ ] Tạo project Spring Boot và cấu hình MySQL.
-- [ ] Tạo migration cho toàn bộ bảng theo ERD.
-- [ ] Seed role và dữ liệu mẫu.
+- [x] Tạo migration cho toàn bộ bảng theo ERD.
+- [x] Tạo migration seed role và mặt hàng mẫu.
 - [ ] Tạo CRUD nhà cung cấp, mặt hàng, khách hàng.
 - [ ] Tạo phiếu nhập và `IMPORT_WEIGHT`.
 - [ ] Tự tính số bao và tổng kg từ các lần cân.
 - [ ] Xác nhận phiếu nhập và cập nhật số dư.
 - [ ] Tạo và xác nhận `PRICE_LOCK`.
 - [ ] Từ chối chốt vượt `usable_coffee_kg`.
-- [ ] Tạo và hoàn tất `EXPORT_TICKET`.
-- [ ] Cho phép tồn kho âm khi xuất.
+- [ ] Tạo `EXPORT_TICKET` làm phiếu chốt bán/căn cứ lập hóa đơn điện tử.
+- [ ] Tạo `EXPORT_DELIVERY` để ghi nhận nhiều lần giao cho một phiếu.
+- [ ] Chỉ trừ tồn kho khi xác nhận `EXPORT_DELIVERY`.
+- [ ] Cho phép tồn kho âm khi giao thực tế.
 - [ ] Tạo API `GET /api/inventory/summary`.
 - [ ] Tạo quản lý `EXPENSE` và `EXPENSE_DETAIL`.
 - [ ] Kiểm tra phân quyền ba vai trò.
