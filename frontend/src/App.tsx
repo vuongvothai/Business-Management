@@ -24,6 +24,19 @@ type ImportPage = {
 
 type Supplier = { id: number; name: string; usableCoffeeKg: number }
 type Item = { id: number; name: string; category: string; unit: string }
+type Customer = { id: number; name: string }
+type ExportTicket = {
+  id: number
+  customerName: string
+  itemName: string
+  committedVolume: number
+  sellingPricePerKg: number
+  deliveredVolume: number
+  remainingVolume: number
+  status: string
+  exportDate: string
+  deliveries: { id: number; deliveredVolume: number; deliveryDate: string }[]
+}
 
 const formatKg = (value: number) =>
   new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 3 }).format(value) + ' kg'
@@ -72,7 +85,8 @@ function App() {
         {activePage === 'overview' && <Overview summary={summary} imports={imports} error={error} />}
         {activePage === 'imports' && <ImportsPage onCreated={() => setActivePage('overview')} />}
         {activePage === 'price-locks' && <PriceLocksPage />}
-        {activePage !== 'overview' && activePage !== 'imports' && activePage !== 'price-locks' && <ModulePlaceholder page={activePage} />}
+        {activePage === 'exports' && <ExportsPage />}
+        {activePage !== 'overview' && activePage !== 'imports' && activePage !== 'price-locks' && activePage !== 'exports' && <ModulePlaceholder page={activePage} />}
       </main>
       <footer>Business Management · Backend Spring Boot · MySQL</footer>
     </div>
@@ -295,6 +309,98 @@ function PriceLocksPage() {
       </form>
       <article className="panel"><div className="panel-heading"><div><p className="eyebrow">TÍNH NHANH</p><h3>Giá trị phiếu chốt</h3></div></div><div className="lock-preview"><span>Khối lượng</span><strong>{formatKg(volumeValue)}</strong><span>Đơn giá</span><strong>{formatMoney(priceValue)}</strong><div className="lock-total"><span>Thành tiền dự kiến</span><strong>{formatMoney(volumeValue * priceValue)}</strong></div></div><p className="muted lock-hint">Số dư supplier sẽ được trừ ngay sau khi chốt thành công.</p></article>
     </div>
+  </section>
+}
+
+function ExportsPage() {
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [items, setItems] = useState<Item[]>([])
+  const [exports, setExports] = useState<ExportTicket[]>([])
+  const [customerId, setCustomerId] = useState('')
+  const [itemId, setItemId] = useState('')
+  const [exportDate, setExportDate] = useState(new Date().toISOString().slice(0, 10))
+  const [committedVolume, setCommittedVolume] = useState('')
+  const [sellingPrice, setSellingPrice] = useState('')
+  const [notice, setNotice] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [deliveryVolume, setDeliveryVolume] = useState<Record<number, string>>({})
+
+  const loadData = () => Promise.all([
+    fetch('/api/customers').then((response) => response.json()),
+    fetch('/api/items').then((response) => response.json()),
+    fetch('/api/exports').then((response) => response.json()),
+  ]).then(([customerData, itemData, exportData]) => {
+    setCustomers(customerData)
+    setItems(itemData)
+    setExports(exportData)
+    if (!customerId && customerData[0]) setCustomerId(String(customerData[0].id))
+    if (!itemId && itemData[0]) setItemId(String(itemData[0].id))
+  })
+
+  useEffect(() => { loadData().catch(() => setNotice('Không thể tải dữ liệu bán hàng.')) }, [])
+
+  const createExport = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const volume = Number(committedVolume)
+    const price = Number(sellingPrice)
+    if (!customerId || !itemId || volume <= 0 || price <= 0) {
+      setNotice('Vui lòng nhập khách hàng, mặt hàng, khối lượng và giá bán hợp lệ.')
+      return
+    }
+    setBusy(true)
+    try {
+      const response = await fetch('/api/exports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId: Number(customerId), itemId: Number(itemId), committedVolume: volume, sellingPricePerKg: price, exportDate }),
+      })
+      if (!response.ok) throw new Error()
+      setCommittedVolume('')
+      setSellingPrice('')
+      setNotice('Đã tạo phiếu bán. Tồn kho chưa bị trừ.')
+      await loadData()
+    } catch { setNotice('Không thể tạo phiếu bán.') }
+    finally { setBusy(false) }
+  }
+
+  const deliver = async (ticket: ExportTicket) => {
+    const volume = Number(deliveryVolume[ticket.id])
+    if (volume <= 0 || volume > ticket.remainingVolume) {
+      setNotice(`Khối lượng giao phải lớn hơn 0 và không vượt ${formatKg(ticket.remainingVolume)}.`)
+      return
+    }
+    setBusy(true)
+    try {
+      const response = await fetch(`/api/exports/${ticket.id}/deliveries`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deliveredVolume: volume, deliveryDate: new Date().toISOString().slice(0, 10) }),
+      })
+      if (!response.ok) throw new Error()
+      setDeliveryVolume({ ...deliveryVolume, [ticket.id]: '' })
+      setNotice(`Đã ghi nhận giao ${formatKg(volume)}.`)
+      await loadData()
+    } catch { setNotice('Không thể ghi nhận giao hàng.') }
+    finally { setBusy(false) }
+  }
+
+  return <section className="module-page">
+    <div className="page-heading"><div><p className="eyebrow">BÁN & GIAO HÀNG</p><h2>Phiếu bán và giao hàng</h2><p className="muted">Tạo cam kết bán trước, sau đó ghi nhận từng lần giao thực tế.</p></div><button className="secondary-button" type="button" onClick={() => loadData()}>Làm mới</button></div>
+    <form className="panel export-form" onSubmit={createExport}>
+      <div className="panel-heading"><div><p className="eyebrow">TẠO MỚI</p><h3>Phiếu chốt bán</h3></div></div>
+      <div className="field-grid export-fields">
+        <label>Khách hàng<select value={customerId} onChange={(event) => setCustomerId(event.target.value)}><option value="">Chọn khách hàng</option>{customers.map((customer) => <option value={customer.id} key={customer.id}>{customer.name}</option>)}</select></label>
+        <label>Mặt hàng<select value={itemId} onChange={(event) => setItemId(event.target.value)}><option value="">Chọn mặt hàng</option>{items.map((item) => <option value={item.id} key={item.id}>{item.name} · {item.category}</option>)}</select></label>
+        <label>Ngày bán<input type="date" value={exportDate} onChange={(event) => setExportDate(event.target.value)} /></label>
+        <label>Khối lượng cam kết (kg)<input type="number" min="0.001" step="0.001" value={committedVolume} onChange={(event) => setCommittedVolume(event.target.value)} placeholder="1000.000" /></label>
+        <label>Giá bán (VND/kg)<input type="number" min="0.01" step="1" value={sellingPrice} onChange={(event) => setSellingPrice(event.target.value)} placeholder="50000" /></label>
+      </div>
+      {notice && <p className="form-notice">{notice}</p>}
+      <button className="primary-button export-submit" disabled={busy} type="submit">{busy ? 'Đang lưu...' : 'Tạo phiếu bán'}</button>
+    </form>
+    <article className="panel export-list"><div className="panel-heading"><div><p className="eyebrow">THEO DÕI</p><h3>Phiếu bán hiện tại</h3></div><span className="count">{exports.length}</span></div>
+      <div className="export-cards">{exports.map((ticket) => <div className="export-card" key={ticket.id}><div className="export-card-head"><div><strong>{ticket.customerName}</strong><span>{ticket.itemName} · {ticket.exportDate}</span></div><span className={`status ${ticket.status.toLowerCase()}`}>{ticket.status}</span></div><div className="export-progress"><div><span>Đã giao</span><strong>{formatKg(ticket.deliveredVolume)}</strong></div><div><span>Còn nợ</span><strong>{formatKg(ticket.remainingVolume)}</strong></div><div><span>Cam kết</span><strong>{formatKg(ticket.committedVolume)}</strong></div></div>{ticket.remainingVolume > 0 && <div className="delivery-entry"><input type="number" min="0.001" max={ticket.remainingVolume} step="0.001" placeholder="Khối lượng giao lần này" value={deliveryVolume[ticket.id] ?? ''} onChange={(event) => setDeliveryVolume({ ...deliveryVolume, [ticket.id]: event.target.value })} /><button className="secondary-button" type="button" disabled={busy} onClick={() => deliver(ticket)}>Ghi nhận giao</button></div>}</div>)}</div>
+    </article>
   </section>
 }
 
