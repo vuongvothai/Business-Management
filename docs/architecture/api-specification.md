@@ -247,6 +247,11 @@ Response `200 OK`:
 `totalValue` chỉ bao gồm khối lượng đã chốt giá. Khối lượng chưa chốt được
 trả riêng qua `unpricedKg`, không tự động gán giá mặc định.
 
+API hiện tại lấy tồn kho từ `item.available_kg` và tính giá trị phần đã chốt
+theo giá bình quân gia quyền của các phiếu `PRICE_LOCK` ở trạng thái
+`CONFIRMED`. Nếu tồn kho lớn hơn khối lượng đã chốt, phần chênh lệch được trả
+ở `unpricedKg`.
+
 ## 7. Phân quyền người dùng
 
 | Vai trò | Quyền |

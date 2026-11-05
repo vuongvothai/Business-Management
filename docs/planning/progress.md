@@ -18,6 +18,7 @@
 - [x] Triển khai API chốt giá và kiểm tra số dư supplier.
 - [x] Triển khai phiếu chốt bán và giao hàng nhiều lần.
 - [x] Chỉ trừ tồn kho khi xác nhận giao hàng.
+- [x] Triển khai API tổng hợp tồn kho theo phân loại.
 - [ ] Khởi tạo frontend React.
 - [ ] Viết test nghiệp vụ.
 
@@ -25,7 +26,7 @@
 
 1. Bổ sung bộ lọc và phân trang cho danh sách phiếu nhập.
 2. Viết test tự động cho API chốt giá và giao hàng.
-3. Triển khai API tổng hợp tồn kho.
+3. Khởi tạo frontend React.
 
 ## Quy ước cập nhật
 
