@@ -16,7 +16,7 @@ React.js, Java và MySQL.
 | M5 | Luồng chốt giá | `PRICE_LOCK`, kiểm tra số dư nhà cung cấp | Hoàn thành |
 | M6 | Luồng bán, giao và tồn kho | `EXPORT_TICKET`, `EXPORT_DELIVERY`, tồn kho và báo cáo tổng hợp | Hoàn thành |
 | M7 | Frontend MVP | Màn hình nghiệp vụ theo vai trò | Chưa bắt đầu |
-| M8 | Kiểm thử và phát hành | Unit test, integration test, hướng dẫn triển khai | Chưa bắt đầu |
+| M8 | Kiểm thử và phát hành | Unit test, integration test, hướng dẫn triển khai | Đang thực hiện |
 
 ## Thứ tự phụ thuộc
 
