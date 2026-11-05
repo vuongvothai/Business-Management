@@ -20,15 +20,16 @@
 - [x] Chỉ trừ tồn kho khi xác nhận giao hàng.
 - [x] Triển khai API tổng hợp tồn kho theo phân loại.
 - [x] Bổ sung bộ lọc ngày, nhà cung cấp và phân trang cho phiếu nhập.
+- [x] Khởi tạo frontend React và dashboard tổng quan tồn kho.
 - [x] Viết test tự động cho API chốt giá và giao hàng.
 - [ ] Khởi tạo frontend React.
 - [ ] Viết test nghiệp vụ.
 
 ## Bước tiếp theo
 
-1. Khởi tạo frontend React.
-2. Bổ sung xử lý lỗi thống nhất cho toàn bộ API.
-3. Viết test controller cho các endpoint chính.
+1. Bổ sung xử lý lỗi thống nhất cho toàn bộ API.
+2. Viết test controller cho các endpoint chính.
+3. Hoàn thiện màn hình nhập hàng, chốt giá và giao hàng.
 
 ## Quy ước cập nhật
 
