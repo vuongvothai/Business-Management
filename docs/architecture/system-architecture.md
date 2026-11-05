@@ -51,7 +51,7 @@ Các module nghiệp vụ chính:
 - `import`: phiếu nhập kho;
 - `price-lock`: chốt giá cho khối lượng đã nhập;
 - `inventory`: tổng hợp tồn kho và giá trị tồn kho;
-- `export`: phiếu xuất kho (phần mở rộng tiếp theo).
+- `export`: phiếu chốt bán và các lần giao hàng thực tế.
 
 ## 4. Luồng nghiệp vụ chính
 
@@ -93,8 +93,9 @@ Các module nghiệp vụ chính:
 - API cần hỗ trợ phân trang cho danh sách phiếu nhập.
 - `PRICE_LOCK` liên kết trực tiếp với một `ITEM` và trừ số dư trên nhà cung
   cấp, không phụ thuộc một phiếu nhập cụ thể.
-- `EXPORT_TICKET` liên kết trực tiếp với một `ITEM`, cho phép gom hàng từ
-  nhiều lần nhập trước khi xuất.
+- `EXPORT_TICKET` liên kết trực tiếp với một `ITEM` và lưu khối lượng cam kết
+  bán; `EXPORT_DELIVERY` lưu các lần giao thực tế từ nhiều lần nhập.
+- Chỉ khi xác nhận `EXPORT_DELIVERY`, service mới trừ `ITEM.available_kg`.
 - Quyền thao tác được kiểm tra theo `USER.role_id`/`ROLE.role_name`: `ADMIN`, `WEIGHER`
   hoặc `ACCOUNTANT`.
 - Khi nhập/xuất/chốt giá, service phải khóa `SUPPLIER` hoặc `ITEM` liên quan

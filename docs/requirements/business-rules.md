@@ -37,8 +37,10 @@
 | Mã | Quy tắc |
 |---|---|
 | BRULE-301 | Mỗi `EXPORT_TICKET` phải tham chiếu đúng một `ITEM`. |
-| BRULE-302 | Được phép xuất vượt `ITEM.available_kg`; sau khi hoàn tất, tồn kho có thể âm. |
-| BRULE-303 | `total_volume` phải lớn hơn 0 và khớp khối lượng xuất của phiếu. |
+| BRULE-302 | `EXPORT_TICKET.committed_volume` phải lớn hơn 0; có thể vượt `ITEM.available_kg`. |
+| BRULE-303 | Tổng `EXPORT_DELIVERY.delivered_volume` không được vượt `committed_volume`. |
+| BRULE-304 | Một `EXPORT_TICKET` có thể có nhiều `EXPORT_DELIVERY`. |
+| BRULE-305 | `remaining_volume = committed_volume - SUM(delivered_volume)` và không lưu bắt buộc như dữ liệu gốc. |
 
 ## 5. Số dư và chi phí
 
@@ -46,7 +48,7 @@
 |---|---|
 | BRULE-401 | Khi phiếu nhập được xác nhận, cộng khối lượng hữu dụng vào `SUPPLIER.usable_coffee_kg`. |
 | BRULE-402 | Khi chốt giá, trừ `usable_coffee_kg` của nhà cung cấp. |
-| BRULE-403 | Khi xuất hàng, trừ `available_kg` của `ITEM`; số dư có thể âm do cam kết giao hàng. |
+| BRULE-403 | Chỉ khi `EXPORT_DELIVERY` được xác nhận mới trừ `available_kg` của `ITEM`; tồn kho có thể âm. |
 | BRULE-404 | `EXPENSE.total_amount = SUM(EXPENSE_DETAIL.amount)` trong một kỳ. |
 | BRULE-405 | Một kỳ chi phí không có hai dòng cùng `category_name`. |
 
@@ -56,11 +58,12 @@
 IMPORT_TICKET: DRAFT -> CONFIRMED
 IMPORT_TICKET: DRAFT -> CANCELLED
 PRICE_LOCK:    DRAFT -> CONFIRMED
-EXPORT_TICKET: DRAFT -> COMPLETED
+EXPORT_TICKET: DRAFT -> CONFIRMED -> PARTIALLY_DELIVERED -> COMPLETED
 EXPORT_TICKET: DRAFT -> CANCELLED
+EXPORT_TICKET: CONFIRMED -> CANCELLED
 ```
 
 Các chuyển trạng thái và thao tác chốt/xuất phải chạy trong transaction.
-Backend phải khóa `SUPPLIER` khi chốt và `ITEM` khi xuất trước khi cập nhật số
-dư. Chốt giá vượt `usable_coffee_kg` vẫn trả lỗi HTTP `409`; xuất vượt tồn
-không trả lỗi tồn kho và được phép ghi nhận số dư âm.
+Backend phải khóa `SUPPLIER` khi chốt và `ITEM` khi xác nhận giao hàng trước
+khi cập nhật số dư. Chốt giá vượt `usable_coffee_kg` vẫn trả lỗi HTTP `409`;
+cam kết bán vượt tồn không trừ tồn và không trả lỗi tồn kho.
