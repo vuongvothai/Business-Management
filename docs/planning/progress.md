@@ -35,7 +35,7 @@
 
 1. Hoàn thiện màn hình frontend đăng nhập và lưu bearer token.
 2. Bổ sung chức năng sửa/xóa dữ liệu master khi cần.
-3. Hoàn thiện truy xuất lô tồn kho và triển khai production.
+3. Hoàn thiện hardening authentication và triển khai production.
 
 ## Quy ước cập nhật
 
