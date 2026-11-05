@@ -13,7 +13,7 @@ React.js, Java và MySQL.
 | M2 | Nền tảng database | Migration MySQL, khóa ngoại, index và dữ liệu mẫu | Hoàn thành |
 | M3 | Backend nền tảng | Spring Boot, cấu hình MySQL, validation, transaction và phân quyền | Chưa bắt đầu |
 | M4 | Luồng nhập hàng | `IMPORT_TICKET`, `IMPORT_WEIGHT`, xác nhận nhập và cập nhật số dư | Hoàn thành |
-| M5 | Luồng chốt giá | `PRICE_LOCK`, kiểm tra số dư nhà cung cấp | Chưa bắt đầu |
+| M5 | Luồng chốt giá | `PRICE_LOCK`, kiểm tra số dư nhà cung cấp | Hoàn thành |
 | M6 | Luồng bán, giao và tồn kho | `EXPORT_TICKET`, `EXPORT_DELIVERY`, tồn kho và báo cáo tổng hợp | Chưa bắt đầu |
 | M7 | Frontend MVP | Màn hình nghiệp vụ theo vai trò | Chưa bắt đầu |
 | M8 | Kiểm thử và phát hành | Unit test, integration test, hướng dẫn triển khai | Chưa bắt đầu |

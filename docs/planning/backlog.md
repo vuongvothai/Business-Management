@@ -9,8 +9,8 @@
 - [x] Tạo phiếu nhập và `IMPORT_WEIGHT`.
 - [x] Tự tính số bao và tổng kg từ các lần cân.
 - [x] Xác nhận phiếu nhập và cập nhật số dư.
-- [ ] Tạo và xác nhận `PRICE_LOCK`.
-- [ ] Từ chối chốt vượt `usable_coffee_kg`.
+- [x] Tạo và xác nhận `PRICE_LOCK`.
+- [x] Từ chối chốt vượt `usable_coffee_kg`.
 - [ ] Tạo `EXPORT_TICKET` làm phiếu chốt bán/căn cứ lập hóa đơn điện tử.
 - [ ] Tạo `EXPORT_DELIVERY` để ghi nhận nhiều lần giao cho một phiếu.
 - [ ] Chỉ trừ tồn kho khi xác nhận `EXPORT_DELIVERY`.

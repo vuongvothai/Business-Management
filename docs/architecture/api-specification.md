@@ -150,6 +150,10 @@ Quy tắc:
 - Request và kiểm tra/trừ `supplier.usable_coffee_kg` phải chạy trong
   cùng transaction.
 
+API hiện tại tạo phiếu ở trạng thái `CONFIRMED`, tự tính `amount` và trừ
+`supplier.usable_coffee_kg` trong cùng transaction. Nếu số dư không đủ, API
+trả `409 PRICE_LOCK_EXCEEDED` và không tạo phiếu.
+
 Response `201 Created`:
 
 ```json
