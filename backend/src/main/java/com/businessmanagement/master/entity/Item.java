@@ -84,4 +84,8 @@ public class Item {
     public BigDecimal getAvailableKg() {
         return availableKg;
     }
+
+    public void addAvailableKg(BigDecimal amount) {
+        availableKg = availableKg.add(amount);
+    }
 }
