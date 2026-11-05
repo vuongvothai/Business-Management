@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.businessmanagement.common.web.GlobalExceptionHandler;
+import com.businessmanagement.auth.service.JwtService;
 import com.businessmanagement.exports.service.ExportService;
 import com.businessmanagement.imports.dto.ImportPageResponse;
 import com.businessmanagement.imports.dto.ImportResponse;
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +46,7 @@ import org.springframework.test.web.servlet.MockMvc;
         InventorySummaryController.class
 })
 @Import(GlobalExceptionHandler.class)
+@AutoConfigureMockMvc(addFilters = false)
 class CoreControllerWebTest {
 
     @Autowired
@@ -60,6 +63,9 @@ class CoreControllerWebTest {
 
     @MockBean
     private InventorySummaryService inventorySummaryService;
+
+    @MockBean
+    private JwtService jwtService;
 
     @Test
     void createsImportAndReturnsCreatedResponse() throws Exception {
