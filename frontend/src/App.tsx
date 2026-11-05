@@ -32,9 +32,9 @@ type ImportPage = {
   totalElements: number
 }
 
-type Supplier = { id: number; name: string; usableCoffeeKg: number }
+type Supplier = { id: number; name: string; phone?: string; usableCoffeeKg: number }
 type Item = { id: number; name: string; category: string; unit: string }
-type Customer = { id: number; name: string }
+type Customer = { id: number; name: string; phone?: string }
 type ExportTicket = {
   id: number
   customerName: string
@@ -492,6 +492,7 @@ function MasterDataPage() {
   const [name, setName] = useState('')
   const [category, setCategory] = useState('')
   const [phone, setPhone] = useState('')
+  const [editingId, setEditingId] = useState<number | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -519,8 +520,8 @@ function MasterDataPage() {
       ? { name, phone: phone || 'Chưa cập nhật' }
       : tab === 'customers' ? { name, phone: phone || null } : { name, category, unit: 'KG' }
     try {
-      const response = await apiFetch(`/api/${endpoint}`, {
-        method: 'POST',
+      const response = await apiFetch(`/api/${endpoint}${editingId ? `/${editingId}` : ''}`, {
+        method: editingId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
@@ -528,9 +529,40 @@ function MasterDataPage() {
       setName('')
       setCategory('')
       setPhone('')
-      setNotice('Đã thêm dữ liệu thành công.')
+      setEditingId(null)
+      setNotice(editingId ? 'Đã cập nhật dữ liệu thành công.' : 'Đã thêm dữ liệu thành công.')
       await loadData()
-    } catch { setNotice('Không thể thêm dữ liệu. Vui lòng kiểm tra thông tin.') }
+    } catch { setNotice(editingId ? 'Không thể cập nhật dữ liệu.' : 'Không thể thêm dữ liệu. Vui lòng kiểm tra thông tin.') }
+    finally { setBusy(false) }
+  }
+
+  const startEditing = (record: Supplier | Customer | Item) => {
+    setEditingId(record.id)
+    setName(record.name)
+    setCategory('category' in record ? record.category : '')
+    setPhone('phone' in record ? record.phone ?? '' : '')
+    setNotice(null)
+  }
+
+  const cancelEditing = () => {
+    setEditingId(null)
+    setName('')
+    setCategory('')
+    setPhone('')
+    setNotice(null)
+  }
+
+  const deleteRecord = async (id: number) => {
+    if (!window.confirm('Bạn có chắc muốn xóa dữ liệu này?')) return
+    setBusy(true)
+    const endpoint = tab === 'suppliers' ? 'suppliers' : tab === 'customers' ? 'customers' : 'items'
+    try {
+      const response = await apiFetch(`/api/${endpoint}/${id}`, { method: 'DELETE' })
+      if (!response.ok) throw new Error()
+      if (editingId === id) cancelEditing()
+      setNotice('Đã xóa dữ liệu thành công.')
+      await loadData()
+    } catch { setNotice('Không thể xóa dữ liệu. Có thể dữ liệu đã được sử dụng trong nghiệp vụ.') }
     finally { setBusy(false) }
   }
 
@@ -538,17 +570,17 @@ function MasterDataPage() {
     <div className="page-heading"><div><p className="eyebrow">DANH MỤC</p><h2>Dữ liệu nền</h2><p className="muted">Quản lý các đối tác và mặt hàng sử dụng trong nghiệp vụ.</p></div><button className="secondary-button" type="button" onClick={() => loadData()}>Làm mới</button></div>
     <div className="master-tabs">{(['suppliers', 'customers', 'items'] as const).map((currentTab) => <button type="button" className={tab === currentTab ? 'active' : ''} key={currentTab} onClick={() => { setTab(currentTab); setNotice(null) }}>{currentTab === 'suppliers' ? 'Nhà cung cấp' : currentTab === 'customers' ? 'Khách hàng' : 'Mặt hàng'}</button>)}</div>
     <div className="form-grid">
-      <form className="panel form-panel" onSubmit={createMasterData}><div className="panel-heading"><div><p className="eyebrow">TẠO MỚI</p><h3>{tab === 'suppliers' ? 'Nhà cung cấp' : tab === 'customers' ? 'Khách hàng' : 'Mặt hàng'}</h3></div></div>
+      <form className="panel form-panel" onSubmit={createMasterData}><div className="panel-heading"><div><p className="eyebrow">{editingId ? 'CHỈNH SỬA' : 'TẠO MỚI'}</p><h3>{tab === 'suppliers' ? 'Nhà cung cấp' : tab === 'customers' ? 'Khách hàng' : 'Mặt hàng'}</h3></div></div>
         <label>Tên<input value={name} onChange={(event) => setName(event.target.value)} placeholder={tab === 'items' ? 'Cà phê nhân' : tab === 'suppliers' ? 'Tên nhà cung cấp' : 'Tên khách hàng'} /></label>
         {tab === 'items' && <label>Phân loại<input value={category} onChange={(event) => setCategory(event.target.value)} placeholder="Loại 1" /></label>}
         {tab !== 'items' && <label>Số điện thoại<input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="0900000000" /></label>}
-        {notice && <p className="form-notice">{notice}</p>}<button className="primary-button" disabled={busy} type="submit">{busy ? 'Đang lưu...' : 'Thêm dữ liệu'}</button>
+        {notice && <p className="form-notice">{notice}</p>}<div className="form-actions"><button className="primary-button" disabled={busy} type="submit">{busy ? 'Đang lưu...' : editingId ? 'Lưu thay đổi' : 'Thêm dữ liệu'}</button>{editingId && <button className="secondary-button" type="button" onClick={cancelEditing}>Hủy</button>}</div>
       </form>
       <article className="panel"><div className="panel-heading"><div><p className="eyebrow">DANH SÁCH</p><h3>{tab === 'suppliers' ? 'Nhà cung cấp' : tab === 'customers' ? 'Khách hàng' : 'Mặt hàng'}</h3></div><span className="count">{tab === 'suppliers' ? suppliers.length : tab === 'customers' ? customers.length : items.length}</span></div>
-        <div className="table-wrap"><table><thead><tr><th>Tên</th><th>Thông tin</th></tr></thead><tbody>
-          {tab === 'suppliers' && suppliers.map((supplier) => <tr key={supplier.id}><td><strong>{supplier.name}</strong></td><td>{formatKg(supplier.usableCoffeeKg)} khả dụng</td></tr>)}
-          {tab === 'customers' && customers.map((customer) => <tr key={customer.id}><td><strong>{customer.name}</strong></td><td>{customer.name}</td></tr>)}
-          {tab === 'items' && items.map((item) => <tr key={item.id}><td><strong>{item.name}</strong></td><td>{item.category} · {item.unit}</td></tr>)}
+        <div className="table-wrap"><table><thead><tr><th>Tên</th><th>Thông tin</th><th>Thao tác</th></tr></thead><tbody>
+          {tab === 'suppliers' && suppliers.map((supplier) => <tr key={supplier.id}><td><strong>{supplier.name}</strong></td><td>{supplier.phone || 'Chưa cập nhật'} · {formatKg(supplier.usableCoffeeKg)} khả dụng</td><td className="row-actions"><button type="button" onClick={() => startEditing(supplier)}>Sửa</button><button type="button" onClick={() => deleteRecord(supplier.id)} disabled={busy}>Xóa</button></td></tr>)}
+          {tab === 'customers' && customers.map((customer) => <tr key={customer.id}><td><strong>{customer.name}</strong></td><td>{customer.phone || 'Chưa cập nhật'}</td><td className="row-actions"><button type="button" onClick={() => startEditing(customer)}>Sửa</button><button type="button" onClick={() => deleteRecord(customer.id)} disabled={busy}>Xóa</button></td></tr>)}
+          {tab === 'items' && items.map((item) => <tr key={item.id}><td><strong>{item.name}</strong></td><td>{item.category} · {item.unit}</td><td className="row-actions"><button type="button" onClick={() => startEditing(item)}>Sửa</button><button type="button" onClick={() => deleteRecord(item.id)} disabled={busy}>Xóa</button></td></tr>)}
         </tbody></table></div>
       </article>
     </div>
