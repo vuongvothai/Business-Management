@@ -28,12 +28,13 @@
   không tồn tại.
 - [x] Viết test nghiệp vụ cho nhập hàng, chốt giá và giao hàng.
 - [x] Viết controller test cho các API nhập hàng, chốt giá và tồn kho.
+- [x] Bổ sung đăng nhập JWT và phân quyền theo role.
 
 ## Bước tiếp theo
 
-1. Viết test controller cho các endpoint chính.
+1. Hoàn thiện màn hình frontend đăng nhập và lưu bearer token.
 2. Bổ sung chức năng sửa/xóa dữ liệu master khi cần.
-3. Hoàn thiện authentication/authorization và triển khai production.
+3. Hoàn thiện truy xuất lô tồn kho và triển khai production.
 
 ## Quy ước cập nhật
 

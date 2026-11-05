@@ -25,6 +25,12 @@ public class AppUser {
     @Column(name = "full_name", nullable = false, length = 255)
     private String fullName;
 
+    @Column(name = "username", nullable = false, unique = true, length = 100)
+    private String username;
+
+    @Column(name = "password_hash", nullable = false, length = 100)
+    private String passwordHash;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
@@ -40,6 +46,13 @@ public class AppUser {
 
     public AppUser(String fullName, Role role) {
         this.fullName = fullName;
+        this.role = role;
+    }
+
+    public AppUser(String username, String fullName, String passwordHash, Role role) {
+        this.username = username;
+        this.fullName = fullName;
+        this.passwordHash = passwordHash;
         this.role = role;
     }
 
@@ -61,6 +74,14 @@ public class AppUser {
 
     public String getFullName() {
         return fullName;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
     public Role getRole() {
