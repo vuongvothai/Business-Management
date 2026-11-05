@@ -10,12 +10,13 @@
 - [x] Soạn đặc tả API và thiết kế database ở mức tài liệu.
 - [x] Khởi tạo backend Java tối thiểu và Docker Compose.
 - [x] Chạy migration database trên MySQL Docker.
+- [x] Tạo entity và repository cho các bảng master.
 - [ ] Khởi tạo frontend React.
 - [ ] Viết test nghiệp vụ.
 
 ## Bước tiếp theo
 
-1. Tạo entity/repository cho các bảng master.
+1. Tạo API đọc/ghi cho các bảng master.
 2. Triển khai luồng nhập hàng đầu tiên.
 3. Viết test cho việc tính tổng từ các lần cân.
 
