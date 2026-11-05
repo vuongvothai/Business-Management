@@ -29,6 +29,7 @@
 - [x] Viết test nghiệp vụ cho nhập hàng, chốt giá và giao hàng.
 - [x] Viết controller test cho các API nhập hàng, chốt giá và tồn kho.
 - [x] Bổ sung đăng nhập JWT và phân quyền theo role.
+- [x] Bổ sung màn hình đăng nhập frontend và tự động gửi bearer token.
 
 ## Bước tiếp theo
 
