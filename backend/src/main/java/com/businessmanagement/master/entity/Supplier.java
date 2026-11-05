@@ -95,4 +95,8 @@ public class Supplier {
     public void addUsableCoffeeKg(BigDecimal amount) {
         usableCoffeeKg = usableCoffeeKg.add(amount);
     }
+
+    public void subtractUsableCoffeeKg(BigDecimal amount) {
+        usableCoffeeKg = usableCoffeeKg.subtract(amount);
+    }
 }

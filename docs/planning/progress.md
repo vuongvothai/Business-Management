@@ -14,14 +14,16 @@
 - [x] Tạo và kiểm thử API CRUD cho supplier, item và customer.
 - [x] Triển khai API tạo và xem phiếu nhập hàng.
 - [x] Tính tổng số bao, tổng kg và cập nhật số dư supplier/tồn kho trong transaction.
+- [x] Viết test tự động cho luồng nhập hàng.
+- [x] Triển khai API chốt giá và kiểm tra số dư supplier.
 - [ ] Khởi tạo frontend React.
 - [ ] Viết test nghiệp vụ.
 
 ## Bước tiếp theo
 
-1. Viết test tự động cho luồng nhập hàng.
-2. Triển khai module chốt giá.
-3. Bổ sung bộ lọc và phân trang cho danh sách phiếu nhập.
+1. Triển khai phiếu chốt bán và giao hàng.
+2. Bổ sung bộ lọc và phân trang cho danh sách phiếu nhập.
+3. Bổ sung test tự động cho API chốt giá.
 
 ## Quy ước cập nhật
 
