@@ -27,6 +27,7 @@
 - [x] Bổ sung response lỗi thống nhất cho validation, lỗi nghiệp vụ và tài nguyên
   không tồn tại.
 - [x] Viết test nghiệp vụ cho nhập hàng, chốt giá và giao hàng.
+- [x] Viết controller test cho các API nhập hàng, chốt giá và tồn kho.
 
 ## Bước tiếp theo
 
