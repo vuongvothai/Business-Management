@@ -12,14 +12,16 @@
 - [x] Chạy migration database trên MySQL Docker.
 - [x] Tạo entity và repository cho các bảng master.
 - [x] Tạo và kiểm thử API CRUD cho supplier, item và customer.
+- [x] Triển khai API tạo và xem phiếu nhập hàng.
+- [x] Tính tổng số bao, tổng kg và cập nhật số dư supplier/tồn kho trong transaction.
 - [ ] Khởi tạo frontend React.
 - [ ] Viết test nghiệp vụ.
 
 ## Bước tiếp theo
 
-1. Triển khai luồng nhập hàng đầu tiên.
-2. Viết test cho việc tính tổng từ các lần cân.
-3. Bổ sung test tự động cho API master data.
+1. Viết test tự động cho luồng nhập hàng.
+2. Triển khai module chốt giá.
+3. Bổ sung bộ lọc và phân trang cho danh sách phiếu nhập.
 
 ## Quy ước cập nhật
 

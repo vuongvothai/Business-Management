@@ -49,6 +49,11 @@ Request:
 }
 ```
 
+Trong phiên bản hiện tại, `createdByUserId` là tùy chọn để phục vụ giai đoạn
+chưa tích hợp đăng nhập. Nếu bỏ qua, backend dùng người dùng hệ thống đầu tiên
+được tạo bởi migration. Khi triển khai authentication, giá trị này sẽ được lấy
+từ người dùng đang đăng nhập thay vì từ request.
+
 Quy tắc:
 
 - `supplierId` và `itemId` phải tồn tại.

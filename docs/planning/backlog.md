@@ -6,9 +6,9 @@
 - [x] Tạo migration cho toàn bộ bảng theo ERD.
 - [x] Tạo migration seed role và mặt hàng mẫu.
 - [x] Tạo CRUD nhà cung cấp, mặt hàng, khách hàng.
-- [ ] Tạo phiếu nhập và `IMPORT_WEIGHT`.
-- [ ] Tự tính số bao và tổng kg từ các lần cân.
-- [ ] Xác nhận phiếu nhập và cập nhật số dư.
+- [x] Tạo phiếu nhập và `IMPORT_WEIGHT`.
+- [x] Tự tính số bao và tổng kg từ các lần cân.
+- [x] Xác nhận phiếu nhập và cập nhật số dư.
 - [ ] Tạo và xác nhận `PRICE_LOCK`.
 - [ ] Từ chối chốt vượt `usable_coffee_kg`.
 - [ ] Tạo `EXPORT_TICKET` làm phiếu chốt bán/căn cứ lập hóa đơn điện tử.
