@@ -26,6 +26,12 @@ Response lỗi thống nhất:
 }
 ```
 
+Các lỗi validation từ request body/query được ánh xạ thành `VALIDATION_ERROR`.
+Lỗi nghiệp vụ dùng mã `BUSINESS_CONFLICT` với HTTP `409`, lỗi không tìm thấy
+tài nguyên dùng mã `NOT_FOUND` với HTTP `404`; các lỗi request còn lại dùng
+`REQUEST_ERROR`. Các lỗi này được xử lý tập trung bởi
+`GlobalExceptionHandler`, vì vậy các endpoint giữ cùng một response shape.
+
 ## 1. Tạo phiếu nhập kho
 
 ### `POST /api/imports`

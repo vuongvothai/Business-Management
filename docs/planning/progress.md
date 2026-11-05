@@ -22,14 +22,17 @@
 - [x] Bổ sung bộ lọc ngày, nhà cung cấp và phân trang cho phiếu nhập.
 - [x] Khởi tạo frontend React và dashboard tổng quan tồn kho.
 - [x] Viết test tự động cho API chốt giá và giao hàng.
-- [ ] Khởi tạo frontend React.
-- [ ] Viết test nghiệp vụ.
+- [x] Kết nối các màn hình frontend với API nhập hàng, chốt giá, bán/giao hàng
+  và danh mục.
+- [x] Bổ sung response lỗi thống nhất cho validation, lỗi nghiệp vụ và tài nguyên
+  không tồn tại.
+- [x] Viết test nghiệp vụ cho nhập hàng, chốt giá và giao hàng.
 
 ## Bước tiếp theo
 
-1. Bổ sung xử lý lỗi thống nhất cho toàn bộ API.
-2. Viết test controller cho các endpoint chính.
-3. Hoàn thiện màn hình nhập hàng, chốt giá và giao hàng.
+1. Viết test controller cho các endpoint chính.
+2. Bổ sung chức năng sửa/xóa dữ liệu master khi cần.
+3. Hoàn thiện authentication/authorization và triển khai production.
 
 ## Quy ước cập nhật
 
