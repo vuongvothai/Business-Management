@@ -203,6 +203,11 @@ Quy tắc:
 - Response phải trả `committedVolume`, `deliveredVolume` và
   `remainingVolume`.
 
+API hiện tại đã hỗ trợ nhiều lần giao cho cùng một phiếu. Tạo
+`EXPORT_TICKET` không trừ tồn kho; chỉ `POST /api/exports/{exportId}/deliveries`
+mới trừ `item.available_kg`. Khi tổng giao bằng khối lượng cam kết, trạng thái
+phiếu chuyển thành `COMPLETED`; nếu chưa đủ thì là `PARTIALLY_DELIVERED`.
+
 ## 5. Chi phí theo kỳ
 
 `EXPENSE_DETAIL.amount` lưu số tiền của từng danh mục. `EXPENSE` lưu
