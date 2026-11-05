@@ -17,7 +17,7 @@
 - [x] Cho phép tồn kho âm khi giao thực tế.
 - [x] Tạo API `GET /api/inventory/summary`.
 - [ ] Tạo quản lý `EXPENSE` và `EXPENSE_DETAIL`.
-- [ ] Kiểm tra phân quyền ba vai trò.
+- [x] Kiểm tra phân quyền ba vai trò.
 
 ## P1 — Sau MVP
 
