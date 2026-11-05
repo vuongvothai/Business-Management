@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import jakarta.transaction.Transactional;
 
 @Service
 public class AuthService {
@@ -22,6 +23,7 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
+    @Transactional
     public LoginResponse login(LoginRequest request) {
         AppUser user = users.findByUsername(request.username())
                 .orElseThrow(() -> invalidCredentials());

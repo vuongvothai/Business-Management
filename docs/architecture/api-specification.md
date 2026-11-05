@@ -163,7 +163,8 @@ Khi không truyền bộ lọc, API vẫn dùng `page=0`, `size=20` mặc địn
 
 ### `POST /api/price-locks`
 
-Chốt giá cho toàn bộ hoặc một phần khối lượng đã nhập.
+Chốt giá cho toàn bộ hoặc một phần khối lượng hữu dụng tổng hợp của một nhà
+cung cấp và mặt hàng.
 
 Request:
 
@@ -209,7 +210,8 @@ Response `201 Created`:
 ```
 
 Một số dư cà phê của nhà cung cấp có thể được chốt nhiều lần. `amount` là
-giá trị tính từ `lockedVolume * lockedPricePerKg`.
+giá trị tính từ `lockedVolume * lockedPricePerKg`. Phiếu chốt không tham chiếu
+đến một phiếu nhập hoặc lô nhập cụ thể.
 
 ## 4. Phiếu chốt bán và giao hàng
 
@@ -217,7 +219,8 @@ giá trị tính từ `lockedVolume * lockedPricePerKg`.
 
 Tạo `EXPORT_TICKET` để chốt bán và làm căn cứ lập hóa đơn điện tử.
 Request chứa `itemId`, `committedVolume`, giá bán và ngày giao dự kiến.
-Việc tạo hoặc xác nhận phiếu chưa trừ tồn kho.
+Việc tạo hoặc xác nhận phiếu chưa trừ tồn kho. Phiếu bán sử dụng tồn kho tổng
+hợp theo mặt hàng và không gắn bắt buộc với một phiếu nhập nguồn.
 
 ### `POST /api/exports/{exportId}/deliveries`
 
