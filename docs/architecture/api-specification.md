@@ -122,6 +122,9 @@ Response `200 OK`:
 }
 ```
 
+Khi không truyền bộ lọc, API vẫn dùng `page=0`, `size=20` mặc định. `size`
+được giới hạn từ 1 đến 100; ngày bắt đầu không được lớn hơn ngày kết thúc.
+
 ## 3. Chốt giá
 
 ### `POST /api/price-locks`

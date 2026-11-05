@@ -1,6 +1,7 @@
 package com.businessmanagement.imports.service;
 
 import com.businessmanagement.imports.dto.ImportRequest;
+import com.businessmanagement.imports.dto.ImportPageResponse;
 import com.businessmanagement.imports.dto.ImportResponse;
 import com.businessmanagement.imports.dto.ImportWeightRequest;
 import com.businessmanagement.imports.entity.ImportTicket;
@@ -14,7 +15,10 @@ import com.businessmanagement.master.repository.ItemRepository;
 import com.businessmanagement.master.repository.SupplierRepository;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
-import java.util.List;
+import java.time.LocalDate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -73,8 +77,29 @@ public class ImportService {
     }
 
     @Transactional
-    public List<ImportResponse> list() {
-        return importRepository.findAll().stream().map(ImportResponse::from).toList();
+    public ImportPageResponse list(LocalDate fromDate, LocalDate toDate,
+                                   Long supplierId, Pageable pageable) {
+        Specification<ImportTicket> specification = Specification.where(null);
+        if (fromDate != null) {
+            specification = specification.and((root, query, builder) ->
+                    builder.greaterThanOrEqualTo(root.get("importDate"), fromDate));
+        }
+        if (toDate != null) {
+            specification = specification.and((root, query, builder) ->
+                    builder.lessThanOrEqualTo(root.get("importDate"), toDate));
+        }
+        if (supplierId != null) {
+            specification = specification.and((root, query, builder) ->
+                    builder.equal(root.get("supplier").get("id"), supplierId));
+        }
+        Page<ImportResponse> result = importRepository.findAll(specification, pageable)
+                .map(ImportResponse::from);
+        return new ImportPageResponse(
+                result.getContent(),
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements(),
+                result.getTotalPages());
     }
 
     private AppUser resolveUser(Long id) {

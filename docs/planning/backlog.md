@@ -26,7 +26,7 @@
 - [ ] Audit log chi tiết.
 - [ ] Đối soát số dư với giao dịch.
 - [ ] Đồng bộ giá thị trường tự động.
-- [ ] Cải thiện bộ lọc và phân trang.
+- [x] Cải thiện bộ lọc và phân trang.
 
 ## P2 — Chưa triển khai
 
