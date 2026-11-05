@@ -41,9 +41,16 @@ public class Item {
     protected Item() {
     }
 
-    public Item(String name, String category) {
+    public Item(String name, String category, String unit) {
         this.name = name;
         this.category = category;
+        this.unit = unit;
+    }
+
+    public void update(String name, String category, String unit) {
+        this.name = name;
+        this.category = category;
+        this.unit = unit;
     }
 
     @PrePersist

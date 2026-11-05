@@ -5,7 +5,7 @@
 - [x] Tạo project Spring Boot và cấu hình MySQL.
 - [x] Tạo migration cho toàn bộ bảng theo ERD.
 - [x] Tạo migration seed role và mặt hàng mẫu.
-- [ ] Tạo CRUD nhà cung cấp, mặt hàng, khách hàng.
+- [x] Tạo CRUD nhà cung cấp, mặt hàng, khách hàng.
 - [ ] Tạo phiếu nhập và `IMPORT_WEIGHT`.
 - [ ] Tự tính số bao và tổng kg từ các lần cân.
 - [ ] Xác nhận phiếu nhập và cập nhật số dư.

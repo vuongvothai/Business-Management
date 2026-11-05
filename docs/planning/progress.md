@@ -11,14 +11,15 @@
 - [x] Khởi tạo backend Java tối thiểu và Docker Compose.
 - [x] Chạy migration database trên MySQL Docker.
 - [x] Tạo entity và repository cho các bảng master.
+- [x] Tạo và kiểm thử API CRUD cho supplier, item và customer.
 - [ ] Khởi tạo frontend React.
 - [ ] Viết test nghiệp vụ.
 
 ## Bước tiếp theo
 
-1. Tạo API đọc/ghi cho các bảng master.
-2. Triển khai luồng nhập hàng đầu tiên.
-3. Viết test cho việc tính tổng từ các lần cân.
+1. Triển khai luồng nhập hàng đầu tiên.
+2. Viết test cho việc tính tổng từ các lần cân.
+3. Bổ sung test tự động cho API master data.
 
 ## Quy ước cập nhật
 

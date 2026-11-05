@@ -41,6 +41,12 @@ public class Customer {
         this.name = name;
     }
 
+    public void update(String name, String phone, String address) {
+        this.name = name;
+        this.phone = phone;
+        this.address = address;
+    }
+
     @PrePersist
     void onCreate() {
         LocalDateTime now = LocalDateTime.now();
