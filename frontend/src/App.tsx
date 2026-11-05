@@ -1,5 +1,15 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import './App.css'
+import { apiFetch } from './api'
+
+type AuthUser = {
+  userId: number
+  username: string
+  fullName: string
+  role: 'ADMIN' | 'WEIGHER' | 'ACCOUNTANT'
+}
+
+type LoginResponse = AuthUser & { accessToken: string; tokenType: string; expiresInSeconds: number }
 
 type InventorySummary = {
   totalKg: number
@@ -45,22 +55,48 @@ const formatMoney = (value: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
 
 function App() {
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    const stored = sessionStorage.getItem('authUser')
+    return stored ? JSON.parse(stored) as AuthUser : null
+  })
   const [summary, setSummary] = useState<InventorySummary | null>(null)
   const [imports, setImports] = useState<ImportPage | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [activePage, setActivePage] = useState('overview')
+  const [activePage, setActivePage] = useState(() => user?.role === 'WEIGHER' ? 'imports' : 'overview')
 
   useEffect(() => {
+    if (!user || user.role === 'WEIGHER') return
     Promise.all([
-      fetch('/api/inventory/summary').then((response) => response.json()),
-      fetch('/api/imports?page=0&size=5').then((response) => response.json()),
+      apiFetch('/api/inventory/summary').then((response) => response.json()),
+      apiFetch('/api/imports?page=0&size=5').then((response) => response.json()),
     ])
       .then(([inventory, importPage]) => {
         setSummary(inventory)
         setImports(importPage)
       })
       .catch(() => setError('Không thể kết nối tới backend. Hãy kiểm tra Docker và API.'))
+  }, [user])
+
+  useEffect(() => {
+    const expire = () => setUser(null)
+    window.addEventListener('auth-expired', expire)
+    return () => window.removeEventListener('auth-expired', expire)
   }, [])
+
+  const login = (response: LoginResponse) => {
+    sessionStorage.setItem('accessToken', response.accessToken)
+    const authUser: AuthUser = {
+      userId: response.userId,
+      username: response.username,
+      fullName: response.fullName,
+      role: response.role,
+    }
+    sessionStorage.setItem('authUser', JSON.stringify(authUser))
+    setUser(authUser)
+    setActivePage(authUser.role === 'WEIGHER' ? 'imports' : 'overview')
+  }
+
+  if (!user) return <LoginPage onLogin={login} />
 
   return (
     <div className="app-shell">
@@ -70,15 +106,18 @@ function App() {
           <p className="eyebrow">BUSINESS MANAGEMENT</p>
           <h1>Quản lý cà phê nhân</h1>
         </div>
-        <span className="connection"><i /> Hệ thống đang hoạt động</span>
+        <div className="user-actions">
+          <span className="user-badge">{user.fullName} · {user.role}</span>
+          <button className="logout-button" onClick={() => { sessionStorage.clear(); setUser(null) }}>Đăng xuất</button>
+        </div>
       </header>
 
       <nav className="main-nav" aria-label="Điều hướng chính">
-        <NavButton active={activePage === 'overview'} onClick={() => setActivePage('overview')} icon="⌂">Tổng quan</NavButton>
-        <NavButton active={activePage === 'imports'} onClick={() => setActivePage('imports')} icon="↓">Nhập hàng</NavButton>
-        <NavButton active={activePage === 'price-locks'} onClick={() => setActivePage('price-locks')} icon="◈">Chốt giá</NavButton>
-        <NavButton active={activePage === 'exports'} onClick={() => setActivePage('exports')} icon="↑">Bán & giao hàng</NavButton>
-        <NavButton active={activePage === 'master-data'} onClick={() => setActivePage('master-data')} icon="≡">Danh mục</NavButton>
+        {user.role !== 'WEIGHER' && <NavButton active={activePage === 'overview'} onClick={() => setActivePage('overview')} icon="⌂">Tổng quan</NavButton>}
+        {(user.role === 'ADMIN' || user.role === 'WEIGHER') && <NavButton active={activePage === 'imports'} onClick={() => setActivePage('imports')} icon="↓">Nhập hàng</NavButton>}
+        {user.role !== 'WEIGHER' && <NavButton active={activePage === 'price-locks'} onClick={() => setActivePage('price-locks')} icon="◈">Chốt giá</NavButton>}
+        {user.role !== 'WEIGHER' && <NavButton active={activePage === 'exports'} onClick={() => setActivePage('exports')} icon="↑">Bán & giao hàng</NavButton>}
+        {user.role === 'ADMIN' && <NavButton active={activePage === 'master-data'} onClick={() => setActivePage('master-data')} icon="≡">Danh mục</NavButton>}
       </nav>
 
       <main>
@@ -92,6 +131,46 @@ function App() {
       <footer>Business Management · Backend Spring Boot · MySQL</footer>
     </div>
   )
+}
+
+function LoginPage({ onLogin }: { onLogin: (response: LoginResponse) => void }) {
+  const [username, setUsername] = useState('admin')
+  const [password, setPassword] = useState('password')
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setBusy(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      })
+      if (!response.ok) throw new Error('invalid')
+      onLogin(await response.json() as LoginResponse)
+    } catch {
+      setError('Tên đăng nhập hoặc mật khẩu không đúng.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return <main className="login-page">
+    <form className="login-card" onSubmit={submit}>
+      <div className="brand-mark login-mark">BM</div>
+      <p className="eyebrow">BUSINESS MANAGEMENT</p>
+      <h2>Đăng nhập hệ thống</h2>
+      <p className="muted">Sử dụng tài khoản được cấp để tiếp tục.</p>
+      <label>Tên đăng nhập<input value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" /></label>
+      <label>Mật khẩu<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" /></label>
+      {error && <div className="alert">{error}</div>}
+      <button className="primary-button login-submit" disabled={busy}>{busy ? 'Đang đăng nhập...' : 'Đăng nhập'}</button>
+      <small>Tài khoản demo: admin / password</small>
+    </form>
+  </main>
 }
 
 function ImportsPage({ onCreated }: { onCreated: () => void }) {
@@ -108,9 +187,9 @@ function ImportsPage({ onCreated }: { onCreated: () => void }) {
   const [busy, setBusy] = useState(false)
 
   const loadData = () => Promise.all([
-    fetch('/api/suppliers').then((response) => response.json()),
-    fetch('/api/items').then((response) => response.json()),
-    fetch('/api/imports?page=0&size=20').then((response) => response.json()),
+    apiFetch('/api/suppliers').then((response) => response.json()),
+    apiFetch('/api/items').then((response) => response.json()),
+    apiFetch('/api/imports?page=0&size=20').then((response) => response.json()),
   ]).then(([supplierData, itemData, importData]) => {
     setSuppliers(supplierData)
     setItems(itemData)
@@ -141,7 +220,7 @@ function ImportsPage({ onCreated }: { onCreated: () => void }) {
     }
     setBusy(true)
     try {
-      const response = await fetch('/api/imports', {
+      const response = await apiFetch('/api/imports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ supplierId: Number(supplierId), itemId: Number(itemId), importDate, weights }),
@@ -250,8 +329,8 @@ function PriceLocksPage() {
   const [busy, setBusy] = useState(false)
 
   const loadData = () => Promise.all([
-    fetch('/api/suppliers').then((response) => response.json()),
-    fetch('/api/items').then((response) => response.json()),
+    apiFetch('/api/suppliers').then((response) => response.json()),
+    apiFetch('/api/items').then((response) => response.json()),
   ]).then(([supplierData, itemData]) => {
     setSuppliers(supplierData)
     setItems(itemData)
@@ -277,7 +356,7 @@ function PriceLocksPage() {
     }
     setBusy(true)
     try {
-      const response = await fetch('/api/price-locks', {
+      const response = await apiFetch('/api/price-locks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ supplierId: Number(supplierId), itemId: Number(itemId), lockDate, lockedVolume: volumeValue, lockedPricePerKg: priceValue }),
@@ -327,9 +406,9 @@ function ExportsPage() {
   const [deliveryVolume, setDeliveryVolume] = useState<Record<number, string>>({})
 
   const loadData = () => Promise.all([
-    fetch('/api/customers').then((response) => response.json()),
-    fetch('/api/items').then((response) => response.json()),
-    fetch('/api/exports').then((response) => response.json()),
+    apiFetch('/api/customers').then((response) => response.json()),
+    apiFetch('/api/items').then((response) => response.json()),
+    apiFetch('/api/exports').then((response) => response.json()),
   ]).then(([customerData, itemData, exportData]) => {
     setCustomers(customerData)
     setItems(itemData)
@@ -350,7 +429,7 @@ function ExportsPage() {
     }
     setBusy(true)
     try {
-      const response = await fetch('/api/exports', {
+      const response = await apiFetch('/api/exports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customerId: Number(customerId), itemId: Number(itemId), committedVolume: volume, sellingPricePerKg: price, exportDate }),
@@ -372,7 +451,7 @@ function ExportsPage() {
     }
     setBusy(true)
     try {
-      const response = await fetch(`/api/exports/${ticket.id}/deliveries`, {
+      const response = await apiFetch(`/api/exports/${ticket.id}/deliveries`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deliveredVolume: volume, deliveryDate: new Date().toISOString().slice(0, 10) }),
@@ -417,9 +496,9 @@ function MasterDataPage() {
   const [busy, setBusy] = useState(false)
 
   const loadData = () => Promise.all([
-    fetch('/api/suppliers').then((response) => response.json()),
-    fetch('/api/customers').then((response) => response.json()),
-    fetch('/api/items').then((response) => response.json()),
+    apiFetch('/api/suppliers').then((response) => response.json()),
+    apiFetch('/api/customers').then((response) => response.json()),
+    apiFetch('/api/items').then((response) => response.json()),
   ]).then(([supplierData, customerData, itemData]) => {
     setSuppliers(supplierData)
     setCustomers(customerData)
@@ -440,7 +519,7 @@ function MasterDataPage() {
       ? { name, phone: phone || 'Chưa cập nhật' }
       : tab === 'customers' ? { name, phone: phone || null } : { name, category, unit: 'KG' }
     try {
-      const response = await fetch(`/api/${endpoint}`, {
+      const response = await apiFetch(`/api/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
