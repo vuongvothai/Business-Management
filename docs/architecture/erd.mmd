@@ -1,0 +1,157 @@
+
+erDiagram
+
+    SUPPLIER {
+        bigint supplier_id PK
+        string name "Nguyễn Văn A"
+        string identity_no "001234567890"
+        string phone "0901234567"
+        string address "Đắk Lắk"
+        decimal usable_coffee_kg "1200.500 kg"
+        datetime created_at
+        datetime updated_at
+    }
+
+    ROLE {
+        bigint role_id PK
+        string role_name UK "ACCOUNTANT"
+    }
+
+    USER {
+        bigint user_id PK
+        string full_name "Trần Thị B"
+        bigint role_id FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    CUSTOMER {
+        bigint customer_id PK
+        string name "Công ty Cà phê ABC"
+        string phone "0281234567"
+        string address "Thành phố Hồ Chí Minh"
+        datetime created_at
+        datetime updated_at
+    }
+
+    ITEM {
+        bigint item_id PK
+        string name "Cà phê nhân"
+        string category "Loại 1"
+        string unit "KG"
+        decimal available_kg "2500.000 kg"
+        datetime created_at
+        datetime updated_at
+    }
+
+    IMPORT_TICKET {
+        bigint import_id PK
+        bigint supplier_id FK
+        bigint item_id FK
+        int number_of_bags "10 bao"
+        decimal total_kg "600.000 kg"
+        decimal moisture_percent "12.50%"
+        decimal impurity_percent "1.80%"
+        decimal purchase_price_per_kg
+        decimal market_price_per_kg
+        decimal market_difference_per_kg
+        string photo_url "https://example.com/import-101.jpg"
+        date import_date "2026-11-05"
+        string note "Nhập cà phê nhân loại 1"
+        string status "CONFIRMED"
+        bigint created_by FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    IMPORT_WEIGHT {
+        bigint weight_id PK
+        bigint import_id FK
+        decimal weight_kg "120.000 kg"
+        tinyint bag_count "2"
+        bigint created_by FK
+        datetime created_at
+    }
+
+    PRICE_LOCK {
+        bigint price_lock_id PK
+        bigint supplier_id FK
+        bigint item_id FK
+        decimal locked_volume "500.000 kg"
+        decimal locked_price_per_kg "42000.00 VND/kg"
+        decimal amount "21000000.00 VND"
+        date lock_date "2026-11-05"
+        string note "Chốt giá đợt 1"
+        string status "CONFIRMED"
+        bigint created_by FK
+        bigint updated_by FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    EXPORT_TICKET {
+        bigint export_id PK
+        bigint customer_id FK
+        bigint item_id FK
+        decimal total_volume "300.000 kg"
+        decimal selling_price_per_kg "45000.00 VND/kg"
+        decimal market_price_per_kg "44000.00 VND/kg"
+        decimal market_difference_per_kg "1000.00 VND/kg"
+        decimal avg_cost_per_kg "42000.00 VND/kg"
+        decimal revenue "13500000.00 VND"
+        decimal estimated_profit "900000.00 VND"
+        date export_date "2026-11-05"
+        string note "Xuất cho khách hàng ABC"
+        string status "COMPLETED"
+        bigint created_by FK
+        bigint updated_by FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    EXPENSE {
+        bigint expense_id PK
+        decimal total_amount "3500000.00 VND"
+        date period_start "2026-11-01"
+        date period_end "2026-11-30"
+        string note "Chi phí tháng 11"
+        bigint created_by FK
+        bigint updated_by FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    EXPENSE_DETAIL {
+        bigint expense_detail_id PK
+        bigint expense_id FK
+        string category_name "Vận chuyển"
+        decimal amount "2000000.00 VND"
+    }
+
+    MARKET_PRICE {
+        bigint market_price_id PK
+        bigint item_id FK
+        date price_date "2026-11-05"
+        decimal price_per_kg "44000.00 VND/kg"
+        string source "Sàn giao dịch nội bộ"
+        datetime fetched_at
+    }
+
+    ROLE ||--o{ USER : "gán"
+
+    SUPPLIER ||--o{ IMPORT_TICKET : "cung cấp"
+    ITEM ||--o{ IMPORT_TICKET : "được nhập"
+    IMPORT_TICKET ||--|{ IMPORT_WEIGHT : "gồm"
+
+    SUPPLIER ||--o{ PRICE_LOCK : "chốt giá"
+    ITEM ||--o{ PRICE_LOCK : "được chốt"
+
+    CUSTOMER ||--o{ EXPORT_TICKET : "nhận hàng"
+    ITEM ||--o{ EXPORT_TICKET : "được xuất"
+
+    USER ||--o{ IMPORT_TICKET : "tạo"
+    USER ||--o{ PRICE_LOCK : "tạo"
+    USER ||--o{ EXPORT_TICKET : "tạo"
+    USER ||--o{ EXPENSE : "tạo"
+    EXPENSE ||--|{ EXPENSE_DETAIL : "gồm"
+    ITEM ||--o{ MARKET_PRICE : "có giá"
