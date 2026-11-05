@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import './App.css'
 
 type InventorySummary = {
@@ -21,6 +21,9 @@ type ImportPage = {
   }[]
   totalElements: number
 }
+
+type Supplier = { id: number; name: string; usableCoffeeKg: number }
+type Item = { id: number; name: string; category: string; unit: string }
 
 const formatKg = (value: number) =>
   new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 3 }).format(value) + ' kg'
@@ -67,11 +70,96 @@ function App() {
 
       <main>
         {activePage === 'overview' && <Overview summary={summary} imports={imports} error={error} />}
-        {activePage !== 'overview' && <ModulePlaceholder page={activePage} />}
+        {activePage === 'imports' && <ImportsPage onCreated={() => setActivePage('overview')} />}
+        {activePage !== 'overview' && activePage !== 'imports' && <ModulePlaceholder page={activePage} />}
       </main>
       <footer>Business Management · Backend Spring Boot · MySQL</footer>
     </div>
   )
+}
+
+function ImportsPage({ onCreated }: { onCreated: () => void }) {
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [items, setItems] = useState<Item[]>([])
+  const [imports, setImports] = useState<ImportPage | null>(null)
+  const [supplierId, setSupplierId] = useState('')
+  const [itemId, setItemId] = useState('')
+  const [importDate, setImportDate] = useState(new Date().toISOString().slice(0, 10))
+  const [weightKg, setWeightKg] = useState('')
+  const [bagCount, setBagCount] = useState('1')
+  const [weights, setWeights] = useState<{ weightKg: number; bagCount: number }[]>([])
+  const [notice, setNotice] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  const loadData = () => Promise.all([
+    fetch('/api/suppliers').then((response) => response.json()),
+    fetch('/api/items').then((response) => response.json()),
+    fetch('/api/imports?page=0&size=20').then((response) => response.json()),
+  ]).then(([supplierData, itemData, importData]) => {
+    setSuppliers(supplierData)
+    setItems(itemData)
+    setImports(importData)
+    if (!supplierId && supplierData[0]) setSupplierId(String(supplierData[0].id))
+    if (!itemId && itemData[0]) setItemId(String(itemData[0].id))
+  })
+
+  useEffect(() => { loadData().catch(() => setNotice('Không thể tải dữ liệu nhập hàng.')) }, [])
+
+  const addWeight = () => {
+    const weight = Number(weightKg)
+    const bags = Number(bagCount)
+    if (!weight || weight <= 0 || ![1, 2].includes(bags)) {
+      setNotice('Khối lượng phải lớn hơn 0 và số bao mỗi lần cân là 1 hoặc 2.')
+      return
+    }
+    setWeights([...weights, { weightKg: weight, bagCount: bags }])
+    setWeightKg('')
+    setNotice(null)
+  }
+
+  const createImport = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!supplierId || !itemId || weights.length === 0) {
+      setNotice('Vui lòng chọn nhà cung cấp, mặt hàng và thêm ít nhất một lần cân.')
+      return
+    }
+    setBusy(true)
+    try {
+      const response = await fetch('/api/imports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ supplierId: Number(supplierId), itemId: Number(itemId), importDate, weights }),
+      })
+      if (!response.ok) throw new Error()
+      setWeights([])
+      setNotice('Đã tạo phiếu nhập thành công.')
+      await loadData()
+      onCreated()
+    } catch { setNotice('Không thể tạo phiếu nhập. Vui lòng kiểm tra dữ liệu.') }
+    finally { setBusy(false) }
+  }
+
+  const totalKg = weights.reduce((sum, weight) => sum + weight.weightKg, 0)
+  const totalBags = weights.reduce((sum, weight) => sum + weight.bagCount, 0)
+  return <section className="module-page">
+    <div className="page-heading"><div><p className="eyebrow">NHẬP HÀNG</p><h2>Quản lý phiếu nhập</h2><p className="muted">Ghi nhận từng lần cân và cập nhật tồn kho tự động.</p></div><button className="secondary-button" type="button" onClick={() => loadData()}>Làm mới</button></div>
+    <div className="form-grid">
+      <form className="panel form-panel" onSubmit={createImport}>
+        <div className="panel-heading"><div><p className="eyebrow">TẠO MỚI</p><h3>Phiếu nhập kho</h3></div></div>
+        <div className="field-grid">
+          <label>Nhà cung cấp<select value={supplierId} onChange={(event) => setSupplierId(event.target.value)}><option value="">Chọn nhà cung cấp</option>{suppliers.map((supplier) => <option value={supplier.id} key={supplier.id}>{supplier.name}</option>)}</select></label>
+          <label>Mặt hàng<select value={itemId} onChange={(event) => setItemId(event.target.value)}><option value="">Chọn mặt hàng</option>{items.map((item) => <option value={item.id} key={item.id}>{item.name} · {item.category}</option>)}</select></label>
+          <label>Ngày nhập<input type="date" value={importDate} onChange={(event) => setImportDate(event.target.value)} /></label>
+        </div>
+        <div className="weight-entry"><label>Khối lượng (kg)<input type="number" min="0.001" step="0.001" value={weightKg} onChange={(event) => setWeightKg(event.target.value)} placeholder="120.300" /></label><label>Số bao<input type="number" min="1" max="2" value={bagCount} onChange={(event) => setBagCount(event.target.value)} /></label><button className="secondary-button add-button" type="button" onClick={addWeight}>+ Thêm lần cân</button></div>
+        <div className="weight-summary"><span>{weights.length} lần cân</span><strong>{totalBags} bao · {formatKg(totalKg)}</strong></div>
+        {weights.length > 0 && <div className="weight-list">{weights.map((weight, index) => <div key={`${weight.weightKg}-${index}`}><span>Lần cân {index + 1}</span><strong>{weight.bagCount} bao · {formatKg(weight.weightKg)}</strong><button type="button" aria-label="Xóa lần cân" onClick={() => setWeights(weights.filter((_, current) => current !== index))}>×</button></div>)}</div>}
+        {notice && <p className="form-notice">{notice}</p>}
+        <button className="primary-button" disabled={busy} type="submit">{busy ? 'Đang lưu...' : 'Tạo phiếu nhập'}</button>
+      </form>
+      <article className="panel"><div className="panel-heading"><div><p className="eyebrow">SỔ NHẬP</p><h3>Phiếu nhập gần đây</h3></div><span className="count">{imports?.totalElements ?? '—'}</span></div><div className="table-wrap"><table><thead><tr><th>Ngày</th><th>Nhà cung cấp</th><th>Số bao</th><th>Khối lượng</th></tr></thead><tbody>{imports?.content.map((item) => <tr key={item.id}><td>{item.importDate}</td><td>{item.supplierName}</td><td>{item.numberOfBags}</td><td><strong>{formatKg(item.totalKg)}</strong></td></tr>)}</tbody></table></div></article>
+    </div>
+  </section>
 }
 
 function Overview({ summary, imports, error }: { summary: InventorySummary | null; imports: ImportPage | null; error: string | null }) {
