@@ -10,3 +10,7 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+app:
+  security:
+    jwt-secret: ${JWT_SECRET:dev-only-change-this-jwt-secret-please-32chars}
+    jwt-expiration: ${JWT_EXPIRATION:PT8H}

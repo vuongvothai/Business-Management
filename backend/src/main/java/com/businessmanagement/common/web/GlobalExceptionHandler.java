@@ -38,7 +38,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiError> handleStatus(ResponseStatusException exception) {
         HttpStatus status = HttpStatus.resolve(exception.getStatusCode().value());
-        String code = status == HttpStatus.CONFLICT ? "BUSINESS_CONFLICT"
+        String code = status == HttpStatus.UNAUTHORIZED ? "UNAUTHORIZED"
+                : status == HttpStatus.CONFLICT ? "BUSINESS_CONFLICT"
                 : status == HttpStatus.NOT_FOUND ? "NOT_FOUND" : "REQUEST_ERROR";
         String message = exception.getReason() == null ? "Yêu cầu không hợp lệ" : exception.getReason();
         return ResponseEntity.status(exception.getStatusCode())

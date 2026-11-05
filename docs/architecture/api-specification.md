@@ -32,6 +32,34 @@ tài nguyên dùng mã `NOT_FOUND` với HTTP `404`; các lỗi request còn l�
 `REQUEST_ERROR`. Các lỗi này được xử lý tập trung bởi
 `GlobalExceptionHandler`, vì vậy các endpoint giữ cùng một response shape.
 
+## Xác thực và phân quyền
+
+### `POST /api/auth/login`
+
+Request:
+
+```json
+{
+  "username": "admin",
+  "password": "password"
+}
+```
+
+Response `200 OK` trả `accessToken` dạng JWT. Gửi token ở các API được bảo vệ:
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+Role hiện tại:
+
+- `ADMIN`: quản lý toàn bộ dữ liệu.
+- `WEIGHER`: nhập hàng.
+- `ACCOUNTANT`: chốt giá, bán/giao hàng và xem tổng hợp tồn kho.
+
+Tài khoản seed ban đầu là `admin/password`; cần đổi mật khẩu trước khi dùng
+production và đặt `JWT_SECRET` dài tối thiểu 32 ký tự.
+
 ## 1. Tạo phiếu nhập kho
 
 ### `POST /api/imports`
