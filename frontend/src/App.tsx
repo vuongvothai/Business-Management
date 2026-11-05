@@ -71,7 +71,8 @@ function App() {
       <main>
         {activePage === 'overview' && <Overview summary={summary} imports={imports} error={error} />}
         {activePage === 'imports' && <ImportsPage onCreated={() => setActivePage('overview')} />}
-        {activePage !== 'overview' && activePage !== 'imports' && <ModulePlaceholder page={activePage} />}
+        {activePage === 'price-locks' && <PriceLocksPage />}
+        {activePage !== 'overview' && activePage !== 'imports' && activePage !== 'price-locks' && <ModulePlaceholder page={activePage} />}
       </main>
       <footer>Business Management · Backend Spring Boot · MySQL</footer>
     </div>
@@ -220,6 +221,81 @@ function Overview({ summary, imports, error }: { summary: InventorySummary | nul
       </section>
     </>
   )
+}
+
+function PriceLocksPage() {
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [items, setItems] = useState<Item[]>([])
+  const [supplierId, setSupplierId] = useState('')
+  const [itemId, setItemId] = useState('')
+  const [lockDate, setLockDate] = useState(new Date().toISOString().slice(0, 10))
+  const [volume, setVolume] = useState('')
+  const [price, setPrice] = useState('')
+  const [notice, setNotice] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  const loadData = () => Promise.all([
+    fetch('/api/suppliers').then((response) => response.json()),
+    fetch('/api/items').then((response) => response.json()),
+  ]).then(([supplierData, itemData]) => {
+    setSuppliers(supplierData)
+    setItems(itemData)
+    if (!supplierId && supplierData[0]) setSupplierId(String(supplierData[0].id))
+    if (!itemId && itemData[0]) setItemId(String(itemData[0].id))
+  })
+
+  useEffect(() => { loadData().catch(() => setNotice('Không thể tải dữ liệu chốt giá.')) }, [])
+
+  const selectedSupplier = suppliers.find((supplier) => String(supplier.id) === supplierId)
+  const volumeValue = Number(volume) || 0
+  const priceValue = Number(price) || 0
+
+  const createPriceLock = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!supplierId || !itemId || volumeValue <= 0 || priceValue <= 0) {
+      setNotice('Vui lòng nhập đầy đủ supplier, mặt hàng, khối lượng và đơn giá hợp lệ.')
+      return
+    }
+    if (selectedSupplier && volumeValue > selectedSupplier.usableCoffeeKg) {
+      setNotice(`Khối lượng chốt vượt số dư hiện có (${formatKg(selectedSupplier.usableCoffeeKg)}).`)
+      return
+    }
+    setBusy(true)
+    try {
+      const response = await fetch('/api/price-locks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ supplierId: Number(supplierId), itemId: Number(itemId), lockDate, lockedVolume: volumeValue, lockedPricePerKg: priceValue }),
+      })
+      if (!response.ok) throw new Error()
+      const result = await response.json()
+      setNotice(`Đã chốt ${formatKg(result.lockedVolume)} · Thành tiền ${formatMoney(result.amount)}.`)
+      setVolume('')
+      setPrice('')
+      await loadData()
+    } catch { setNotice('Không thể chốt giá. Số dư có thể đã thay đổi, vui lòng tải lại.') }
+    finally { setBusy(false) }
+  }
+
+  return <section className="module-page">
+    <div className="page-heading"><div><p className="eyebrow">CHỐT GIÁ</p><h2>Chốt giá cà phê</h2><p className="muted">Chốt toàn bộ hoặc một phần số dư của nhà cung cấp.</p></div><button className="secondary-button" type="button" onClick={() => loadData()}>Làm mới</button></div>
+    <div className="form-grid">
+      <form className="panel form-panel" onSubmit={createPriceLock}>
+        <div className="panel-heading"><div><p className="eyebrow">TẠO MỚI</p><h3>Phiếu chốt giá</h3></div></div>
+        <div className="field-grid">
+          <label>Nhà cung cấp<select value={supplierId} onChange={(event) => setSupplierId(event.target.value)}><option value="">Chọn nhà cung cấp</option>{suppliers.map((supplier) => <option value={supplier.id} key={supplier.id}>{supplier.name} · {formatKg(supplier.usableCoffeeKg)}</option>)}</select></label>
+          <label>Mặt hàng<select value={itemId} onChange={(event) => setItemId(event.target.value)}><option value="">Chọn mặt hàng</option>{items.map((item) => <option value={item.id} key={item.id}>{item.name} · {item.category}</option>)}</select></label>
+          <label>Ngày chốt<input type="date" value={lockDate} onChange={(event) => setLockDate(event.target.value)} /></label>
+          <label>Khối lượng chốt (kg)<input type="number" min="0.001" step="0.001" value={volume} onChange={(event) => setVolume(event.target.value)} placeholder="500.000" /></label>
+          <label>Đơn giá (VND/kg)<input type="number" min="0.01" step="1" value={price} onChange={(event) => setPrice(event.target.value)} placeholder="42000" /></label>
+        </div>
+        <div className="weight-summary"><span>Số dư khả dụng</span><strong>{selectedSupplier ? formatKg(selectedSupplier.usableCoffeeKg) : '—'}</strong></div>
+        {notice && <p className="form-notice">{notice}</p>}
+        <button className="primary-button" disabled={busy} type="submit">{busy ? 'Đang lưu...' : 'Xác nhận chốt giá'}</button>
+      </form>
+      <article className="panel"><div className="panel-heading"><div><p className="eyebrow">TÍNH NHANH</p><h3>Giá trị phiếu chốt</h3></div></div><div className="lock-preview"><span>Khối lượng</span><strong>{formatKg(volumeValue)}</strong><span>Đơn giá</span><strong>{formatMoney(priceValue)}</strong><div className="lock-total"><span>Thành tiền dự kiến</span><strong>{formatMoney(volumeValue * priceValue)}</strong></div></div><p className="muted lock-hint">Số dư supplier sẽ được trừ ngay sau khi chốt thành công.</p></article>
+    </div>
+  </section>
 }
 
 function ModulePlaceholder({ page }: { page: string }) {
