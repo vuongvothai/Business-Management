@@ -15,7 +15,7 @@
 - [x] Tạo `EXPORT_DELIVERY` để ghi nhận nhiều lần giao cho một phiếu.
 - [x] Chỉ trừ tồn kho khi xác nhận `EXPORT_DELIVERY`.
 - [x] Cho phép tồn kho âm khi giao thực tế.
-- [ ] Tạo API `GET /api/inventory/summary`.
+- [x] Tạo API `GET /api/inventory/summary`.
 - [ ] Tạo quản lý `EXPENSE` và `EXPENSE_DETAIL`.
 - [ ] Kiểm tra phân quyền ba vai trò.
 
