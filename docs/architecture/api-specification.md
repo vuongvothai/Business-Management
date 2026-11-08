@@ -72,6 +72,12 @@ Request:
 {
   "supplierId": 1,
   "itemId": 2,
+  "vehicleId": 3,
+  "truckLicensePlate": "51C-123.45",
+  "loadingWarehouse": "Kho bốc A",
+  "importWarehouse": "Kho nhập chính",
+  "tareWeight": 12.5,
+  "sampleTestResult": "Đạt",
   "importDate": "2026-11-05",
   "weights": [
     { "weightKg": 120.3, "bagCount": 2 }
@@ -91,6 +97,9 @@ từ người dùng đang đăng nhập thay vì từ request.
 Quy tắc:
 
 - `supplierId` và `itemId` phải tồn tại.
+- `vehicleId` nếu có phải tham chiếu biển số đang hoạt động; request có thể
+  gửi biển số mới để tạo dữ liệu dùng lại theo quyền phù hợp.
+- `truckLicensePlate` được lưu lại như snapshot của biển số đã chọn.
 - `numberOfBags` được backend tính bằng tổng `weights[].bagCount`.
 - `weightKg` của từng lần cân phải lớn hơn 0.
 - `bagCount` của từng lần cân chỉ nhận `1` hoặc `2`.
@@ -100,6 +109,9 @@ Quy tắc:
   hàng theo phần trăm.
 - Backend phải tính `totalKg` từ các lần cân trong transaction; client không
   được tự ghi đè giá trị này.
+- Giao diện phải hiển thị từng lần cân và tổng lũy kế sau từng lần:
+  `Lần cân 1: 5 bao / 300 kg — Tổng: 5 bao / 300 kg`, tiếp tục đến lần cuối
+  để người cân đối chiếu trực quan trước khi xác nhận.
 
 Response `201 Created`:
 
@@ -108,6 +120,8 @@ Response `201 Created`:
   "id": 101,
   "supplierId": 1,
   "itemId": 2,
+  "vehicleId": 3,
+  "truckLicensePlate": "51C-123.45",
   "importDate": "2026-11-05",
   "numberOfBags": 2,
   "weights": [
@@ -192,6 +206,11 @@ API hiện tại tạo phiếu ở trạng thái `CONFIRMED`, tự tính `amount
 `supplier.usable_coffee_kg` trong cùng transaction. Nếu số dư không đủ, API
 trả `409 PRICE_LOCK_EXCEEDED` và không tạo phiếu.
 
+Các trường phiếu nhập mở rộng trong ERD (`truckLicensePlate`,
+`loadingWarehouse`, `importWarehouse`, `tareWeight`, `sampleTestResult`) cần
+được bổ sung vào request/response ở phiên bản kế tiếp; hiện chưa phải là
+contract đã triển khai.
+
 Response `201 Created`:
 
 ```json
@@ -218,7 +237,7 @@ giá trị tính từ `lockedVolume * lockedPricePerKg`. Phiếu chốt không t
 ### `POST /api/exports`
 
 Tạo `EXPORT_TICKET` để chốt bán và làm căn cứ lập hóa đơn điện tử.
-Request chứa `itemId`, `committedVolume`, giá bán và ngày giao dự kiến.
+Request chứa `itemId`, `committedVolume`, giá bán và ngày chốt bán.
 Việc tạo hoặc xác nhận phiếu chưa trừ tồn kho. Phiếu bán sử dụng tồn kho tổng
 hợp theo mặt hàng và không gắn bắt buộc với một phiếu nhập nguồn.
 
@@ -248,14 +267,33 @@ API hiện tại đã hỗ trợ nhiều lần giao cho cùng một phiếu. T�
 mới trừ `item.available_kg`. Khi tổng giao bằng khối lượng cam kết, trạng thái
 phiếu chuyển thành `COMPLETED`; nếu chưa đủ thì là `PARTIALLY_DELIVERED`.
 
-## 5. Chi phí theo kỳ
+Màn hình bán và màn hình giao được tách riêng ở frontend trong kế hoạch phiên
+bản kế tiếp, nhưng vẫn dùng chung hai resource trên.
+
+## 5. API dự kiến cho phiên bản kế tiếp
+
+Các API dưới đây là kế hoạch, chưa triển khai:
+
+- `GET /api/suppliers/search?identityNo=&phone=`: tìm theo CCCD hoặc số điện
+  thoại; khi `identityNo` không có dữ liệu thì dùng `phone`.
+- `GET/POST/PUT/DELETE /api/vehicles`: quản lý biển số xe để chọn nhanh khi
+  tạo phiếu nhập; `DELETE` chỉ ẩn biển số bằng `active=false` nếu đã có lịch
+  sử dụng.
+- `GET /api/dashboard?fromDate=&toDate=&itemId=`: trả chuỗi doanh thu, lợi
+  nhuận theo ngày và giá cà phê hiện hành.
+- `GET /api/price-locks/{id}/print-data`: trả dữ liệu ổn định cho bản xem
+  trước/in phiếu chốt giá.
+- `GET /api/exports/{exportId}/deliveries/{deliveryId}/print-data`: trả dữ
+  liệu ổn định cho bản xem trước/in phiếu giao.
+
+## 6. Chi phí theo kỳ
 
 `EXPENSE_DETAIL.amount` lưu số tiền của từng danh mục. `EXPENSE` lưu
 `totalAmount` là tổng tiền của nhiều danh mục trong một khoảng thời gian, gồm
 `periodStart` và `periodEnd`, thay cho một ngày chi phí đơn lẻ. Một expense có
 thể có nhiều `EXPENSE_DETAIL`.
 
-## 6. Tổng hợp tồn kho
+## 7. Tổng hợp tồn kho
 
 ### `GET /api/inventory/summary`
 
@@ -292,7 +330,7 @@ theo giá bình quân gia quyền của các phiếu `PRICE_LOCK` ở trạng th
 `CONFIRMED`. Nếu tồn kho lớn hơn khối lượng đã chốt, phần chênh lệch được trả
 ở `unpricedKg`.
 
-## 7. Phân quyền người dùng
+## 8. Phân quyền người dùng
 
 | Vai trò | Quyền |
 |---|---|

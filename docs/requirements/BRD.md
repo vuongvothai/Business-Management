@@ -37,6 +37,21 @@
 - Đồng bộ giá thị trường tự động.
 - Quản lý 1 kho nhưng nhiều tên công ty (thực ra là 1 công ty quản lý nhưng nhập/xuất tự cân nhắt là nên xuất cho công ty nào nên để kế toán tự điều chỉnh).
 
+### Phạm vi phiên bản kế tiếp (đã lập kế hoạch, chưa triển khai)
+
+1. Mở rộng dữ liệu phiếu nhập: biển số xe, kho bốc, kho nhập, trừ bì và kết
+   quả mẫu thử.
+2. Tách màn hình **Thêm dữ liệu** khỏi nghiệp vụ; mặt hàng `ITEM` là dữ liệu
+   cà phê nhân cố định, không cho nhập/sửa/xóa từ màn hình này.
+3. Quản lý danh sách biển số xe tối giản để người dùng chọn nhanh khi lập
+   phiếu nhập; không quản lý thêm thông tin phương tiện.
+4. Tìm nhà cung cấp theo CCCD hoặc số điện thoại; nếu không có CCCD thì cho
+   phép tìm bằng số điện thoại.
+5. Tách màn hình chốt bán và màn hình giao hàng.
+6. Hiển thị biểu đồ doanh thu/lợi nhuận theo khoảng ngày được chọn và giá cà
+   phê hôm nay lấy từ API.
+7. Xuất mẫu phiếu chốt giá và phiếu giao hàng ở dạng thân thiện để in.
+
 ## 2. Đối tượng sử dụng
 
 | Đối tượng | Nhu cầu chính |
@@ -50,12 +65,33 @@
 ### 3.1 Nhập hàng
 
 1. Nhân viên cân chọn nhà cung cấp và mặt hàng.
-2. Tạo phiếu nhập với số bao, tổng khối lượng, độ ẩm, tạp chất và ngày nhập.
+2. Tạo phiếu nhập với nhà cung cấp, chọn hoặc thêm nhanh biển số xe, kho bốc,
+   kho nhập, trừ bì,
+   kết quả mẫu thử, độ ẩm, tạp chất và ngày nhập.
 3. Nhập một hoặc nhiều lần cân; mỗi lần cân có `bag_count`(1 hoạc 2 nhưng mặc định là 2).
 4. Có thể đính kèm ảnh minh chứng.
 5. Hệ thống kiểm tính tổng số bao và tổng khối lượng ->  phiếu nhập.
 6. Phiếu chuyển qua các trạng thái `DRAFT`, `CONFIRMED` hoặc
    `CANCELLED`.
+7. Sau mỗi lần cân, giao diện hiển thị dòng lần cân và tổng số bao/khối lượng
+   lũy kế đến lần đó; lần cuối hiển thị tổng thực tế của phiếu.
+
+### 3.3 Tổng quan và báo cáo
+
+1. Người dùng chọn khoảng ngày trên màn hình tổng quan.
+2. Hệ thống lấy dữ liệu từ API để hiển thị biểu đồ doanh thu và lợi nhuận theo
+   ngày.
+3. Hệ thống hiển thị giá cà phê hiện hành trong ngày theo mặt hàng và nguồn
+   giá.
+4. Doanh thu/lợi nhuận thực tế của biểu đồ phải phân biệt với giá trị ước tính
+   trên phiếu chốt bán.
+
+### 3.4 In chứng từ
+
+1. Màn hình chốt giá cho phép xem bản in mẫu trước khi in.
+2. Màn hình giao hàng cho phép xem bản in mẫu của lần giao.
+3. Nội dung in lấy từ API, có mã phiếu, đối tác, mặt hàng, khối lượng, đơn giá,
+   thành tiền, ngày lập và người thực hiện.
 
 ### 3.2 Chốt giá
 
@@ -90,6 +126,13 @@
 | BR-009 | Hiển thị tổng nhập, đã chốt, chưa chốt và tồn kho. |
 | BR-010 | Phiếu xuất lưu cam kết bán; các lần giao thực tế được lưu riêng và chỉ trừ tồn kho khi xác nhận giao. |
 | BR-011 | Lưu người tạo và thời điểm tạo/cập nhật cho các nghiệp vụ chính. |
+| BR-012 | Nhà cung cấp được tìm theo `identity_no` hoặc `phone`; khi không có CCCD thì số điện thoại là khóa tìm kiếm thay thế. |
+| BR-013 | `VEHICLE` chỉ lưu biển số xe duy nhất và trạng thái hoạt động; phiếu nhập tham chiếu biển số đã chọn và lưu thêm snapshot tại thời điểm giao dịch. |
+| BR-014 | `ITEM` vẫn tồn tại để liên kết tồn kho và giá thị trường nhưng không xuất hiện trong màn hình **Thêm dữ liệu** phiên bản kế tiếp. |
+| BR-015 | Biểu đồ doanh thu/lợi nhuận nhận `fromDate`, `toDate` và tùy chọn mặt hàng từ API. |
+| BR-016 | Giá cà phê hôm nay được lấy từ `MARKET_PRICE` theo mặt hàng và `price_date`; không dùng giá nhập tay trên frontend làm dữ liệu chính. |
+| BR-017 | Màn hình bán và màn hình giao là hai luồng giao diện riêng nhưng vẫn dùng chung `EXPORT_TICKET` và `EXPORT_DELIVERY`. |
+| BR-018 | Bản in chốt giá và giao hàng là dữ liệu trình bày từ API, không tạo giao dịch mới và không thay đổi số dư. |
 
 ## 5. Yêu cầu phi chức năng
 
@@ -112,6 +155,12 @@
   trực tiếp với một phiếu nhập nguồn.
 - Hóa đơn điện tử có thể dựa trên `EXPORT_TICKET`; số lượng giao thực tế được
   đối chiếu qua các bản ghi `EXPORT_DELIVERY`.
+- Biểu đồ doanh thu/lợi nhuận phiên bản kế tiếp ưu tiên số liệu giao hàng đã
+  xác nhận; cách tính theo ngày lập phiếu bán hay ngày giao phải được chốt
+  trước khi triển khai.
+- Giao diện nhập phải cho phép thêm biển số mới và chọn lại biển số đang hoạt
+  động bằng danh sách dropdown/toggle list; không yêu cầu nhập lại biển số
+  trong mỗi phiếu.
 
 ## 7. Các quyết định ngoài ra: 
 

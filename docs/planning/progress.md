@@ -34,9 +34,10 @@
 
 ## Bước tiếp theo
 
-1. Hoàn thiện màn hình frontend đăng nhập và lưu bearer token.
-2. Bổ sung chức năng sửa/xóa dữ liệu master khi cần.
-3. Hoàn thiện hardening authentication và triển khai production.
+1. Hoàn thiện các hạng mục M9 về dữ liệu phiếu nhập, biển số xe và tìm supplier.
+2. Tách màn hình bán/giao và đổi khu vực danh mục thành **Thêm dữ liệu**.
+3. Thiết kế API dashboard, giá cà phê hôm nay và bản in chốt/giao.
+4. Hoàn thiện test, hardening authentication và triển khai production.
 
 ## Quy ước cập nhật
 

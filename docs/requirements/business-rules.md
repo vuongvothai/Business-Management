@@ -10,6 +10,9 @@
 | BRULE-002 | `ROLE.role_name` chỉ nhận `ADMIN`, `WEIGHER`, `ACCOUNTANT`. |
 | BRULE-003 | `moisture_percent` và `impurity_percent` nằm trong khoảng 0-100 nếu có giá trị. |
 | BRULE-004 | Khối lượng, số bao, khối lượng chốt và xuất phải lớn hơn 0. |
+| BRULE-005 | Tìm nhà cung cấp theo CCCD hoặc số điện thoại; nếu `identity_no` trống thì số điện thoại là tiêu chí thay thế. |
+| BRULE-006 | `ITEM` là dữ liệu nền của cà phê nhân, không cho thao tác CRUD từ màn hình **Thêm dữ liệu**. |
+| BRULE-007 | `VEHICLE.license_plate` là duy nhất; `active=false` chỉ ẩn khỏi danh sách chọn, không xóa lịch sử. |
 
 ## 2. Phiếu nhập
 
@@ -21,6 +24,10 @@
 | BRULE-104 | Mỗi lần cân phải có người nhập và thuộc đúng một phiếu nhập. |
 | BRULE-105 | `photo_url` là tùy chọn, có thể `NULL`. |
 | BRULE-106 | Phiếu nhập không được dùng để chốt/xuất nếu ở trạng thái `CANCELLED`. |
+| BRULE-107 | `tare_weight` không được âm; `sample_test_result`, biển số xe và thông tin kho có thể để trống nếu chưa có dữ liệu. |
+| BRULE-108 | Biển số xe được chọn từ danh sách dữ liệu đã lưu; phiếu nhập phải giữ giá trị biển số tại thời điểm lập phiếu. |
+| BRULE-109 | Mỗi phiếu nhập lưu một `vehicle_id` và một `truck_license_plate` snapshot, không lưu mảng biển số trong `IMPORT_TICKET`. |
+| BRULE-110 | Sau mỗi lần cân, hệ thống hiển thị khối lượng/số bao của lần đó và tổng lũy kế đến lần đó; tổng cuối là tổng thực tế dùng để xác nhận. |
 
 ## 3. Chốt giá
 
@@ -41,6 +48,8 @@
 | BRULE-303 | Tổng `EXPORT_DELIVERY.delivered_volume` không được vượt `committed_volume`. |
 | BRULE-304 | Một `EXPORT_TICKET` có thể có nhiều `EXPORT_DELIVERY`. |
 | BRULE-305 | `remaining_volume = committed_volume - SUM(delivered_volume)` và không lưu bắt buộc như dữ liệu gốc. |
+| BRULE-306 | Màn hình bán và giao là hai giao diện riêng; việc tách giao diện không thay đổi quan hệ giữa `EXPORT_TICKET` và `EXPORT_DELIVERY`. |
+| BRULE-307 | Bản in phiếu chốt/giao chỉ đọc dữ liệu đã lưu và không tạo hoặc cập nhật giao dịch. |
 
 ## 5. Số dư và chi phí
 
@@ -51,6 +60,7 @@
 | BRULE-403 | Chỉ khi `EXPORT_DELIVERY` được xác nhận mới trừ `available_kg` của `ITEM`; tồn kho có thể âm. |
 | BRULE-404 | `EXPENSE.total_amount = SUM(EXPENSE_DETAIL.amount)` trong một kỳ. |
 | BRULE-405 | Một kỳ chi phí không có hai dòng cùng `category_name`. |
+| BRULE-406 | Mỗi mặt hàng có tối đa một `MARKET_PRICE` cho một `price_date`. |
 
 ## 6. Trạng thái
 
@@ -59,11 +69,14 @@ IMPORT_TICKET: DRAFT -> CONFIRMED
 IMPORT_TICKET: DRAFT -> CANCELLED
 PRICE_LOCK:    DRAFT -> CONFIRMED
 EXPORT_TICKET: DRAFT -> CONFIRMED -> PARTIALLY_DELIVERED -> COMPLETED
-EXPORT_TICKET: DRAFT -> CANCELLED
-EXPORT_TICKET: CONFIRMED -> CANCELLED
 ```
 
 Các chuyển trạng thái và thao tác chốt/xuất phải chạy trong transaction.
 Backend phải khóa `SUPPLIER` khi chốt và `ITEM` khi xác nhận giao hàng trước
 khi cập nhật số dư. Chốt giá vượt `usable_coffee_kg` vẫn trả lỗi HTTP `409`;
 cam kết bán vượt tồn không trừ tồn và không trả lỗi tồn kho.
+
+Biểu đồ doanh thu/lợi nhuận và giá cà phê hôm nay là yêu cầu phiên bản kế
+tiếp. Khi triển khai phải xác định rõ doanh thu/lợi nhuận theo ngày giao đã
+xác nhận hay ngày lập `EXPORT_TICKET`; không được trộn số liệu cam kết với số
+liệu giao thực tế trong cùng một chỉ số.

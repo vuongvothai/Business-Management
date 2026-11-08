@@ -17,6 +17,10 @@ React.js, Java và MySQL.
 | M6 | Luồng bán, giao và tồn kho | `EXPORT_TICKET`, `EXPORT_DELIVERY`, tồn kho và báo cáo tổng hợp | Hoàn thành |
 | M7 | Frontend MVP | Màn hình nghiệp vụ theo vai trò | Hoàn thành |
 | M8 | Kiểm thử và phát hành | Unit test, integration test, hướng dẫn triển khai | Đang thực hiện |
+| M9 | Mở rộng dữ liệu và dữ liệu dùng lại | Trường nhập mở rộng, biển số xe dùng lại, tìm supplier theo CCCD/điện thoại | Chưa bắt đầu |
+| M10 | Tổ chức lại giao diện nghiệp vụ | Màn hình **Thêm dữ liệu**, tách bán và giao, không CRUD `ITEM` trên UI | Chưa bắt đầu |
+| M11 | Dashboard và giá thị trường | Biểu đồ doanh thu/lợi nhuận theo ngày và giá cà phê hôm nay từ API | Chưa bắt đầu |
+| M12 | Chứng từ in và hoàn thiện | Bản in chốt/giao, test các hàm còn thiếu và hướng dẫn phát hành | Chưa bắt đầu |
 
 ## Thứ tự phụ thuộc
 
@@ -26,6 +30,17 @@ M1 -> M2 -> M3 -> M4 -> M5 -> M6 -> M7 -> M8
 
 M4, M5 và M6 dùng chung transaction, phân quyền và số dư nên không nên triển
 khai frontend hoàn chỉnh trước khi các API backend tương ứng ổn định.
+
+## Thứ tự phiên bản kế tiếp
+
+```text
+M8 -> M9 -> M10 -> M11 -> M12
+```
+
+M9 phải hoàn thành trước M10 vì giao diện nhập và **Thêm dữ liệu** cần thống
+nhất trường dữ liệu và cách chọn biển số xe. M11 cần hoàn thành API trước khi
+chỉnh biểu đồ frontend. M12 chỉ thực hiện sau khi response nghiệp vụ và công
+thức doanh thu/lợi nhuận đã được chốt.
 
 ## Phạm vi MVP
 
@@ -43,6 +58,8 @@ khai frontend hoàn chỉnh trước khi các API backend tương ứng ổn đ�
 - Upload ảnh lên storage thật.
 - Đồng bộ giá thị trường tự động.
 - Báo cáo nâng cao và quản lý công nợ.
+- Tự động đồng bộ giá thị trường; phiên bản kế tiếp chỉ lập kế hoạch lấy giá
+  hiện hành từ dữ liệu `MARKET_PRICE` đã lưu.
 
 ## Tiêu chí hoàn thành roadmap
 

@@ -1,4 +1,3 @@
-
 erDiagram
 
     SUPPLIER {
@@ -43,18 +42,46 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
+VEHICLE {
+        bigint vehicle_id PK
+        string license_plate UK "Biển số xe"
+        boolean active "Còn hiển thị trong danh sách chọn"
+        datetime created_at
+        datetime updated_at
+    }
+        VEHICLE ||--o{ IMPORT_TICKET : "được chọn"
+    VEHICLE ||--o{ EXPORT_DELIVERY : "được chọn"
 
     IMPORT_TICKET {
         bigint import_id PK
         bigint supplier_id FK
         bigint item_id FK
+        string truck_license_plate "Biển số xe"
+        string loading_warehouse "Kho bốc"
+        string import_warehouse "Kho nhập"
         int number_of_bags "Tổng số bao, tự tính từ IMPORT_WEIGHT"
         decimal total_kg "Tổng khối lượng, tự tính từ IMPORT_WEIGHT"
-        decimal moisture_percent "Tỷ lệ độ ẩm (%)"
-        decimal impurity_percent "Tỷ lệ tạp chất (%)"
-        decimal purchase_price_per_kg
-        decimal market_price_per_kg
-        decimal market_difference_per_kg
+        decimal tare_weight "Trừ bì"
+        string sample_test_result "Mẫu thử"
+        decimal moisture_percent "Tỷ lệ độ ẩm ex: 15.01"
+        decimal impurity_percent "Tỷ lệ tạp chất ex: 1.2)"
+        decimal purchase_price_per_kg "101.000 vnd"
+        decimal market_price_per_kg " 100.000 vnd"
+        decimal market_difference_per_kg "↗ hoặc giảm ↘ 500 vnd"
+        decimal total_amount "total_kg * purchase_price_per_kg "
+        decimal total_deduction_amount " total_kg*((ví dụ moisture_percent bằng 15.01 thì lấy giá trị [0][1] = 0.10 từ const table = [
+        [0.00, 0.10, 0.20, 0.37, 0.47, 0.57, 0.67, 0.77, 0.88, 0.99], // 15
+        [1.13, 1.24, 1.35, 1.46, 1.57, 1.68, 1.80, 1.92, 2.04, 2.16], // 16
+        [2.31, 2.44, 2.57, 2.70, 2.83, 2.96, 3.10, 3.24, 3.38, 3.52], // 17
+        [3.67, 3.81, 3.96, 4.11, 4.26, 4.41, 4.56, 4.71, 4.87, 5.03], // 18
+        [5.20, 5.37, 5.54, 5.71, 5.83, 6.05, 6.23, 6.41, 6.59, 6.77], // 19
+        [6.95, 7.13, 7.32, 7.51, 7.71, 7.91, 8.11, 8.31, 8.51, 8.71], // 20
+        [8.91, 9.12, 9.34, 9.56, 9.73, 10.00, 10.22, 10.44, 10.67, 10.90], // 21
+        [11.13, 11.36, 11.60, 11.85, 12.10, 12.35, 12.60, 12.85, 13.10, 13.36], // 22
+        [13.62, 13.88, 14.15, 14.43, 14.71, 14.99, 15.27, 15.55, 15.84, 16.13], // 23
+        [16.42, 16.70, 17.01, 17.31, 17.61, 17.91, 18.22, 18.53, 18.84, 19.15], // 24
+        [19.47, null, null, null, null, null, null, null, null, null] // 25
+    ] nếu nằm ngoài 15-25 thì để là null)+impurity_percent)-(number_of_bags * tare_weight) "
         string photo_url "Ảnh minh chứng, không bắt buộc"
         date import_date "Ngày nhập"
         string note "Ghi chú"
@@ -68,7 +95,7 @@ erDiagram
         bigint weight_id PK
         bigint import_id FK
         decimal weight_kg "Khối lượng lần cân (kg)"
-        tinyint bag_count "Số bao của lần cân: 1 hoặc 2"
+        tinyint bag_count "Số bao của lần cân mặc định là 2 có thể điều chỉnh trực tiếp."
         bigint created_by FK
         datetime created_at
     }
@@ -101,9 +128,8 @@ erDiagram
         decimal revenue "Doanh thu, tự tính"
         decimal estimated_profit "Lợi nhuận ước tính, tự tính"
         date export_date "Ngày chốt bán"
-        date delivery_due_date "Ngày dự kiến giao"
         string note "Ghi chú"
-        string status "DRAFT, CONFIRMED, PARTIALLY_DELIVERED, COMPLETED hoặc CANCELLED"
+        string status "DRAFT, CONFIRMED, PARTIALLY_DELIVERED hoặc COMPLETED (Đã bỏ CANCELLED)"
         bigint created_by FK
         bigint updated_by FK
         datetime created_at
@@ -115,6 +141,9 @@ erDiagram
         bigint export_id FK
         decimal delivered_volume "Khối lượng giao thực tế (kg)"
         date delivery_date "Ngày giao hàng"
+        string truck_license_plate "Biển số xe"
+        string loading_warehouse "Kho bốc"
+        string import_warehouse "Kho nhập"
         string status "CONFIRMED hoặc CANCELLED"
         string note "Ghi chú lần giao"
         bigint created_by FK

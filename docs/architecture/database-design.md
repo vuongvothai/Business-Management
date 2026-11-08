@@ -47,6 +47,23 @@ theo mặt hàng.
 | `created_at` | `DATETIME` | NOT NULL |
 | `updated_at` | `DATETIME` | NOT NULL |
 
+### `vehicle`
+
+`vehicle` chỉ lưu danh sách biển số xe dùng lại trong màn hình nhập hàng; không
+quản lý chủ xe, loại xe hoặc thông tin vận tải khác.
+
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| `vehicle_id` | `BIGINT` | PK |
+| `license_plate` | `VARCHAR(30)` | NOT NULL, UNIQUE |
+| `active` | `BOOLEAN` | NOT NULL, mặc định `TRUE` |
+| `created_at` | `DATETIME` | NOT NULL |
+| `updated_at` | `DATETIME` | NOT NULL |
+
+Không xóa cứng biển số đã được dùng trong phiếu nhập; thao tác xóa trên giao
+diện chuyển `active` thành `FALSE` để không còn xuất hiện trong danh sách chọn,
+nhưng vẫn bảo toàn lịch sử.
+
 ### `role` và `user`
 
 `role` chuẩn hóa vai trò, tránh sai khác như `Admin`, `ADMIN` và `admin`.
@@ -79,8 +96,14 @@ Quyền nghiệp vụ:
 | `import_id` | `BIGINT` | PK |
 | `supplier_id` | `BIGINT` | FK, NOT NULL |
 | `item_id` | `BIGINT` | FK, NOT NULL |
+| `vehicle_id` | `BIGINT` | FK, NULL |
+| `truck_license_plate` | `VARCHAR(30)` | NULL, biển số xe tại thời điểm nhập |
+| `loading_warehouse` | `VARCHAR(255)` | NULL |
+| `import_warehouse` | `VARCHAR(255)` | NULL |
 | `number_of_bags` | `INT` | NOT NULL, > 0, backend tính từ `IMPORT_WEIGHT` |
 | `total_kg` | `DECIMAL(14,3)` | NOT NULL, > 0, backend tính từ `IMPORT_WEIGHT` |
+| `tare_weight` | `DECIMAL(14,3)` | NULL, >= 0 |
+| `sample_test_result` | `VARCHAR(1000)` | NULL |
 | `moisture_percent` | `DECIMAL(5,2)` | NULL, từ 0 đến 100 |
 | `impurity_percent` | `DECIMAL(5,2)` | NULL, từ 0 đến 100 |
 | `photo_url` | `VARCHAR(1000)` | NULL, không bắt buộc |
@@ -94,6 +117,8 @@ Quyền nghiệp vụ:
 `number_of_bags` và `total_kg` được lưu trên phiếu nhập để truy vấn nhanh,
 nhưng luôn do backend tính từ các bản ghi `IMPORT_WEIGHT` trong cùng
 transaction. Client không được tự ghi đè hai giá trị này.
+`vehicle_id` phục vụ chọn nhanh; `truck_license_plate` là snapshot để lịch sử
+không thay đổi khi bản ghi biển số được cập nhật hoặc ẩn khỏi danh sách.
 
 ### `import_weight`
 
@@ -151,7 +176,7 @@ trực tiếp từ `supplier.usable_coffee_kg`. Backend tính `amount` bằng
 
 `export_ticket` là phiếu chốt bán, có thể dùng làm căn cứ lập hóa đơn điện tử.
 Mỗi phiếu gắn với đúng một `item_id` và có các trạng thái `DRAFT`,
-`CONFIRMED`, `PARTIALLY_DELIVERED`, `COMPLETED`, `CANCELLED`.
+`CONFIRMED`, `PARTIALLY_DELIVERED`, `COMPLETED`.
 `committed_volume` là tổng khối lượng cam kết bán, không phải khối lượng đã
 giao. Phiếu không phụ thuộc trực tiếp vào `IMPORT_TICKET`.
 
@@ -161,7 +186,8 @@ giao. Phiếu không phụ thuộc trực tiếp vào `IMPORT_TICKET`.
 | `customer_id` | `BIGINT` | FK, NOT NULL |
 | `item_id` | `BIGINT` | FK, NOT NULL |
 | `committed_volume` | `DECIMAL(14,3)` | NOT NULL, > 0 |
-| `delivery_due_date` | `DATE` | NULL |
+`delivery_due_date` không còn thuộc mô hình hiện tại; ngày giao thực tế nằm ở
+`export_delivery.delivery_date`.
 
 `export_delivery` lưu từng lần giao hàng thực tế:
 
@@ -210,6 +236,7 @@ trùng danh mục.
 `market_price.item_id` là khóa ngoại tới `item.item_id`. Nên tạo unique key
 `UNIQUE(item_id, price_date)` để mỗi mặt hàng chỉ có một giá thị trường trong
 một ngày.
+
 
 ## Quan hệ
 

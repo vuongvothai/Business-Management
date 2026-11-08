@@ -19,6 +19,27 @@
 - [ ] Tạo quản lý `EXPENSE` và `EXPENSE_DETAIL`.
 - [x] Kiểm tra phân quyền ba vai trò.
 
+## P0 — Phiên bản kế tiếp
+
+- [ ] Cập nhật backend và migration cho các trường phiếu nhập: biển số xe, kho
+  bốc, kho nhập, trừ bì và kết quả mẫu thử.
+- [ ] Tạo bảng `VEHICLE` chỉ gồm biển số, trạng thái hoạt động và audit
+  timestamps; cho phép chọn lại biển số khi lập phiếu nhập.
+- [ ] Bổ sung tìm kiếm nhà cung cấp theo CCCD và số điện thoại với cơ chế thay
+  thế khi thiếu CCCD.
+- [ ] Đổi màn hình danh mục thành **Thêm dữ liệu**, bỏ thao tác nhập `ITEM`
+  khỏi giao diện nhưng vẫn giữ `ITEM` làm dữ liệu nền.
+- [ ] Tách màn hình bán và giao, giữ nguyên API/nghiệp vụ `EXPORT_TICKET` và
+  `EXPORT_DELIVERY`.
+- [ ] Thiết kế API tổng quan theo khoảng ngày cho doanh thu, lợi nhuận và giá
+  cà phê hôm nay.
+- [ ] Xác định công thức doanh thu/lợi nhuận theo số giao đã xác nhận và ngày
+  dùng để vẽ biểu đồ.
+- [ ] Thêm bản xem trước và xuất mẫu in cho phiếu chốt giá và phiếu giao hàng.
+- [ ] Viết test cho tìm kiếm nhà cung cấp, dữ liệu nhập mở rộng, dashboard và
+  bản in.
+- [ ] Hiển thị từng lần cân và tổng lũy kế sau mỗi lần cân trên màn hình nhập.
+
 ## P1 — Sau MVP
 
 - [ ] Upload ảnh minh chứng lên storage thật.

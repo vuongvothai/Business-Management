@@ -61,3 +61,59 @@ mặt hàng, nhập hàng, cân, chốt giá, xuất hàng, tồn kho và chi ph
 - Các thay đổi số dư chạy nguyên tử trong transaction.
 - Người dùng chỉ thao tác đúng quyền.
 - Có test cho các luồng nghiệp vụ chính.
+
+## 4. Kế hoạch phiên bản kế tiếp (chưa triển khai)
+
+### 4.1 Chốt mô hình dữ liệu
+
+1. Giữ các trường mở rộng hiện có trên `IMPORT_TICKET`: biển số xe, kho bốc,
+   kho nhập, trừ bì và kết quả mẫu thử.
+2. Tạo bảng `VEHICLE` tối giản chỉ gồm `license_plate`, `active` và audit
+   timestamps; thêm `vehicle_id` vào `IMPORT_TICKET` và giữ snapshot biển số.
+3. Giữ `ITEM` làm dữ liệu nền cho cà phê nhân và giá thị trường, không đưa
+   CRUD `ITEM` vào màn hình **Thêm dữ liệu**.
+4. Chốt cách tính khối lượng hữu dụng sau khi áp dụng `tare_weight`.
+
+### 4.2 Backend/API còn thiếu
+
+1. Bổ sung query tìm supplier theo `identity_no` và `phone`, có fallback khi
+   CCCD trống.
+2. Bổ sung API quản lý biển số xe và API chọn biển số khi tạo phiếu nhập.
+3. Bổ sung API dashboard theo `fromDate`, `toDate`, `itemId` tùy chọn, gồm
+   chuỗi doanh thu/lợi nhuận theo ngày và giá cà phê hiện hành.
+4. Chốt công thức dùng giao hàng đã xác nhận cho số liệu thực tế; tách rõ
+   doanh thu/lợi nhuận ước tính trên `EXPORT_TICKET`.
+5. Bổ sung endpoint dữ liệu in cho phiếu chốt giá và phiếu giao hàng, ưu tiên
+   response ổn định để frontend tạo bản xem trước/in.
+
+Các hàm/dịch vụ cần lập kế hoạch trước khi code:
+
+| Khu vực | Hàm dự kiến | Trách nhiệm |
+|---|---|---|
+| Supplier | `search(identityNo, phone)` | Tìm theo CCCD, fallback sang số điện thoại |
+| Vehicle | `listActive()`, `create()`, `update()`, `deactivate()` | Quản lý biển số dùng lại, không xóa lịch sử |
+| Import | `create()` / `update()` mở rộng | Nhận trường xe, kho, trừ bì và mẫu thử |
+| Dashboard | `getDailyMetrics(fromDate, toDate, itemId)` | Doanh thu/lợi nhuận theo ngày |
+| Market price | `getToday(itemId)` | Lấy giá hiện hành từ `MARKET_PRICE` |
+| Print data | `getPriceLockPrintData(id)`, `getDeliveryPrintData(exportId, deliveryId)` | Chuẩn hóa dữ liệu bản in |
+
+Đây là danh sách hàm mục tiêu, chưa phải API hoặc mã nguồn đã triển khai.
+
+### 4.3 Frontend
+
+1. Đổi tên khu vực danh mục thành **Thêm dữ liệu**.
+2. Bỏ tab nhập mặt hàng; thêm dropdown/toggle list biển số và thao tác thêm
+   biển số mới.
+3. Hiển thị từng lần cân kèm tổng số bao/khối lượng lũy kế sau từng lần cân.
+4. Tách màn hình **Bán hàng** và **Giao hàng**, giữ chung dữ liệu giao dịch.
+5. Thêm bộ lọc ngày và biểu đồ doanh thu/lợi nhuận trên màn hình tổng quan.
+6. Hiển thị giá cà phê hôm nay theo dữ liệu API.
+7. Thêm bản xem trước và nút in cho chốt giá và giao hàng.
+
+### 4.4 Kiểm thử và tài liệu
+
+1. Test validation cho trường nhập mở rộng và `tare_weight`.
+2. Test tìm supplier bằng CCCD, số điện thoại và trường hợp thiếu CCCD.
+3. Test dashboard theo khoảng ngày, công thức lợi nhuận và giá hiện hành.
+4. Test dữ liệu in không làm thay đổi giao dịch hoặc số dư.
+5. Cập nhật API specification, database design và BRD trước khi bắt đầu code.
