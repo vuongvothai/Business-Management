@@ -1,89 +1,81 @@
 package com.businessmanagement.auth.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import com.businessmanagement.auth.dto.LoginRequest;
+import com.businessmanagement.auth.dto.LoginResponse;
+import com.businessmanagement.master.entity.AppUser;
+import com.businessmanagement.master.entity.Role;
+import com.businessmanagement.master.repository.AppUserRepository;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-
-import com.businessmanagement.auth.repository.AppUserRepository;
-import com.businessmanagement.auth.service.impl.AuthServiceImpl;
-import com.businessmanagement.auth.util.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
-public class AuthServiceTest {
+class AuthServiceTest {
 
     @Mock
     private AppUserRepository userRepository;
-    
+
     @Mock
     private PasswordEncoder passwordEncoder;
-    
+
     @Mock
     private JwtService jwtService;
-    
-    @InjectMocks
-    private AuthServiceImpl authService;
+
+    private AuthService authService;
+    private AppUser user;
+
+    @BeforeEach
+    void setUp() {
+        authService = new AuthService(userRepository, passwordEncoder, jwtService);
+        user = new AppUser("testuser", "Test user", "encodedPassword", new Role("ADMIN"));
+    }
 
     @Test
-    public void login_WithValidCredentials_ShouldReturnToken() {
-        // Given
-        String username = "testuser";
-        String password = "validPassword";
-        String encodedPassword = "encodedPassword";
-        String expectedToken = "testToken";
-        
-        when(userRepository.existsByUsername(username)).thenReturn(true);
-        when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
-        when(jwtService.generateToken(username)).thenReturn(expectedToken);
-        
-        // When
-        String actualToken = authService.login(username, password);
-        
-        // Then
-        assertEquals(expectedToken, actualToken);
-        verify(userRepository).existsByUsername(username);
-        verify(passwordEncoder).matches(password, encodedPassword);
-        verify(jwtService).generateToken(username);
+    void loginWithValidCredentialsReturnsBearerResponse() {
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("validPassword", "encodedPassword")).thenReturn(true);
+        when(jwtService.issueToken("testuser", "ADMIN")).thenReturn("testToken");
+        when(jwtService.expiresInSeconds()).thenReturn(28800L);
+
+        LoginResponse response = authService.login(new LoginRequest("testuser", "validPassword"));
+
+        assertThat(response.accessToken()).isEqualTo("testToken");
+        assertThat(response.tokenType()).isEqualTo("Bearer");
+        assertThat(response.expiresInSeconds()).isEqualTo(28800L);
+        assertThat(response.username()).isEqualTo("testuser");
+        assertThat(response.role()).isEqualTo("ADMIN");
+        verify(userRepository).findByUsername("testuser");
     }
-    
-        @Test
-        public void login_WithInvalidUsername_ShouldThrowException() {
-            // Given
-            String username = "nonexistent";
-            String password = "anyPassword";
-        
-            when(userRepository.existsByUsername(username)).thenReturn(false);
-        
-            // When/Then
-            assertThrows(RuntimeException.class, () -> {
-                authService.login(username, password);
-            });
-        
-            verify(userRepository).existsByUsername(username);
-            verifyNoInteractions(passwordEncoder, jwtService);
-        }
-    
-        @Test
-        public void login_WithInvalidPassword_ShouldThrowException() {
-            // Given
-            String username = "testuser";
-            String password = "wrongPassword";
-            String encodedPassword = "encodedPassword";
-        
-            when(userRepository.existsByUsername(username)).thenReturn(true);
-            when(passwordEncoder.matches(password, encodedPassword)).thenReturn(false);
-        
-            // When/Then
-            assertThrows(RuntimeException.class, () -> {
-                authService.login(username, password);
-            });
-        
-            verify(userRepository).existsByUsername(username);
-            verify(passwordEncoder).matches(password, encodedPassword);
-            verifyNoInteractions(jwtService);
-        }
+
+    @Test
+    void loginWithUnknownUsernameRejectsCredentials() {
+        when(userRepository.findByUsername("missing")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authService.login(new LoginRequest("missing", "password")))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Tên đăng nhập hoặc mật khẩu không đúng");
+        verifyNoInteractions(passwordEncoder, jwtService);
+    }
+
+    @Test
+    void loginWithWrongPasswordRejectsCredentials() {
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("wrongPassword", "encodedPassword")).thenReturn(false);
+
+        assertThatThrownBy(() -> authService.login(new LoginRequest("testuser", "wrongPassword")))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Tên đăng nhập hoặc mật khẩu không đúng");
+        verifyNoInteractions(jwtService);
+    }
 }
