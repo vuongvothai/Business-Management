@@ -173,6 +173,19 @@ class CoreControllerWebTest {
     }
 
     @Test
+    void rejectsInvalidImportPaginationAndDateRange() throws Exception {
+        mockMvc.perform(get("/api/imports").param("page", "-1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("REQUEST_ERROR"));
+
+        mockMvc.perform(get("/api/imports")
+                        .param("fromDate", "2026-11-07")
+                        .param("toDate", "2026-11-06"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("REQUEST_ERROR"));
+    }
+
+    @Test
     void returnsInventorySummary() throws Exception {
         when(inventorySummaryService.summarize()).thenReturn(new InventorySummaryResponse(
                 new BigDecimal("101.000"), new BigDecimal("50.000"),
