@@ -87,6 +87,26 @@ class CoreControllerWebTest {
     }
 
     @Test
+    void acceptsCustomBagCountAndDefaultsOmittedBagCount() throws Exception {
+        when(importService.create(any())).thenReturn(importResponse());
+
+        mockMvc.perform(post("/api/imports")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "supplierId": 1,
+                                  "itemId": 2,
+                                  "importDate": "2026-11-06",
+                                  "weights": [
+                                    {"weightKg": 120.3, "bagCount": 25},
+                                    {"weightKg": 80.7}
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
     void rejectsInvalidImportRequestWithUnifiedError() throws Exception {
         mockMvc.perform(post("/api/imports")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -61,6 +61,20 @@ class ImportServiceTest {
     }
 
     @Test
+    void omittedBagCountDefaultsToTwo() {
+        ImportWeightRequest weight = new ImportWeightRequest(new BigDecimal("10"), null);
+
+        assertThat(weight.bagCount()).isEqualTo(2);
+    }
+
+    @Test
+    void acceptsCustomBagCountAboveTwo() {
+        ImportWeightRequest weight = new ImportWeightRequest(new BigDecimal("10"), 25);
+
+        assertThat(weight.bagCount()).isEqualTo(25);
+    }
+
+    @Test
     void createCalculatesTotalsAndUpdatesBalances() {
         when(supplierRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(supplier));
         when(itemRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(item));

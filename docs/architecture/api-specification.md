@@ -102,7 +102,7 @@ Quy tắc:
 - `truckLicensePlate` được lưu lại như snapshot của biển số đã chọn.
 - `numberOfBags` được backend tính bằng tổng `weights[].bagCount`.
 - `weightKg` của từng lần cân phải lớn hơn 0.
-- `bagCount` của từng lần cân chỉ nhận `1` hoặc `2`.
+- `bagCount` mặc định là `2` nếu bỏ trống; nếu nhập thì phải là số nguyên từ `1` trở lên, không giới hạn cứng ở `2`.
 - `totalKg` được backend tính bằng tổng `weights[].weightKg`.
 - `moisturePercent` nằm trong khoảng `0` đến `100`.
 - `impurityPercent` nằm trong khoảng `0` đến `100`, biểu thị tỷ lệ tạp chất của lô

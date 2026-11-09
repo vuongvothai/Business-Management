@@ -21,7 +21,7 @@
 |---|---|
 | BRULE-101 | `number_of_bags = SUM(IMPORT_WEIGHT.bag_count)`. |
 | BRULE-102 | `total_kg = SUM(IMPORT_WEIGHT.weight_kg)`. |
-| BRULE-103 | `bag_count` mặc định là `2`. |
+| BRULE-103 | `bag_count` mặc định là `2` khi bỏ trống; người dùng có thể nhập số nguyên tùy chọn từ `1` trở lên, không giới hạn cứng ở `2`. |
 | BRULE-104 | Mỗi lần cân phải có người nhập và thuộc đúng một phiếu nhập. |
 | BRULE-105 | `photo_url` là tùy chọn, có thể `NULL`. |
 | BRULE-106 | Phiếu nhập không được dùng để chốt/xuất nếu ở trạng thái `CANCELLED`. |
