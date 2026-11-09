@@ -32,9 +32,9 @@
   giao dịch (2026-11-09).
 - [ ] Chốt quy tắc tính khối lượng sau trừ bì/độ ẩm/tạp chất, bảng khấu trừ,
   đơn vị và xử lý giá trị ngoài phạm vi trước khi viết hàm tính.
-- [ ] Bổ sung tìm supplier: ưu tiên CCCD khớp chính xác; nếu không có CCCD hoặc
-  không tìm thấy thì dùng số điện thoại; yêu cầu người dùng chọn khi có nhiều
-  kết quả.
+- [x] Bổ sung tìm supplier: ưu tiên CCCD khớp chính xác; nếu không có CCCD hoặc
+  không tìm thấy thì dùng số điện thoại đã chuẩn hóa; trả danh sách ứng viên để
+  người dùng chọn khi có nhiều kết quả (2026-11-10).
 - [ ] Đổi khu vực danh mục thành **Thêm dữ liệu**, bỏ CRUD `ITEM` khỏi UI nhưng
   giữ `ITEM` làm dữ liệu nền; thêm quản lý/chọn nhanh biển số.
 - [ ] Tách màn hình và điều hướng **Bán hàng** (`EXPORT_TICKET`) và

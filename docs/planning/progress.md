@@ -42,7 +42,7 @@
 - [x] Bổ sung màn hình đăng nhập frontend và tự động gửi bearer token.
 - [x] Bổ sung thêm, sửa và xóa nhà cung cấp, khách hàng và mặt hàng trên frontend.
 - [x] Bổ sung module `VEHICLE` và trường nhập/giao mở rộng (`vehicleId`, snapshot biển số, kho, bì, kết quả mẫu thử) (2026-11-09).
-- [ ] Tìm supplier theo CCCD/điện thoại.
+- [x] Tìm supplier theo CCCD chính xác, fallback số điện thoại chuẩn hóa, trả danh sách ứng viên (2026-11-10).
 - [ ] Quản lý chi phí `EXPENSE`/`EXPENSE_DETAIL` (đang còn thiếu trong MVP).
 - [ ] Tách giao diện bán/giao; thêm màn hình **Thêm dữ liệu** không có CRUD `ITEM`.
 - [ ] Dashboard doanh thu/lãi gộp theo ngày và API giá cà phê hôm nay.

@@ -277,11 +277,11 @@ bản kế tiếp, nhưng vẫn dùng chung hai resource trên.
 
 ### Tìm nhà cung cấp
 
-`GET /api/suppliers/search?identityNo=&phone=`
+`GET /api/suppliers/search?identityNo=&phone=` đã triển khai.
 
 - Nếu có CCCD, tìm chính xác theo `identityNo` trước.
 - Nếu không nhập CCCD hoặc CCCD không có kết quả và có số điện thoại, fallback
-  sang số điện thoại đã chuẩn hóa.
+  sang số điện thoại đã chuẩn hóa, bao gồm dạng `+84`.
 - Trả danh sách ứng viên; giao diện yêu cầu người dùng chọn nếu có nhiều kết
   quả. Không tự tạo supplier từ truy vấn tìm kiếm.
 - Nếu không tìm thấy ở cả hai tiêu chí, trả danh sách rỗng.

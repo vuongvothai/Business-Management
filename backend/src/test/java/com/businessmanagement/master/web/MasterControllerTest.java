@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.businessmanagement.master.dto.CustomerRequest;
 import com.businessmanagement.master.dto.ItemRequest;
 import com.businessmanagement.master.dto.SupplierRequest;
+import com.businessmanagement.master.dto.SupplierResponse;
 import com.businessmanagement.master.entity.Customer;
 import com.businessmanagement.master.entity.Item;
 import com.businessmanagement.master.entity.Supplier;
@@ -54,6 +55,33 @@ class MasterControllerTest {
         controller.delete(1L);
 
         verify(supplierRepository).deleteById(1L);
+    }
+
+    @Test
+    void supplierSearchPrioritizesIdentityAndFallsBackToNormalizedPhone() {
+        SupplierController controller = new SupplierController(supplierRepository);
+        Supplier identityMatch = new Supplier("Identity match", "0900000001");
+        Supplier phoneMatch = new Supplier("Phone match", "0900000002");
+        when(supplierRepository.findAllByIdentityNo("012345678901")).thenReturn(List.of(identityMatch));
+
+        assertThat(controller.search(" 012345678901 ", " +84 900 000 002 "))
+                .extracting(SupplierResponse::name)
+                .containsExactly("Identity match");
+        verify(supplierRepository).findAllByIdentityNo("012345678901");
+        when(supplierRepository.findAllByIdentityNo("missing")).thenReturn(List.of());
+        when(supplierRepository.findAllByPhone("0900000002")).thenReturn(List.of(phoneMatch));
+        assertThat(controller.search("missing", "+84 900 000 002"))
+                .extracting(SupplierResponse::name)
+                .containsExactly("Phone match");
+    }
+
+    @Test
+    void supplierSearchRequiresAtLeastOneCriterion() {
+        SupplierController controller = new SupplierController(supplierRepository);
+
+        assertThatThrownBy(() -> controller.search(" ", " "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("identityNo hoặc phone");
     }
 
     @Test
