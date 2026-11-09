@@ -16,18 +16,18 @@
 |---|---:|---:|---:|
 | Xem dữ liệu tổng quan | Có | Có | Có |
 | Quản lý người dùng/vai trò | Có | Không | Không |
-| Quản lý nhà cung cấp | Có | `[CẦN XÁC NHẬN]` | `[CẦN XÁC NHẬN]` |
+| Quản lý nhà cung cấp | Có | Không | Có |
 | Quản lý mặt hàng | Có | Xem | Xem |
-| Tạo `IMPORT_TICKET` | Có | Có | `[CẦN XÁC NHẬN]` |
+| Tạo `IMPORT_TICKET` | Có | Có | Có |
 | Xem mọi phiếu nhập | Có | Không | Có |
 | Xem phiếu do mình tạo | Có | Có | Có |
 | Sửa phiếu `DRAFT` | Có | Có, phiếu của mình | Có |
 | Sửa phiếu `CONFIRMED` | Có | Không | Có |
-| Xác nhận phiếu nhập | Có | `[CẦN XÁC NHẬN]` | `[CẦN XÁC NHẬN]` |
+| Xác nhận phiếu nhập | Có | Không | Có |
 | Chốt giá | Có | Không | Có |
 | Tạo/hoàn tất phiếu xuất | Có | Không | Có |
-| Hủy chứng từ | Có | `[CẦN XÁC NHẬN]` | `[CẦN XÁC NHẬN]` |
-| Xem báo cáo | Có | `[CẦN XÁC NHẬN]` | Có |
+| Hủy chứng từ | Có | Không | Có |
+| Xem báo cáo | Có | Không | Có |
 
 ## 3. Phạm vi dữ liệu
 
@@ -44,12 +44,12 @@
 | `POST /api/imports` | `ADMIN`, `WEIGHER` |
 | `GET /api/imports` | Theo phạm vi dữ liệu của role |
 | `POST /api/price-locks` | `ADMIN`, `ACCOUNTANT` |
-| `GET /api/inventory/summary` | `ADMIN`, `ACCOUNTANT` `[CẦN XÁC NHẬN]` |
+| `GET /api/inventory/summary` | `ADMIN`, `ACCOUNTANT` |
 | `POST /api/exports` | `ADMIN`, `ACCOUNTANT` |
 
-## 5. Câu hỏi cần xác nhận
+## 5. Lưu ý khác. 
 
-1. Nhân viên cân có được xem tồn kho tổng không?
-2. Ai được chuyển phiếu từ `DRAFT` sang `CONFIRMED`?
+1. Nhân viên cân không được xem tồn kho tổng 
+2. chỉ `ACCOUNTANT` và `ADMIN` được chuyển phiếu từ `DRAFT` sang `CONFIRMED`
 3. Kế toán được sửa phiếu đã xác nhận theo quyết định trong BRD.
-4. Có cần thêm vai trò quản lý kho/người duyệt không?
+4. không cần thêm vai trò quản lý kho/người duyệt không

@@ -1,5 +1,15 @@
 ﻿# Tiến độ dự án
 
+## Baseline và lưu phiên bản
+
+- Mốc mã nguồn trước đợt cập nhật tài liệu: `main` tại commit `ad3f51d`,
+  working tree sạch tại thời điểm đối chiếu.
+- Quy trình tag và dump database được mô tả trong
+  [version-baseline.md](./version-baseline.md); chưa tạo tag hoặc dump trong
+  thay đổi tài liệu này.
+- Các trường mở rộng trong ERD chưa có trong migration/entity/request hiện
+  hành. Chỉ đánh dấu hoàn thành sau khi migration, API và test đã được triển khai.
+
 ## Trạng thái hiện tại
 
 - [x] Xác định kiến trúc monolith.
@@ -31,13 +41,20 @@
 - [x] Bổ sung đăng nhập JWT và phân quyền theo role.
 - [x] Bổ sung màn hình đăng nhập frontend và tự động gửi bearer token.
 - [x] Bổ sung thêm, sửa và xóa nhà cung cấp, khách hàng và mặt hàng trên frontend.
+- [ ] Bổ sung trường nhập mở rộng, `VEHICLE` và tìm supplier theo CCCD/điện thoại.
+- [ ] Quản lý chi phí `EXPENSE`/`EXPENSE_DETAIL` (đang còn thiếu trong MVP).
+- [ ] Tách giao diện bán/giao; thêm màn hình **Thêm dữ liệu** không có CRUD `ITEM`.
+- [ ] Dashboard doanh thu/lãi gộp theo ngày và API giá cà phê hôm nay.
+- [ ] Xem trước/tải/in chứng từ chốt giá và giao hàng.
 
 ## Bước tiếp theo
 
-1. Hoàn thiện các hạng mục M9 về dữ liệu phiếu nhập, biển số xe và tìm supplier.
-2. Tách màn hình bán/giao và đổi khu vực danh mục thành **Thêm dữ liệu**.
-3. Thiết kế API dashboard, giá cà phê hôm nay và bản in chốt/giao.
-4. Hoàn thiện test, hardening authentication và triển khai production.
+1. Xác nhận và lưu baseline Git/database trước khi áp dụng migration mới.
+2. Chốt quy tắc khấu trừ nhập hàng, công thức dashboard và nguồn cập nhật giá.
+3. Triển khai M9: schema/API trường nhập, xe dùng lại và tìm supplier.
+4. Triển khai M10-M12: tách màn hình, dashboard/giá và chứng từ in; cập nhật
+   test cùng tài liệu theo từng phần.
+5. Hoàn tất quản lý chi phí MVP, hardening authentication và chuẩn bị phát hành.
 
 ## Quy ước cập nhật
 

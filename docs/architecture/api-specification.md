@@ -272,19 +272,76 @@ bản kế tiếp, nhưng vẫn dùng chung hai resource trên.
 
 ## 5. API dự kiến cho phiên bản kế tiếp
 
-Các API dưới đây là kế hoạch, chưa triển khai:
+> Toàn bộ contract trong mục này là kế hoạch, chưa triển khai. Trường trên ERD
+> chỉ trở thành khả dụng sau khi có migration, entity, DTO, API và test.
 
-- `GET /api/suppliers/search?identityNo=&phone=`: tìm theo CCCD hoặc số điện
-  thoại; khi `identityNo` không có dữ liệu thì dùng `phone`.
-- `GET/POST/PUT/DELETE /api/vehicles`: quản lý biển số xe để chọn nhanh khi
-  tạo phiếu nhập; `DELETE` chỉ ẩn biển số bằng `active=false` nếu đã có lịch
-  sử dụng.
-- `GET /api/dashboard?fromDate=&toDate=&itemId=`: trả chuỗi doanh thu, lợi
-  nhuận theo ngày và giá cà phê hiện hành.
-- `GET /api/price-locks/{id}/print-data`: trả dữ liệu ổn định cho bản xem
-  trước/in phiếu chốt giá.
-- `GET /api/exports/{exportId}/deliveries/{deliveryId}/print-data`: trả dữ
-  liệu ổn định cho bản xem trước/in phiếu giao.
+### Tìm nhà cung cấp
+
+`GET /api/suppliers/search?identityNo=&phone=`
+
+- Nếu có CCCD, tìm chính xác theo `identityNo` trước.
+- Nếu không nhập CCCD hoặc CCCD không có kết quả và có số điện thoại, fallback
+  sang số điện thoại đã chuẩn hóa.
+- Trả danh sách ứng viên; giao diện yêu cầu người dùng chọn nếu có nhiều kết
+  quả. Không tự tạo supplier từ truy vấn tìm kiếm.
+- Nếu không tìm thấy ở cả hai tiêu chí, trả danh sách rỗng.
+
+### Quản lý biển số dùng lại
+
+| Method | Endpoint | Mục đích |
+|---|---|---|
+| `GET` | `/api/vehicles?active=true` | Lấy biển số đang được phép chọn |
+| `POST` | `/api/vehicles` | Thêm biển số dùng lại |
+| `PUT` | `/api/vehicles/{id}` | Sửa biển số theo quyền |
+| `DELETE` | `/api/vehicles/{id}` | Ẩn bằng `active=false`, không xóa lịch sử |
+
+Phiếu nhập và phiếu giao nhận `vehicleId` đang hoạt động. Backend chụp biển số
+thành `truckLicensePlate` trong bản ghi nghiệp vụ; không tin snapshot do client
+tự gửi. Biển số đã dùng không được xóa cứng.
+
+### Trường nhập mở rộng
+
+Mở rộng `POST /api/imports` và response/danh sách chi tiết tương ứng để nhận
+các trường đã duyệt trong ERD, gồm `vehicleId`, `loadingWarehouse`,
+`importWarehouse`, `tareWeight` và `sampleTestResult`. Backend vẫn tự tính
+tổng bao/kg từ các lần cân. Quy tắc tính khối lượng tính tiền và khấu trừ phải
+được chốt trước khi thêm kết quả tính vào contract; không suy luận công thức
+từ chú thích hiện tại trong ERD.
+
+Mở rộng `POST /api/exports/{exportId}/deliveries` nhận `vehicleId` và trả
+snapshot biển số cùng dữ liệu giao.
+
+### Dashboard và giá thị trường hôm nay
+
+`GET /api/dashboard?fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD&itemId=`
+
+Response dự kiến gồm danh sách mỗi ngày trong khoảng chọn (ngày không có giao
+trả số 0), doanh thu, lãi gộp và giá hôm nay theo mặt hàng. Ngày giao đã xác
+nhận là mốc tính thực tế đề xuất:
+
+- `revenue = deliveredVolume * sellingPricePerKg`
+- `grossProfit = revenue - deliveredVolume * avgCostPerKgSnapshot`
+
+Công thức trên cần được chủ nghiệp vụ duyệt. Không gọi lãi gộp là lãi ròng nếu
+chưa phân bổ chi phí; số cam kết trên `EXPORT_TICKET` phải được báo cáo riêng
+với số giao thực tế. `avg_cost_per_kg` hiện là trường nullable và luồng tạo
+phiếu chưa đảm bảo điền snapshot; chỉ trả lãi gộp khi chính sách giá vốn đã
+được triển khai và có snapshot hợp lệ. Không thay bằng giá trị 0 khi thiếu.
+
+Giá hôm nay đọc từ `MARKET_PRICE` theo đúng ngày hiện tại, trả kèm
+`source`/`fetchedAt`. Bản ghi nhập thủ công cũng phải có nguồn và thời điểm
+ghi nhận. Nếu chưa có bản ghi hôm nay, trả trạng thái thiếu dữ liệu/null;
+không tự dùng giá ngày cũ. Quy trình nạp/cập nhật `MARKET_PRICE` (thủ công hay
+nguồn ngoài) là phần cần chốt riêng; chưa lập kế hoạch tự động đồng bộ.
+
+### Dữ liệu chứng từ in
+
+- `GET /api/price-locks/{id}/print-data`: dữ liệu chỉ đọc cho phiếu chốt giá.
+- `GET /api/exports/{exportId}/deliveries/{deliveryId}/print-data`: dữ liệu
+  chỉ đọc cho một lần giao.
+
+Frontend dùng response để xem trước và tạo/in mẫu PDF. Việc xem, tải hoặc in
+không tạo giao dịch và không thay đổi số dư/trạng thái.
 
 ## 6. Chi phí theo kỳ
 

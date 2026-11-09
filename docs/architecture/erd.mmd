@@ -56,6 +56,7 @@ VEHICLE {
         bigint import_id PK
         bigint supplier_id FK
         bigint item_id FK
+        bigint vehicle_id FK "Xe chọn từ danh sách, có thể null"
         string truck_license_plate "Biển số xe"
         string loading_warehouse "Kho bốc"
         string import_warehouse "Kho nhập"
@@ -68,20 +69,8 @@ VEHICLE {
         decimal purchase_price_per_kg "101.000 vnd"
         decimal market_price_per_kg " 100.000 vnd"
         decimal market_difference_per_kg "↗ hoặc giảm ↘ 500 vnd"
-        decimal total_amount "total_kg * purchase_price_per_kg "
-        decimal total_deduction_amount " total_kg*((ví dụ moisture_percent bằng 15.01 thì lấy giá trị [0][1] = 0.10 từ const table = [
-        [0.00, 0.10, 0.20, 0.37, 0.47, 0.57, 0.67, 0.77, 0.88, 0.99], // 15
-        [1.13, 1.24, 1.35, 1.46, 1.57, 1.68, 1.80, 1.92, 2.04, 2.16], // 16
-        [2.31, 2.44, 2.57, 2.70, 2.83, 2.96, 3.10, 3.24, 3.38, 3.52], // 17
-        [3.67, 3.81, 3.96, 4.11, 4.26, 4.41, 4.56, 4.71, 4.87, 5.03], // 18
-        [5.20, 5.37, 5.54, 5.71, 5.83, 6.05, 6.23, 6.41, 6.59, 6.77], // 19
-        [6.95, 7.13, 7.32, 7.51, 7.71, 7.91, 8.11, 8.31, 8.51, 8.71], // 20
-        [8.91, 9.12, 9.34, 9.56, 9.73, 10.00, 10.22, 10.44, 10.67, 10.90], // 21
-        [11.13, 11.36, 11.60, 11.85, 12.10, 12.35, 12.60, 12.85, 13.10, 13.36], // 22
-        [13.62, 13.88, 14.15, 14.43, 14.71, 14.99, 15.27, 15.55, 15.84, 16.13], // 23
-        [16.42, 16.70, 17.01, 17.31, 17.61, 17.91, 18.22, 18.53, 18.84, 19.15], // 24
-        [19.47, null, null, null, null, null, null, null, null, null] // 25
-    ] nếu nằm ngoài 15-25 thì để là null)+impurity_percent)-(number_of_bags * tare_weight) "
+        decimal total_amount "Thành tiền theo khối lượng tính tiền và đơn giá"
+        decimal total_deduction_amount "Tổng khấu trừ theo quy tắc độ ẩm/tạp chất và trừ bì"
         string photo_url "Ảnh minh chứng, không bắt buộc"
         date import_date "Ngày nhập"
         string note "Ghi chú"
@@ -139,6 +128,7 @@ VEHICLE {
     EXPORT_DELIVERY {
         bigint delivery_id PK
         bigint export_id FK
+        bigint vehicle_id FK "Xe chọn từ danh sách, có thể null"
         decimal delivered_volume "Khối lượng giao thực tế (kg)"
         date delivery_date "Ngày giao hàng"
         string truck_license_plate "Biển số xe"

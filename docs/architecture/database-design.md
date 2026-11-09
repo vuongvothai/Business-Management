@@ -11,7 +11,12 @@
 - Các bảng giao dịch chính lưu `created_at`, `created_by`, `updated_at` và
   `updated_by` để phục vụ audit.
 
-## Bảng phục vụ API hiện tại
+## Mô hình dữ liệu và trạng thái triển khai
+
+Các bảng dưới đây mô tả schema mục tiêu. Migration hiện hành chưa có bảng
+`vehicle` và các trường mở rộng phiếu nhập/giao được ghi rõ là kế hoạch; không
+coi mô tả ERD là bằng chứng schema đã tồn tại trong database. Xem roadmap và
+[kế hoạch baseline](../planning/version-baseline.md) trước khi tạo migration.
 
 ### `supplier`
 
@@ -49,8 +54,8 @@ theo mặt hàng.
 
 ### `vehicle`
 
-`vehicle` chỉ lưu danh sách biển số xe dùng lại trong màn hình nhập hàng; không
-quản lý chủ xe, loại xe hoặc thông tin vận tải khác.
+`vehicle` chỉ lưu danh sách biển số xe dùng lại trên phiếu nhập và phiếu giao;
+không quản lý chủ xe, loại xe hoặc thông tin vận tải khác.
 
 | Cột | Kiểu | Ràng buộc |
 |---|---|---|
@@ -96,7 +101,7 @@ Quyền nghiệp vụ:
 | `import_id` | `BIGINT` | PK |
 | `supplier_id` | `BIGINT` | FK, NOT NULL |
 | `item_id` | `BIGINT` | FK, NOT NULL |
-| `vehicle_id` | `BIGINT` | FK, NULL |
+| `vehicle_id` | `BIGINT` | FK tới `vehicle.vehicle_id`, NULL |
 | `truck_license_plate` | `VARCHAR(30)` | NULL, biển số xe tại thời điểm nhập |
 | `loading_warehouse` | `VARCHAR(255)` | NULL |
 | `import_warehouse` | `VARCHAR(255)` | NULL |
@@ -119,6 +124,11 @@ nhưng luôn do backend tính từ các bản ghi `IMPORT_WEIGHT` trong cùng
 transaction. Client không được tự ghi đè hai giá trị này.
 `vehicle_id` phục vụ chọn nhanh; `truck_license_plate` là snapshot để lịch sử
 không thay đổi khi bản ghi biển số được cập nhật hoặc ẩn khỏi danh sách.
+
+Các cột mở rộng phiếu nhập ở bảng trên là mục tiêu phiên bản kế tiếp; schema
+đang chạy hiện chưa có `vehicle_id`, `truck_license_plate`,
+`loading_warehouse`, `import_warehouse`, `tare_weight` và
+`sample_test_result`.
 
 ### `import_weight`
 
@@ -195,8 +205,10 @@ giao. Phiếu không phụ thuộc trực tiếp vào `IMPORT_TICKET`.
 |---|---|---|
 | `delivery_id` | `BIGINT` | PK |
 | `export_id` | `BIGINT` | FK, NOT NULL |
+| `vehicle_id` | `BIGINT` | FK tới `vehicle.vehicle_id`, NULL |
 | `delivered_volume` | `DECIMAL(14,3)` | NOT NULL, > 0 |
 | `delivery_date` | `DATE` | NOT NULL |
+| `truck_license_plate` | `VARCHAR(30)` | NULL, snapshot biển số tại thời điểm giao |
 | `status` | `VARCHAR(20)` | NOT NULL: `CONFIRMED`, `CANCELLED` |
 | `created_by` | `BIGINT` | FK, NOT NULL |
 | `created_at` | `DATETIME` | NOT NULL |
@@ -206,6 +218,10 @@ giao. Phiếu không phụ thuộc trực tiếp vào `IMPORT_TICKET`.
 `EXPORT_DELIVERY`, backend khóa `ITEM` trong transaction và trừ
 `delivered_volume` khỏi `ITEM.available_kg`. Tạo phiếu cam kết không làm thay
 đổi tồn kho. Cam kết bán có thể vượt tồn hiện tại.
+
+`vehicle_id` và `truck_license_plate` là trường mục tiêu chưa có trong
+migration/entity hiện hành. Snapshot biển số phải được lưu độc lập để giữ
+nguyên lịch sử dù xe bị đổi tên hoặc ẩn.
 
 ### `expense` và `expense_detail`
 
@@ -235,7 +251,10 @@ trùng danh mục.
 
 `market_price.item_id` là khóa ngoại tới `item.item_id`. Nên tạo unique key
 `UNIQUE(item_id, price_date)` để mỗi mặt hàng chỉ có một giá thị trường trong
-một ngày.
+một ngày. Để hiển thị giá hôm nay có thể truy xuất nguồn gốc, bản ghi giá phải
+có `source` và thời điểm ghi nhận; khi nhập thủ công, thời điểm này là lúc lưu.
+Schema hiện tại cho phép các cột này `NULL`, nên cần quyết định backfill và
+siết ràng buộc trong migration nếu dùng làm dữ liệu dashboard.
 
 
 ## Quan hệ

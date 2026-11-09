@@ -3,7 +3,8 @@
 ## P0 — Bắt buộc
 
 - [x] Tạo project Spring Boot và cấu hình MySQL.
-- [x] Tạo migration cho toàn bộ bảng theo ERD.
+- [x] Tạo migration cho các bảng MVP đã triển khai; các phần mở rộng theo ERD
+  còn thiếu được theo dõi ở backlog phiên bản kế tiếp.
 - [x] Tạo migration seed role và mặt hàng mẫu.
 - [x] Tạo CRUD nhà cung cấp, mặt hàng, khách hàng.
 - [x] Tạo phiếu nhập và `IMPORT_WEIGHT`.
@@ -21,29 +22,39 @@
 
 ## P0 — Phiên bản kế tiếp
 
-- [ ] Cập nhật backend và migration cho các trường phiếu nhập: biển số xe, kho
-  bốc, kho nhập, trừ bì và kết quả mẫu thử.
-- [ ] Tạo bảng `VEHICLE` chỉ gồm biển số, trạng thái hoạt động và audit
-  timestamps; cho phép chọn lại biển số khi lập phiếu nhập.
-- [ ] Bổ sung tìm kiếm nhà cung cấp theo CCCD và số điện thoại với cơ chế thay
-  thế khi thiếu CCCD.
-- [ ] Đổi màn hình danh mục thành **Thêm dữ liệu**, bỏ thao tác nhập `ITEM`
-  khỏi giao diện nhưng vẫn giữ `ITEM` làm dữ liệu nền.
-- [ ] Tách màn hình bán và giao, giữ nguyên API/nghiệp vụ `EXPORT_TICKET` và
-  `EXPORT_DELIVERY`.
-- [ ] Thiết kế API tổng quan theo khoảng ngày cho doanh thu, lợi nhuận và giá
-  cà phê hôm nay.
-- [ ] Xác định công thức doanh thu/lợi nhuận theo số giao đã xác nhận và ngày
-  dùng để vẽ biểu đồ.
-- [ ] Thêm bản xem trước và xuất mẫu in cho phiếu chốt giá và phiếu giao hàng.
-- [ ] Viết test cho tìm kiếm nhà cung cấp, dữ liệu nhập mở rộng, dashboard và
-  bản in.
-- [ ] Hiển thị từng lần cân và tổng lũy kế sau mỗi lần cân trên màn hình nhập.
+- [ ] Lưu baseline mã nguồn bằng annotated Git tag và dump database; xác minh
+  khôi phục trước migration mới (xem [version-baseline.md](./version-baseline.md)).
+- [ ] Bổ sung migration mới (không sửa migration đã áp dụng) cho các trường
+  phiếu nhập trong ERD: `vehicle_id`, snapshot biển số, kho bốc/kho nhập,
+  `tare_weight`, `sample_test_result` và các trường kết quả tính đã được duyệt.
+- [ ] Tạo bảng `VEHICLE` với biển số duy nhất, trạng thái hoạt động và audit;
+  cho phép chọn lại biển số ở phiếu nhập và phiếu giao, lưu snapshot trên mỗi
+  giao dịch.
+- [ ] Chốt quy tắc tính khối lượng sau trừ bì/độ ẩm/tạp chất, bảng khấu trừ,
+  đơn vị và xử lý giá trị ngoài phạm vi trước khi viết hàm tính.
+- [ ] Bổ sung tìm supplier: ưu tiên CCCD khớp chính xác; nếu không có CCCD hoặc
+  không tìm thấy thì dùng số điện thoại; yêu cầu người dùng chọn khi có nhiều
+  kết quả.
+- [ ] Đổi khu vực danh mục thành **Thêm dữ liệu**, bỏ CRUD `ITEM` khỏi UI nhưng
+  giữ `ITEM` làm dữ liệu nền; thêm quản lý/chọn nhanh biển số.
+- [ ] Tách màn hình và điều hướng **Bán hàng** (`EXPORT_TICKET`) và
+  **Giao hàng** (`EXPORT_DELIVERY`); không đổi quy tắc tồn kho hiện tại.
+- [ ] Chốt chỉ số dashboard: ngày ghi nhận, doanh thu đã giao, lãi gộp và cách
+  xử lý chi phí; sau đó tạo API theo khoảng ngày và mặt hàng tùy chọn.
+- [ ] Chốt và lưu snapshot giá vốn/kg trên phiếu bán theo chính sách giá vốn
+  được duyệt; không tính lãi gộp dựa trên trường nullable chưa được điền.
+- [ ] Trả giá thị trường hôm nay từ `MARKET_PRICE`, gồm nguồn và thời điểm cập
+  nhật; bảo đảm dữ liệu ghi tay cũng có thời điểm ghi nhận, xác định cách cập
+  nhật và không tự động đồng bộ khi chưa chọn nguồn.
+- [ ] Bổ sung xem trước và tệp/mẫu PDF in phiếu chốt giá, từng lần giao; dữ liệu
+  lấy từ API và chỉ đọc.
+- [ ] Hiển thị từng lần cân cùng tổng số bao/khối lượng lũy kế sau từng lần.
+- [ ] Viết unit/integration/UI test cho validation, tra cứu supplier, xe dùng
+  lại, tính tổng/trừ bì, dashboard, giá thiếu, phân quyền và bản in.
 
 ## P1 — Sau MVP
 
 - [ ] Upload ảnh minh chứng lên storage thật.
-- [ ] Dashboard và báo cáo doanh thu/lợi nhuận.
 - [ ] Audit log chi tiết.
 - [ ] Đối soát số dư với giao dịch.
 - [ ] Đồng bộ giá thị trường tự động.

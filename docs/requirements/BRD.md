@@ -28,14 +28,10 @@
 5. Chốt giá hàng nhập.
 6. Xem tổng hợp tồn kho.
 7. Quản lý tồn kho tổng hợp và chi phí theo kỳ.
-
-**Ngoài phạm vi hoặc cần xác nhận:**
-
-- Đăng nhập, đặt lại mật khẩu.
-- Upload ảnh vô dử liệu nhập hàng luôn.
-- Báo cáo doanh thu/lợi nhuận chi tiết.
-- Đồng bộ giá thị trường tự động.
-- Quản lý 1 kho nhưng nhiều tên công ty (thực ra là 1 công ty quản lý nhưng nhập/xuất tự cân nhắt là nên xuất cho công ty nào nên để kế toán tự điều chỉnh).
+8.Đăng nhập, đặt lại mật khẩu.
+9. Upload ảnh vô dử liệu nhập hàng luôn.
+10. Báo cáo doanh thu/lợi nhuận chi tiết.
+11. Đồng bộ giá thị trường tự động.
 
 ### Phạm vi phiên bản kế tiếp (đã lập kế hoạch, chưa triển khai)
 
@@ -76,23 +72,6 @@
 7. Sau mỗi lần cân, giao diện hiển thị dòng lần cân và tổng số bao/khối lượng
    lũy kế đến lần đó; lần cuối hiển thị tổng thực tế của phiếu.
 
-### 3.3 Tổng quan và báo cáo
-
-1. Người dùng chọn khoảng ngày trên màn hình tổng quan.
-2. Hệ thống lấy dữ liệu từ API để hiển thị biểu đồ doanh thu và lợi nhuận theo
-   ngày.
-3. Hệ thống hiển thị giá cà phê hiện hành trong ngày theo mặt hàng và nguồn
-   giá.
-4. Doanh thu/lợi nhuận thực tế của biểu đồ phải phân biệt với giá trị ước tính
-   trên phiếu chốt bán.
-
-### 3.4 In chứng từ
-
-1. Màn hình chốt giá cho phép xem bản in mẫu trước khi in.
-2. Màn hình giao hàng cho phép xem bản in mẫu của lần giao.
-3. Nội dung in lấy từ API, có mã phiếu, đối tác, mặt hàng, khối lượng, đơn giá,
-   thành tiền, ngày lập và người thực hiện.
-
 ### 3.2 Chốt giá
 
 1. Kế toán chọn nhà cung cấp và mặt hàng từ số dư cà phê hữu dụng.
@@ -102,14 +81,32 @@
 
 ### 3.3 Xuất hàng
 
-1. Kế toán tạo phiếu xuất cho khách hàng.
+1. Kế toán tạo phiếu bán cho khách hàng.
 2. Kế toán ghi nhận khối lượng cam kết bán, giá bán và thông tin lập hóa đơn
    điện tử.
-3. Kế toán có thể ghi nhận nhiều lần giao hàng cho cùng một phiếu xuất.
+3. Kế toán có thể ghi nhận nhiều lần giao hàng cho cùng một phiếu xuất và chọn
+   biển số đã lưu hoặc thêm nhanh biển số.
 4. Chỉ khi xác nhận lần giao thực tế, hệ thống mới trừ tồn kho.
 5. Hệ thống vẫn cho phép cam kết bán vượt tồn kho hiện tại.
 6. Phiếu chuyển sang `PARTIALLY_DELIVERED` khi giao một phần và
    `COMPLETED` khi giao đủ.
+
+### 3.4 Tổng quan và báo cáo
+
+1. Người dùng chọn khoảng ngày trên màn hình tổng quan.
+2. Hệ thống lấy dữ liệu từ API để hiển thị biểu đồ doanh thu và lợi nhuận theo
+   ngày, phân biệt số liệu giao thực tế với số cam kết/ước tính.
+3. Hệ thống hiển thị giá cà phê trong ngày từ API theo mặt hàng, nguồn và thời
+   điểm cập nhật; nếu chưa có giá hôm nay phải thể hiện rõ là chưa có dữ liệu.
+4. Tính lợi nhuận theo giao dịch giao đã xác nhận; cách tính giá vốn và việc
+   phân bổ chi phí cần được chốt trước khi phát triển.
+
+### 3.5 In chứng từ
+
+1. Màn hình chốt giá cho phép xem bản in mẫu trước khi in.
+2. Màn hình giao hàng cho phép xem bản in mẫu của lần giao.
+3. Nội dung in lấy từ API, có mã phiếu, đối tác, mặt hàng, khối lượng, đơn giá,
+   thành tiền, ngày lập và người thực hiện. Tệp in chỉ đọc dữ liệu đã lưu.
 
 ## 4. Yêu cầu chức năng
 
@@ -127,12 +124,15 @@
 | BR-010 | Phiếu xuất lưu cam kết bán; các lần giao thực tế được lưu riêng và chỉ trừ tồn kho khi xác nhận giao. |
 | BR-011 | Lưu người tạo và thời điểm tạo/cập nhật cho các nghiệp vụ chính. |
 | BR-012 | Nhà cung cấp được tìm theo `identity_no` hoặc `phone`; khi không có CCCD thì số điện thoại là khóa tìm kiếm thay thế. |
-| BR-013 | `VEHICLE` chỉ lưu biển số xe duy nhất và trạng thái hoạt động; phiếu nhập tham chiếu biển số đã chọn và lưu thêm snapshot tại thời điểm giao dịch. |
+| BR-013 | `VEHICLE` chỉ lưu biển số xe duy nhất và trạng thái hoạt động; phiếu nhập và phiếu giao có thể tham chiếu xe đã chọn, đồng thời lưu snapshot biển số tại thời điểm giao dịch. |
 | BR-014 | `ITEM` vẫn tồn tại để liên kết tồn kho và giá thị trường nhưng không xuất hiện trong màn hình **Thêm dữ liệu** phiên bản kế tiếp. |
 | BR-015 | Biểu đồ doanh thu/lợi nhuận nhận `fromDate`, `toDate` và tùy chọn mặt hàng từ API. |
 | BR-016 | Giá cà phê hôm nay được lấy từ `MARKET_PRICE` theo mặt hàng và `price_date`; không dùng giá nhập tay trên frontend làm dữ liệu chính. |
 | BR-017 | Màn hình bán và màn hình giao là hai luồng giao diện riêng nhưng vẫn dùng chung `EXPORT_TICKET` và `EXPORT_DELIVERY`. |
-| BR-018 | Bản in chốt giá và giao hàng là dữ liệu trình bày từ API, không tạo giao dịch mới và không thay đổi số dư. |
+| BR-018 | Bản in chốt giá và giao hàng là dữ liệu trình bày từ API, không tạo giao dịch mới và không thay đổi số dư; người dùng có thể xem trước và xuất/in PDF. |
+| BR-019 | **Thêm dữ liệu** không cho tạo/sửa/xóa `ITEM`; `ITEM` vẫn được dùng nội bộ cho cà phê nhân, tồn kho và giá thị trường. |
+| BR-020 | Biểu đồ lấy ngày giao đã xác nhận làm mốc ghi nhận đề xuất; doanh thu/lợi nhuận phải tách khỏi giá trị ước tính của phiếu bán và chờ duyệt công thức giá vốn/chi phí. |
+| BR-021 | API dashboard trả giá hôm nay theo `MARKET_PRICE`, có nguồn và thời điểm; không giả làm giá hôm nay nếu dữ liệu hiện hành chưa có. |
 
 ## 5. Yêu cầu phi chức năng
 
@@ -161,6 +161,11 @@
 - Giao diện nhập phải cho phép thêm biển số mới và chọn lại biển số đang hoạt
   động bằng danh sách dropdown/toggle list; không yêu cầu nhập lại biển số
   trong mỗi phiếu.
+- Giao diện giao hàng cũng dùng danh sách biển số dùng lại theo ERD; mỗi phiếu
+  giữ snapshot biển số để lịch sử không đổi sau khi biển số bị ẩn/cập nhật.
+- Trước khi phát triển các trường tính khấu trừ trong ERD, phải xác nhận đơn vị
+  `tare_weight`, bảng khấu trừ độ ẩm/tạp chất, cách tính khối lượng tính tiền
+  và xử lý độ ẩm ngoài dải.
 
 ## 7. Các quyết định ngoài ra: 
 
