@@ -87,6 +87,20 @@ class PriceLockServiceTest {
         assertThat(supplier.getUsableCoffeeKg()).isEqualByComparingTo("10");
     }
 
+    @Test
+    void createRejectsUnknownItem() {
+        supplier.addUsableCoffeeKg(new BigDecimal("10"));
+        when(supplierRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(supplier));
+        when(itemRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.create(new PriceLockRequest(
+                1L, 99L, LocalDate.of(2026, 11, 6),
+                new BigDecimal("5"), new BigDecimal("42000"), null, null)))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Item not found: 99");
+        assertThat(supplier.getUsableCoffeeKg()).isEqualByComparingTo("10");
+    }
+
     private static void setId(Object entity, Long id) {
         try {
             var field = entity.getClass().getDeclaredField("id");

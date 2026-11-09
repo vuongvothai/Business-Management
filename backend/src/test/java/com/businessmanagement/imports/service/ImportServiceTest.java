@@ -99,6 +99,21 @@ class ImportServiceTest {
         assertThat(item.getAvailableKg()).isZero();
     }
 
+    @Test
+    void createRejectsUnknownItemWithoutChangingSupplierBalance() {
+        when(supplierRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(supplier));
+        when(itemRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
+        ImportRequest request = new ImportRequest(
+                1L, 99L, LocalDate.of(2026, 11, 5),
+                java.util.List.of(new ImportWeightRequest(new BigDecimal("10"), 1)),
+                null, null, null, null, null, null, null);
+
+        assertThatThrownBy(() -> service.create(request))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Item not found: 99");
+        assertThat(supplier.getUsableCoffeeKg()).isZero();
+    }
+
     private static void setId(Object entity, Long id) {
         try {
             var field = entity.getClass().getDeclaredField("id");

@@ -121,6 +121,17 @@ class ExportServiceTest {
         assertThat(item.getAvailableKg()).isZero();
     }
 
+    @Test
+    void createRejectsUnknownCustomer() {
+        when(customerRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.create(new ExportRequest(
+                99L, 2L, new BigDecimal("100"), new BigDecimal("50000"),
+                LocalDate.of(2026, 11, 6), null, "test", null)))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Customer not found: 99");
+    }
+
     private static void setId(Object entity, Long id) {
         try {
             var field = entity.getClass().getDeclaredField("id");
