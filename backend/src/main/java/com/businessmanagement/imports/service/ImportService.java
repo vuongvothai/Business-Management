@@ -13,7 +13,10 @@ import com.businessmanagement.master.repository.AppUserRepository;
 import com.businessmanagement.master.repository.ImportTicketRepository;
 import com.businessmanagement.master.repository.ItemRepository;
 import com.businessmanagement.master.repository.SupplierRepository;
+import com.businessmanagement.vehicles.entity.Vehicle;
+import com.businessmanagement.vehicles.repository.VehicleRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.data.domain.Page;
@@ -30,6 +33,20 @@ public class ImportService {
     private final SupplierRepository supplierRepository;
     private final ItemRepository itemRepository;
     private final AppUserRepository appUserRepository;
+    private final VehicleRepository vehicleRepository;
+
+    @Autowired
+    public ImportService(ImportTicketRepository importRepository,
+                          SupplierRepository supplierRepository,
+                          ItemRepository itemRepository,
+                          AppUserRepository appUserRepository,
+                          VehicleRepository vehicleRepository) {
+        this.importRepository = importRepository;
+        this.supplierRepository = supplierRepository;
+        this.itemRepository = itemRepository;
+        this.appUserRepository = appUserRepository;
+        this.vehicleRepository = vehicleRepository;
+    }
 
     public ImportService(ImportTicketRepository importRepository,
                           SupplierRepository supplierRepository,
@@ -39,6 +56,7 @@ public class ImportService {
         this.supplierRepository = supplierRepository;
         this.itemRepository = itemRepository;
         this.appUserRepository = appUserRepository;
+        this.vehicleRepository = null;
     }
 
     @Transactional
@@ -48,6 +66,7 @@ public class ImportService {
         Item item = itemRepository.findByIdForUpdate(request.itemId())
                 .orElseThrow(() -> notFound("Item", request.itemId()));
         AppUser user = resolveUser(request.createdByUserId());
+        Vehicle vehicle = resolveActiveVehicle(request.vehicleId());
 
         BigDecimal totalKg = request.weights().stream()
                 .map(ImportWeightRequest::weightKg)
@@ -59,6 +78,8 @@ public class ImportService {
         ImportTicket ticket = new ImportTicket(
                 supplier, item, request.importDate(), request.moisturePercent(),
                 request.impurityPercent(), request.photoUrl(), request.note(), user);
+        ticket.setVehicleDetails(vehicle, request.loadingWarehouse(), request.importWarehouse(),
+                request.tareWeight(), request.sampleTestResult());
         ticket.setTotals(numberOfBags, totalKg);
         for (ImportWeightRequest weight : request.weights()) {
             ticket.addWeight(new ImportWeight(weight.weightKg(), weight.bagCount(), user));
@@ -100,6 +121,14 @@ public class ImportService {
                 result.getSize(),
                 result.getTotalElements(),
                 result.getTotalPages());
+    }
+
+    private Vehicle resolveActiveVehicle(Long id) {
+        if (id == null) return null;
+        Vehicle vehicle = vehicleRepository == null ? null : vehicleRepository.findById(id)
+                .orElseThrow(() -> notFound("Vehicle", id));
+        if (!vehicle.isActive()) throw new ResponseStatusException(HttpStatus.CONFLICT, "Vehicle is inactive: " + id);
+        return vehicle;
     }
 
     private AppUser resolveUser(Long id) {

@@ -93,9 +93,9 @@ class ExportServiceTest {
         when(deliveryRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         ExportResponse first = service.deliver(1L, new DeliveryRequest(
-                new BigDecimal("40"), LocalDate.of(2026, 11, 7), null, null));
+                new BigDecimal("40"), LocalDate.of(2026, 11, 7), null, null, null));
         ExportResponse second = service.deliver(1L, new DeliveryRequest(
-                new BigDecimal("60"), LocalDate.of(2026, 11, 8), null, null));
+                new BigDecimal("60"), LocalDate.of(2026, 11, 8), null, null, null));
 
         assertThat(first.remainingVolume()).isEqualByComparingTo("60");
         assertThat(first.status()).isEqualTo("PARTIALLY_DELIVERED");
@@ -115,7 +115,7 @@ class ExportServiceTest {
                 .thenReturn(new BigDecimal("90"));
 
         assertThatThrownBy(() -> service.deliver(1L, new DeliveryRequest(
-                new BigDecimal("11"), LocalDate.of(2026, 11, 7), null, null)))
+                new BigDecimal("11"), LocalDate.of(2026, 11, 7), null, null, null)))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("DELIVERY_EXCEEDED");
         assertThat(item.getAvailableKg()).isZero();

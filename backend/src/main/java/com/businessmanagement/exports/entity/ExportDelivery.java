@@ -68,10 +68,12 @@ public class ExportDelivery {
     }
 
     public ExportDelivery(ExportTicket exportTicket, BigDecimal deliveredVolume,
-                           LocalDate deliveryDate, String note, AppUser createdBy) {
+                           LocalDate deliveryDate, Vehicle vehicle, String note, AppUser createdBy) {
         this.exportTicket = exportTicket;
         this.deliveredVolume = deliveredVolume;
         this.deliveryDate = deliveryDate;
+        this.vehicle = vehicle;
+        this.truckLicensePlate = vehicle == null ? null : vehicle.getLicensePlate();
         this.status = DeliveryStatus.CONFIRMED;
         this.note = note;
         this.createdBy = createdBy;

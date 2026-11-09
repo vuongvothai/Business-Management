@@ -24,12 +24,12 @@
 
 - [ ] Lưu baseline mã nguồn bằng annotated Git tag và dump database; xác minh
   khôi phục trước migration mới (xem [version-baseline.md](./version-baseline.md)).
-- [ ] Bổ sung migration mới (không sửa migration đã áp dụng) cho các trường
-  phiếu nhập trong ERD: `vehicle_id`, snapshot biển số, kho bốc/kho nhập,
-  `tare_weight`, `sample_test_result` và các trường kết quả tính đã được duyệt.
-- [ ] Tạo bảng `VEHICLE` với biển số duy nhất, trạng thái hoạt động và audit;
+- [x] Bổ sung migration mới và API cho các trường phiếu nhập/giao trong ERD:
+  `vehicle_id`, snapshot biển số, kho bốc/kho nhập, `tare_weight` và
+  `sample_test_result` (2026-11-09).
+- [x] Quản lý bảng `VEHICLE` với biển số duy nhất, trạng thái hoạt động và audit;
   cho phép chọn lại biển số ở phiếu nhập và phiếu giao, lưu snapshot trên mỗi
-  giao dịch.
+  giao dịch (2026-11-09).
 - [ ] Chốt quy tắc tính khối lượng sau trừ bì/độ ẩm/tạp chất, bảng khấu trừ,
   đơn vị và xử lý giá trị ngoài phạm vi trước khi viết hàm tính.
 - [ ] Bổ sung tìm supplier: ưu tiên CCCD khớp chính xác; nếu không có CCCD hoặc

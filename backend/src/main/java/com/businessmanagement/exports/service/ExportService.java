@@ -14,7 +14,10 @@ import com.businessmanagement.master.repository.CustomerRepository;
 import com.businessmanagement.master.repository.ExportDeliveryRepository;
 import com.businessmanagement.master.repository.ExportTicketRepository;
 import com.businessmanagement.master.repository.ItemRepository;
+import com.businessmanagement.vehicles.entity.Vehicle;
+import com.businessmanagement.vehicles.repository.VehicleRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -29,6 +32,7 @@ public class ExportService {
     private final CustomerRepository customerRepository;
     private final ItemRepository itemRepository;
     private final AppUserRepository appUserRepository;
+    private final VehicleRepository vehicleRepository;
 
     public ExportService(ExportTicketRepository exportRepository,
                          ExportDeliveryRepository deliveryRepository,
@@ -40,6 +44,22 @@ public class ExportService {
         this.customerRepository = customerRepository;
         this.itemRepository = itemRepository;
         this.appUserRepository = appUserRepository;
+        this.vehicleRepository = null;
+    }
+
+    @Autowired
+    public ExportService(ExportTicketRepository exportRepository,
+                         ExportDeliveryRepository deliveryRepository,
+                         CustomerRepository customerRepository,
+                         ItemRepository itemRepository,
+                         AppUserRepository appUserRepository,
+                         VehicleRepository vehicleRepository) {
+        this.exportRepository = exportRepository;
+        this.deliveryRepository = deliveryRepository;
+        this.customerRepository = customerRepository;
+        this.itemRepository = itemRepository;
+        this.appUserRepository = appUserRepository;
+        this.vehicleRepository = vehicleRepository;
     }
 
     @Transactional
@@ -68,8 +88,9 @@ public class ExportService {
                     "DELIVERY_EXCEEDED: delivered volume exceeds committed volume");
         }
         AppUser user = resolveUser(request.createdByUserId());
+        Vehicle vehicle = resolveActiveVehicle(request.vehicleId());
         deliveryRepository.save(new ExportDelivery(ticket, request.deliveredVolume(),
-                request.deliveryDate(), request.note(), user));
+                request.deliveryDate(), vehicle, request.note(), user));
         item.addAvailableKg(request.deliveredVolume().negate());
         ticket.updateDeliveryStatus(newTotal);
         return ExportResponse.from(ticket, newTotal);
@@ -81,6 +102,14 @@ public class ExportService {
                 .map(ticket -> ExportResponse.from(ticket,
                         deliveryRepository.sumDelivered(ticket.getId(), DeliveryStatus.CONFIRMED)))
                 .toList();
+    }
+
+    private Vehicle resolveActiveVehicle(Long id) {
+        if (id == null) return null;
+        Vehicle vehicle = vehicleRepository == null ? null : vehicleRepository.findById(id)
+                .orElseThrow(() -> notFound("Vehicle", id));
+        if (vehicle == null || !vehicle.isActive()) throw new ResponseStatusException(HttpStatus.CONFLICT, "Vehicle is inactive: " + id);
+        return vehicle;
     }
 
     private AppUser resolveUser(Long id) {

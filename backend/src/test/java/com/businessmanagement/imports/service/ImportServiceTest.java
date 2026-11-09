@@ -82,7 +82,7 @@ class ImportServiceTest {
         when(importRepository.save(any(ImportTicket.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
         ImportRequest request = new ImportRequest(
-                1L, 2L, LocalDate.of(2026, 11, 5),
+                1L, 2L, null, null, null, null, null, LocalDate.of(2026, 11, 5),
                 java.util.List.of(
                         new ImportWeightRequest(new BigDecimal("120.300"), 2),
                         new ImportWeightRequest(new BigDecimal("80.700"), 1)),
@@ -102,7 +102,7 @@ class ImportServiceTest {
     void createRejectsUnknownSupplier() {
         when(supplierRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
         ImportRequest request = new ImportRequest(
-                99L, 2L, LocalDate.of(2026, 11, 5),
+                99L, 2L, null, null, null, null, null, LocalDate.of(2026, 11, 5),
                 java.util.List.of(new ImportWeightRequest(new BigDecimal("10"), 1)),
                 null, null, null, null, null, null, null);
 
@@ -118,7 +118,7 @@ class ImportServiceTest {
         when(supplierRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(supplier));
         when(itemRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
         ImportRequest request = new ImportRequest(
-                1L, 99L, LocalDate.of(2026, 11, 5),
+                1L, 99L, null, null, null, null, null, LocalDate.of(2026, 11, 5),
                 java.util.List.of(new ImportWeightRequest(new BigDecimal("10"), 1)),
                 null, null, null, null, null, null, null);
 

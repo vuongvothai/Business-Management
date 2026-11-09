@@ -115,7 +115,7 @@ class CoreControllerWebTest {
                                   "supplierId": 1,
                                   "itemId": 2,
                                   "importDate": "2026-11-06",
-                                  "weights": [{"weightKg": 120.3, "bagCount": 3}]
+                                  "weights": [{"weightKg": 120.3, "bagCount": 0}]
                                 }
                                 """))
                 .andExpect(status().isBadRequest())

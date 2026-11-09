@@ -301,15 +301,17 @@ tự gửi. Biển số đã dùng không được xóa cứng.
 
 ### Trường nhập mở rộng
 
-Mở rộng `POST /api/imports` và response/danh sách chi tiết tương ứng để nhận
-các trường đã duyệt trong ERD, gồm `vehicleId`, `loadingWarehouse`,
-`importWarehouse`, `tareWeight` và `sampleTestResult`. Backend vẫn tự tính
+Đã triển khai `POST /api/imports` và response/danh sách chi tiết với các trường
+`vehicleId`, `truckLicensePlate` (snapshot), `loadingWarehouse`,
+`importWarehouse`, `tareWeight` và `sampleTestResult`. API
+`GET/POST/PUT/DELETE /api/vehicles` quản lý biển số dùng lại; DELETE chỉ ẩn xe.
+Backend xác thực xe active và vẫn tự tính
 tổng bao/kg từ các lần cân. Quy tắc tính khối lượng tính tiền và khấu trừ phải
 được chốt trước khi thêm kết quả tính vào contract; không suy luận công thức
 từ chú thích hiện tại trong ERD.
 
-Mở rộng `POST /api/exports/{exportId}/deliveries` nhận `vehicleId` và trả
-snapshot biển số cùng dữ liệu giao.
+`POST /api/exports/{exportId}/deliveries` đã nhận `vehicleId` và trả snapshot
+`truckLicensePlate` cùng dữ liệu giao.
 
 ### Dashboard và giá thị trường hôm nay
 

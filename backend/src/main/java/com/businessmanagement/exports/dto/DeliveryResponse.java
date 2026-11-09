@@ -5,9 +5,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record DeliveryResponse(Long id, BigDecimal deliveredVolume,
-                                LocalDate deliveryDate, String note, String status) {
+                                LocalDate deliveryDate, Long vehicleId, String truckLicensePlate,
+                                String note, String status) {
     public static DeliveryResponse from(ExportDelivery delivery) {
         return new DeliveryResponse(delivery.getId(), delivery.getDeliveredVolume(),
-                delivery.getDeliveryDate(), delivery.getNote(), delivery.getStatus().name());
+                delivery.getDeliveryDate(), delivery.getVehicle() == null ? null : delivery.getVehicle().getId(),
+                delivery.getTruckLicensePlate(), delivery.getNote(), delivery.getStatus().name());
     }
 }

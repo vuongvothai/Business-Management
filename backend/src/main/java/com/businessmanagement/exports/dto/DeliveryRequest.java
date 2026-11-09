@@ -9,6 +9,12 @@ import java.time.LocalDate;
 public record DeliveryRequest(
         @NotNull @DecimalMin("0.001") BigDecimal deliveredVolume,
         @NotNull LocalDate deliveryDate,
+        Long vehicleId,
         @Size(max = 1000) String note,
         Long createdByUserId) {
+
+    public DeliveryRequest(BigDecimal deliveredVolume, LocalDate deliveryDate,
+                           String note, Long createdByUserId) {
+        this(deliveredVolume, deliveryDate, null, note, createdByUserId);
+    }
 }

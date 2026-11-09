@@ -1,4 +1,4 @@
-﻿# Tiến độ dự án
+# Tiến độ dự án
 
 ## Baseline và lưu phiên bản
 
@@ -41,7 +41,8 @@
 - [x] Bổ sung đăng nhập JWT và phân quyền theo role.
 - [x] Bổ sung màn hình đăng nhập frontend và tự động gửi bearer token.
 - [x] Bổ sung thêm, sửa và xóa nhà cung cấp, khách hàng và mặt hàng trên frontend.
-- [ ] Bổ sung trường nhập mở rộng, `VEHICLE` và tìm supplier theo CCCD/điện thoại.
+- [x] Bổ sung module `VEHICLE` và trường nhập/giao mở rộng (`vehicleId`, snapshot biển số, kho, bì, kết quả mẫu thử) (2026-11-09).
+- [ ] Tìm supplier theo CCCD/điện thoại.
 - [ ] Quản lý chi phí `EXPENSE`/`EXPENSE_DETAIL` (đang còn thiếu trong MVP).
 - [ ] Tách giao diện bán/giao; thêm màn hình **Thêm dữ liệu** không có CRUD `ITEM`.
 - [ ] Dashboard doanh thu/lãi gộp theo ngày và API giá cà phê hôm nay.

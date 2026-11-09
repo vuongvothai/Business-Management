@@ -136,6 +136,16 @@ public class ImportTicket {
         weight.assignTo(this);
     }
 
+    public void setVehicleDetails(Vehicle vehicle, String loadingWarehouse, String importWarehouse,
+                                  BigDecimal tareWeight, String sampleTestResult) {
+        this.vehicle = vehicle;
+        this.truckLicensePlate = vehicle == null ? null : vehicle.getLicensePlate();
+        this.loadingWarehouse = loadingWarehouse;
+        this.importWarehouse = importWarehouse;
+        this.tareWeight = tareWeight;
+        this.sampleTestResult = sampleTestResult;
+    }
+
     public void setTotals(int numberOfBags, BigDecimal totalKg) {
         this.numberOfBags = numberOfBags;
         this.totalKg = totalKg;
