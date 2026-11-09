@@ -1,6 +1,7 @@
 package com.businessmanagement.exports.entity;
 
 import com.businessmanagement.master.entity.AppUser;
+import com.businessmanagement.vehicles.entity.Vehicle;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -29,6 +30,19 @@ public class ExportDelivery {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "export_id", nullable = false)
     private ExportTicket exportTicket;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vehicle_id")
+    private Vehicle vehicle;
+
+    @Column(name = "truck_license_plate", length = 30)
+    private String truckLicensePlate;
+
+    @Column(name = "loading_warehouse", length = 255)
+    private String loadingWarehouse;
+
+    @Column(name = "import_warehouse", length = 255)
+    private String importWarehouse;
 
     @Column(name = "delivered_volume", nullable = false, precision = 14, scale = 3)
     private BigDecimal deliveredVolume;
@@ -69,6 +83,10 @@ public class ExportDelivery {
     }
 
     public Long getId() { return id; }
+    public Vehicle getVehicle() { return vehicle; }
+    public String getTruckLicensePlate() { return truckLicensePlate; }
+    public String getLoadingWarehouse() { return loadingWarehouse; }
+    public String getImportWarehouse() { return importWarehouse; }
     public BigDecimal getDeliveredVolume() { return deliveredVolume; }
     public LocalDate getDeliveryDate() { return deliveryDate; }
     public DeliveryStatus getStatus() { return status; }

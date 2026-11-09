@@ -3,6 +3,7 @@ package com.businessmanagement.imports.entity;
 import com.businessmanagement.master.entity.AppUser;
 import com.businessmanagement.master.entity.Item;
 import com.businessmanagement.master.entity.Supplier;
+import com.businessmanagement.vehicles.entity.Vehicle;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,6 +42,25 @@ public class ImportTicket {
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vehicle_id")
+    private Vehicle vehicle;
+
+    @Column(name = "truck_license_plate", length = 30)
+    private String truckLicensePlate;
+
+    @Column(name = "loading_warehouse", length = 255)
+    private String loadingWarehouse;
+
+    @Column(name = "import_warehouse", length = 255)
+    private String importWarehouse;
+
+    @Column(name = "tare_weight", precision = 12, scale = 3)
+    private BigDecimal tareWeight;
+
+    @Column(name = "sample_test_result", length = 255)
+    private String sampleTestResult;
+
     @Column(name = "number_of_bags", nullable = false)
     private Integer numberOfBags;
 
@@ -61,6 +81,12 @@ public class ImportTicket {
 
     @Column(name = "market_difference_per_kg", precision = 15, scale = 2)
     private BigDecimal marketDifferencePerKg;
+
+    @Column(name = "total_amount", precision = 18, scale = 2)
+    private BigDecimal totalAmount;
+
+    @Column(name = "total_deduction_amount", precision = 18, scale = 2)
+    private BigDecimal totalDeductionAmount;
 
     @Column(name = "photo_url", length = 1000)
     private String photoUrl;
@@ -130,8 +156,16 @@ public class ImportTicket {
     public Long getId() { return id; }
     public Supplier getSupplier() { return supplier; }
     public Item getItem() { return item; }
+    public Vehicle getVehicle() { return vehicle; }
+    public String getTruckLicensePlate() { return truckLicensePlate; }
+    public String getLoadingWarehouse() { return loadingWarehouse; }
+    public String getImportWarehouse() { return importWarehouse; }
+    public BigDecimal getTareWeight() { return tareWeight; }
+    public String getSampleTestResult() { return sampleTestResult; }
     public Integer getNumberOfBags() { return numberOfBags; }
     public BigDecimal getTotalKg() { return totalKg; }
+    public BigDecimal getTotalAmount() { return totalAmount; }
+    public BigDecimal getTotalDeductionAmount() { return totalDeductionAmount; }
     public BigDecimal getMoisturePercent() { return moisturePercent; }
     public BigDecimal getImpurityPercent() { return impurityPercent; }
     public String getPhotoUrl() { return photoUrl; }
