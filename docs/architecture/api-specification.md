@@ -347,10 +347,11 @@ không tạo giao dịch và không thay đổi số dư/trạng thái.
 
 ## 6. Chi phí theo kỳ
 
-`EXPENSE_DETAIL.amount` lưu số tiền của từng danh mục. `EXPENSE` lưu
+Đã triển khai nhóm API `/api/expenses` cho `EXPENSE` và `EXPENSE_DETAIL`.
+`EXPENSE_DETAIL.amount` lưu số tiền của từng danh mục. `EXPENSE` tự tính
 `totalAmount` là tổng tiền của nhiều danh mục trong một khoảng thời gian, gồm
 `periodStart` và `periodEnd`, thay cho một ngày chi phí đơn lẻ. Một expense có
-thể có nhiều `EXPENSE_DETAIL`.
+thể có nhiều `EXPENSE_DETAIL`; chỉ `ADMIN` và `ACCOUNTANT` được thao tác.
 
 ## 7. Tổng hợp tồn kho
 

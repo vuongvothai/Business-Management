@@ -17,7 +17,7 @@
 - [x] Chỉ trừ tồn kho khi xác nhận `EXPORT_DELIVERY`.
 - [x] Cho phép tồn kho âm khi giao thực tế.
 - [x] Tạo API `GET /api/inventory/summary`.
-- [ ] Tạo quản lý `EXPENSE` và `EXPENSE_DETAIL`.
+- [x] Tạo quản lý `EXPENSE` và `EXPENSE_DETAIL`, gồm CRUD theo kỳ và tự tính tổng tiền (2026-11-10).
 - [x] Kiểm tra phân quyền ba vai trò.
 
 ## P0 — Phiên bản kế tiếp

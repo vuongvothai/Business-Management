@@ -71,6 +71,19 @@ public class Expense {
     public void addDetail(ExpenseDetail detail) {
         details.add(detail);
         detail.assignTo(this);
+        recalculateTotal();
+    }
+
+    public void replaceDetails(LocalDate periodStart, LocalDate periodEnd, String note, AppUser updatedBy) {
+        this.periodStart = periodStart;
+        this.periodEnd = periodEnd;
+        this.note = note;
+        this.updatedBy = updatedBy;
+        details.clear();
+        totalAmount = BigDecimal.ZERO;
+    }
+
+    private void recalculateTotal() {
         totalAmount = details.stream().map(ExpenseDetail::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }

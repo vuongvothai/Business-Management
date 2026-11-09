@@ -37,7 +37,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/inventory/summary").hasAnyRole("ADMIN", "ACCOUNTANT")
                         .requestMatchers("/api/imports/**").hasAnyRole("ADMIN", "WEIGHER")
                         .requestMatchers("/api/price-locks/**").hasAnyRole("ADMIN", "ACCOUNTANT")
-                        .requestMatchers("/api/exports/**").hasAnyRole("ADMIN", "ACCOUNTANT")
+                        .requestMatchers("/api/exports/**", "/api/expenses/**").hasAnyRole("ADMIN", "ACCOUNTANT")
                         .requestMatchers("/api/suppliers/**", "/api/items/**", "/api/customers/**")
                         .hasRole("ADMIN")
                         .anyRequest().authenticated())
