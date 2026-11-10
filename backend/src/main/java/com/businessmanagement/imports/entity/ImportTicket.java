@@ -194,5 +194,6 @@ public class ImportTicket {
     public LocalDate getImportDate() { return importDate; }
     public String getNote() { return note; }
     public ImportStatus getStatus() { return status; }
+    public AppUser getCreatedBy() { return createdBy; }
     public List<ImportWeight> getWeights() { return weights; }
 }

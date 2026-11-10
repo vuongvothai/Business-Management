@@ -25,6 +25,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 public class ImportService {
@@ -103,9 +105,10 @@ public class ImportService {
 
     @Transactional
     public ImportResponse get(Long id) {
-        return importRepository.findById(id)
-                .map(ImportResponse::from)
+        ImportTicket ticket = importRepository.findById(id)
                 .orElseThrow(() -> notFound("Import", id));
+        ensureVisibleToCurrentUser(ticket);
+        return ImportResponse.from(ticket);
     }
 
     @Transactional
@@ -124,6 +127,13 @@ public class ImportService {
             specification = specification.and((root, query, builder) ->
                     builder.equal(root.get("supplier").get("id"), supplierId));
         }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_WEIGHER"))) {
+            String username = authentication.getName();
+            specification = specification.and((root, query, builder) ->
+                    builder.equal(root.get("createdBy").get("username"), username));
+        }
         Page<ImportResponse> result = importRepository.findAll(specification, pageable)
                 .map(ImportResponse::from);
         return new ImportPageResponse(
@@ -132,6 +142,15 @@ public class ImportService {
                 result.getSize(),
                 result.getTotalElements(),
                 result.getTotalPages());
+    }
+
+    private void ensureVisibleToCurrentUser(ImportTicket ticket) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_WEIGHER"))
+                && (ticket.getCreatedBy() == null || !authentication.getName().equals(ticket.getCreatedBy().getUsername()))) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Import not found: " + ticket.getId());
+        }
     }
 
     private Vehicle resolveActiveVehicle(Long id) {

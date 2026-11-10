@@ -35,7 +35,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/inventory/summary", "/api/dashboard", "/api/market-prices/**", "/api/market-price/**").hasAnyRole("ADMIN", "ACCOUNTANT")
-                        .requestMatchers("/api/imports/**").hasAnyRole("ADMIN", "WEIGHER")
+                        .requestMatchers(HttpMethod.POST, "/api/imports/**").hasAnyRole("ADMIN", "WEIGHER")
+                        .requestMatchers(HttpMethod.GET, "/api/imports/**").hasAnyRole("ADMIN", "WEIGHER", "ACCOUNTANT")
                         .requestMatchers("/api/price-locks/**").hasAnyRole("ADMIN", "ACCOUNTANT")
                         .requestMatchers("/api/exports/**", "/api/expenses/**").hasAnyRole("ADMIN", "ACCOUNTANT")
                         .requestMatchers(HttpMethod.GET, "/api/suppliers/**", "/api/items/**", "/api/customers/**", "/api/vehicles/**")

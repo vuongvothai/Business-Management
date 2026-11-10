@@ -52,6 +52,7 @@
 - [x] Bổ sung controller test cho request giao hàng mở rộng và validation độ dài kho (2026-11-10).
 - [x] Chuẩn hóa biển số xe trước khi lưu, tránh trùng do khác hoa/thường hoặc khoảng trắng (2026-11-10).
 - [x] Siết phân quyền đọc danh mục/xe cho ba role và ghi rõ thao tác quản trị chỉ dành cho ADMIN (2026-11-10).
+- [x] Giới hạn WEIGHER chỉ xem phiếu nhập do chính mình tạo ở cả danh sách và chi tiết (2026-11-10).
 - [x] Dashboard doanh thu/lãi gộp theo ngày và API giá cà phê hôm nay (2026-11-10).
 - [x] API dữ liệu chỉ đọc cho xem trước/in chứng từ chốt giá và giao hàng (2026-11-10).
 - [x] Bổ sung bộ unit/controller test cho các module backend chính (2026-11-10).

@@ -32,7 +32,8 @@
 ## 3. Phạm vi dữ liệu
 
 - `WEIGHER` chỉ xem phiếu nhập có `created_by` là chính mình, trừ khi được
-  cấp quyền bổ sung.
+  cấp quyền bổ sung. Backend áp dụng giới hạn này cho cả danh sách và chi tiết;
+  bản ghi của người khác trả `404` để không tiết lộ sự tồn tại.
 - `ACCOUNTANT` xem dữ liệu cần cho chốt giá, tồn kho và xuất hàng.
 - `ADMIN` không bị giới hạn phạm vi dữ liệu.
 - Mọi thao tác tạo, sửa, xác nhận hoặc hủy phải ghi nhận người thực hiện.
