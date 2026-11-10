@@ -25,6 +25,10 @@ public class MarketPriceService {
         if (priceDate == null || priceDate.isAfter(LocalDate.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "priceDate must not be in the future");
         }
+        if (request.pricePerKg().scale() > 2) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "pricePerKg supports at most 2 decimals");
+        }
         Item item = items.findById(itemId).orElseThrow(() -> notFound("Item", itemId));
         if (prices.findByItemIdAndPriceDate(itemId, priceDate).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -39,6 +43,10 @@ public class MarketPriceService {
     public MarketPriceResponse update(Long itemId, LocalDate priceDate, MarketPriceRequest request) {
         if (priceDate == null || priceDate.isAfter(LocalDate.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "priceDate must not be in the future");
+        }
+        if (request.pricePerKg().scale() > 2) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "pricePerKg supports at most 2 decimals");
         }
         MarketPrice price = prices.findByItemIdAndPriceDate(itemId, priceDate)
                 .orElseThrow(() -> notFound("MarketPrice", itemId + "/" + priceDate));

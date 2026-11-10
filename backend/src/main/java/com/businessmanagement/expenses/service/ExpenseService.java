@@ -78,6 +78,10 @@ public class ExpenseService {
     private void validateCategories(List<ExpenseDetailRequest> details) {
         Set<String> categories = new HashSet<>();
         for (ExpenseDetailRequest detail : details) {
+            if (detail.amount().scale() > 2) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Expense amount supports at most 2 decimals");
+            }
             if (!categories.add(detail.categoryName().trim().toLowerCase())) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
                         "Duplicate expense category: " + detail.categoryName());
