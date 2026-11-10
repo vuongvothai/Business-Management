@@ -44,6 +44,7 @@
 - [x] Bổ sung module `VEHICLE` và trường nhập/giao mở rộng (`vehicleId`, snapshot biển số, kho, bì, kết quả mẫu thử) (2026-11-09).
 - [x] Tìm supplier theo CCCD chính xác, fallback số điện thoại chuẩn hóa, trả danh sách ứng viên (2026-11-10).
 - [x] Quản lý chi phí `EXPENSE`/`EXPENSE_DETAIL` theo kỳ, tự tính tổng tiền và phân quyền (2026-11-10).
+- [x] Triển khai BRULE-112 theo lựa chọn `appendix_direct` + `apply_appendix_exactly`: bảng moisture exact 1 chữ số và công thức exact `total_kg * ((percent + impurity_percent) + (number_of_bags * tare_weight))`, cập nhật test (2026-11-10).
 - [ ] Tách giao diện bán/giao; thêm màn hình **Thêm dữ liệu** không có CRUD `ITEM`.
 - [x] Dashboard doanh thu/lãi gộp theo ngày và API giá cà phê hôm nay (2026-11-10).
 - [x] API dữ liệu chỉ đọc cho xem trước/in chứng từ chốt giá và giao hàng (2026-11-10).
@@ -52,7 +53,7 @@
 ## Bước tiếp theo
 
 1. Xác nhận và lưu baseline Git/database trước khi áp dụng migration mới.
-2. Chốt quy tắc khấu trừ nhập hàng, công thức dashboard và nguồn cập nhật giá.
+2. Hoàn thiện kiểm thử integration/UI còn thiếu cho các luồng chính.
 3. Triển khai M9: schema/API trường nhập, xe dùng lại và tìm supplier.
 4. Triển khai M10-M12: tách màn hình, dashboard/giá và chứng từ in; cập nhật
    test cùng tài liệu theo từng phần.

@@ -153,6 +153,16 @@ public class ImportTicket {
         this.totalKg = totalKg;
     }
 
+    public void setCalculatedTotals(BigDecimal totalAmount, BigDecimal totalDeductionAmount) {
+        this.totalAmount = totalAmount;
+        this.totalDeductionAmount = totalDeductionAmount;
+    }
+
+    public void setPricing(BigDecimal purchasePricePerKg, BigDecimal marketPricePerKg) {
+        this.purchasePricePerKg = purchasePricePerKg;
+        this.marketPricePerKg = marketPricePerKg;
+    }
+
     @PrePersist
     void onCreate() {
         LocalDateTime now = LocalDateTime.now();

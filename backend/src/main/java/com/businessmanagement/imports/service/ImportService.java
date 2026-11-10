@@ -81,6 +81,17 @@ public class ImportService {
         ticket.setVehicleDetails(vehicle, request.loadingWarehouse(), request.importWarehouse(),
                 request.tareWeight(), request.sampleTestResult());
         ticket.setTotals(numberOfBags, totalKg);
+        ticket.setPricing(request.purchasePricePerKg(), request.marketPricePerKg());
+        BigDecimal totalDeduction = null;
+        if (request.moisturePercent() != null || request.impurityPercent() != null || request.tareWeight() != null) {
+            try {
+                totalDeduction = ImportDeductionCalculator.totalDeductionKg(totalKg, numberOfBags,
+                        request.tareWeight(), request.moisturePercent(), request.impurityPercent());
+            } catch (IllegalArgumentException exception) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage(), exception);
+            }
+        }
+        ticket.setCalculatedTotals(ImportDeductionCalculator.totalAmount(totalKg, request.purchasePricePerKg()), totalDeduction);
         for (ImportWeightRequest weight : request.weights()) {
             ticket.addWeight(new ImportWeight(weight.weightKg(), weight.bagCount(), user));
         }

@@ -72,6 +72,16 @@ mặt hàng, nhập hàng, cân, chốt giá, xuất hàng, tồn kho và chi ph
 1. Thêm migration mới cho trường phiếu nhập còn thiếu theo ERD: xe tham chiếu
    và snapshot biển số, kho bốc, kho nhập, trừ bì, kết quả mẫu thử; xác định
    trường lưu kết quả tính/khấu trừ sau khi quy tắc được duyệt.
+
+### Chính sách khấu trừ nhập hàng (đã duyệt)
+
+`totalAmount = totalKg * purchasePricePerKg` (giữ `NULL` nếu thiếu giá mua).
+Moisture phải có chính xác 1 chữ số thập phân; `< 15.0` cho khấu trừ `0.00`;
+`>= 15.0` tra bảng 11x10 bằng `rowIndex=floor(moisture)-15` và
+`colIndex=first decimal digit` (`15.0=>0.00`, `15.1=>0.10`, `16.1=>1.24`,
+`25.0=>19.47`). Null, ngoài bảng hoặc sai độ chính xác là lỗi. Tổng khấu trừ
+= `totalKg * ((percent + impurityPercent) + (numberOfBags * tareWeight))`,
+không chia 100 hay đổi công thức, giữ `BigDecimal`, làm tròn 2 chữ số.
 2. Tạo bảng `VEHICLE` tối giản gồm `license_plate`, `active` và audit
    timestamps. Thêm `vehicle_id` và snapshot biển số vào `IMPORT_TICKET` và
    `EXPORT_DELIVERY`, phù hợp quan hệ ERD; không xóa cứng biển số đã dùng.

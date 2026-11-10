@@ -107,6 +107,16 @@ Quy tắc:
 - `moisturePercent` nằm trong khoảng `0` đến `100`.
 - `impurityPercent` nằm trong khoảng `0` đến `100`, biểu thị tỷ lệ tạp chất của lô
   hàng theo phần trăm.
+- Nếu có bất kỳ đầu vào khấu trừ nào, `moisturePercent`, `impurityPercent` và
+  `tareWeight` đều bắt buộc hợp lệ. `moisturePercent` phải có chính xác 1 chữ số
+  thập phân; moisture `< 15.0` có khấu trừ `0.00`. Với moisture `>= 15.0`, tra
+  bảng 11x10 bằng `rowIndex=floor(moisture)-15`, `colIndex=first decimal digit`;
+  các mốc `15.0=>0.00`, `15.1=>0.10`, `16.1=>1.24`, `25.0=>19.47`. Null,
+  ngoài bảng hoặc sai độ chính xác trả lỗi validation/business.
+- Backend lưu `totalAmount = totalKg * purchasePricePerKg` (NULL nếu thiếu giá)
+  và `totalDeductionAmount = totalKg * ((percent + impurityPercent) +
+  (numberOfBags * tareWeight))`, giữ nguyên công thức exact, dùng `BigDecimal`
+  và làm tròn 2 chữ số; không chia 100.
 - Backend phải tính `totalKg` từ các lần cân trong transaction; client không
   được tự ghi đè giá trị này.
 - Giao diện phải hiển thị từng lần cân và tổng lũy kế sau từng lần:
@@ -308,9 +318,9 @@ tự gửi. Biển số đã dùng không được xóa cứng.
 Backend xác thực xe active và vẫn tự tính
 tổng bao/kg từ các lần cân. Mỗi phần tử `weights` hiện trả thêm
 `cumulativeBagCount` và `cumulativeWeightKg`, theo thứ tự lần cân ổn định.
-Quy tắc tính khối lượng tính tiền và khấu trừ phải được chốt trước khi thêm
-kết quả tính vào contract; không suy luận công thức
-từ chú thích hiện tại trong ERD.
+Kết quả khấu trừ đã được chốt theo BRULE-112 và trả trong `totalDeductionAmount`;
+API áp dụng đúng bảng moisture và công thức exact, không suy luận công thức
+khác từ chú thích trong ERD.
 
 `POST /api/exports/{exportId}/deliveries` đã nhận `vehicleId` và trả snapshot
 `truckLicensePlate` cùng dữ liệu giao.

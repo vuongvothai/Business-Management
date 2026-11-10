@@ -29,8 +29,9 @@
 | BRULE-108 | Biển số xe được chọn từ danh sách dữ liệu đã lưu; phiếu nhập phải giữ giá trị biển số tại thời điểm lập phiếu. |
 | BRULE-109 | Mỗi phiếu nhập lưu một `vehicle_id` và một `truck_license_plate` snapshot, không lưu mảng biển số trong `IMPORT_TICKET`. |
 | BRULE-110 | Sau mỗi lần cân, hệ thống hiển thị khối lượng/số bao của lần đó và tổng lũy kế đến lần đó; tổng cuối là tổng thực tế dùng để xác nhận. |
-| BRULE-111 | `total_amount` = `total_kg` * `purchase_price_per_kg`
-| BRULE-112 | `total_deduction_amount` =  `total_kg`*((`moisture_percent`+`impurity_percent`)-(`number_of_bags` * `tare_weight`) 
+| BRULE-111 | `total_amount` = `total_kg` * `purchase_price_per_kg`|
+| BRULE-112 | `total_deduction_amount` = `total_kg` * ((`percent` + `impurity_percent`) + (`number_of_bags` * `tare_weight`)) |
+"Trong đó, biến percent được tra cứu tự động từ Độ ẩm (moisture_percent) ở BRULE-112.md"
 
 ## 3. Chốt giá
 

@@ -22,6 +22,8 @@ public record ImportResponse(
         Integer numberOfBags,
         List<ImportWeightResponse> weights,
         BigDecimal totalKg,
+        BigDecimal totalAmount,
+        BigDecimal totalDeductionAmount,
         BigDecimal moisturePercent,
         BigDecimal impurityPercent,
         String photoUrl,
@@ -34,7 +36,7 @@ public record ImportResponse(
                           BigDecimal moisturePercent, BigDecimal impurityPercent,
                           String photoUrl, String note, String status) {
         this(id, supplierId, supplierName, itemId, itemName, null, null, null, null,
-                null, null, importDate, numberOfBags, weights, totalKg, moisturePercent,
+                null, null, importDate, numberOfBags, weights, totalKg, null, null, moisturePercent,
                 impurityPercent, photoUrl, note, status);
     }
 
@@ -52,6 +54,8 @@ public record ImportResponse(
                 ticket.getNumberOfBags(),
                 cumulativeWeights(ticket),
                 ticket.getTotalKg(),
+                ticket.getTotalAmount(),
+                ticket.getTotalDeductionAmount(),
                 ticket.getMoisturePercent(),
                 ticket.getImpurityPercent(),
                 ticket.getPhotoUrl(),

@@ -1,69 +1,68 @@
-﻿# Backlog MVP
+# Backlog MVP
 
-## P0 — Bắt buộc
+## P0 � B?t bu?c
 
-- [x] Tạo project Spring Boot và cấu hình MySQL.
-- [x] Tạo migration cho các bảng MVP đã triển khai; các phần mở rộng theo ERD
-  còn thiếu được theo dõi ở backlog phiên bản kế tiếp.
-- [x] Tạo migration seed role và mặt hàng mẫu.
-- [x] Tạo CRUD nhà cung cấp, mặt hàng, khách hàng.
-- [x] Tạo phiếu nhập và `IMPORT_WEIGHT`.
-- [x] Tự tính số bao và tổng kg từ các lần cân.
-- [x] Xác nhận phiếu nhập và cập nhật số dư.
-- [x] Tạo và xác nhận `PRICE_LOCK`.
-- [x] Từ chối chốt vượt `usable_coffee_kg`.
-- [x] Tạo `EXPORT_TICKET` làm phiếu chốt bán/căn cứ lập hóa đơn điện tử.
-- [x] Tạo `EXPORT_DELIVERY` để ghi nhận nhiều lần giao cho một phiếu.
-- [x] Chỉ trừ tồn kho khi xác nhận `EXPORT_DELIVERY`.
-- [x] Cho phép tồn kho âm khi giao thực tế.
-- [x] Tạo API `GET /api/inventory/summary`.
-- [x] Tạo quản lý `EXPENSE` và `EXPENSE_DETAIL`, gồm CRUD theo kỳ và tự tính tổng tiền (2026-11-10).
-- [x] Kiểm tra phân quyền ba vai trò.
+- [x] T?o project Spring Boot v� c?u h?nh MySQL.
+- [x] T?o migration cho c�c b?ng MVP �? tri?n khai; c�c ph?n m? r?ng theo ERD
+  c?n thi?u ��?c theo d?i ? backlog phi�n b?n k? ti?p.
+- [x] T?o migration seed role v� m?t h�ng m?u.
+- [x] T?o CRUD nh� cung c?p, m?t h�ng, kh�ch h�ng.
+- [x] T?o phi?u nh?p v� `IMPORT_WEIGHT`.
+- [x] T? t�nh s? bao v� t?ng kg t? c�c l?n c�n.
+- [x] X�c nh?n phi?u nh?p v� c?p nh?t s? d�.
+- [x] T?o v� x�c nh?n `PRICE_LOCK`.
+- [x] T? ch?i ch?t v�?t `usable_coffee_kg`.
+- [x] T?o `EXPORT_TICKET` l�m phi?u ch?t b�n/c�n c? l?p h�a ��n �i?n t?.
+- [x] T?o `EXPORT_DELIVERY` �? ghi nh?n nhi?u l?n giao cho m?t phi?u.
+- [x] Ch? tr? t?n kho khi x�c nh?n `EXPORT_DELIVERY`.
+- [x] Cho ph�p t?n kho �m khi giao th?c t?.
+- [x] T?o API `GET /api/inventory/summary`.
+- [x] T?o qu?n l? `EXPENSE` v� `EXPENSE_DETAIL`, g?m CRUD theo k? v� t? t�nh t?ng ti?n (2026-11-10).
+- [x] Ki?m tra ph�n quy?n ba vai tr?.
 
-## P0 — Phiên bản kế tiếp
+## P0 � Phi�n b?n k? ti?p
 
-- [ ] Lưu baseline mã nguồn bằng annotated Git tag và dump database; xác minh
-  khôi phục trước migration mới (xem [version-baseline.md](./version-baseline.md)).
-- [x] Bổ sung migration mới và API cho các trường phiếu nhập/giao trong ERD:
-  `vehicle_id`, snapshot biển số, kho bốc/kho nhập, `tare_weight` và
+- [ ] L�u baseline m? ngu?n b?ng annotated Git tag v� dump database; x�c minh
+  kh�i ph?c tr�?c migration m?i (xem [version-baseline.md](./version-baseline.md)).
+- [x] B? sung migration m?i v� API cho c�c tr�?ng phi?u nh?p/giao trong ERD:
+  `vehicle_id`, snapshot bi?n s?, kho b?c/kho nh?p, `tare_weight` v�
   `sample_test_result` (2026-11-09).
-- [x] Quản lý bảng `VEHICLE` với biển số duy nhất, trạng thái hoạt động và audit;
-  cho phép chọn lại biển số ở phiếu nhập và phiếu giao, lưu snapshot trên mỗi
-  giao dịch (2026-11-09).
-- [ ] Chốt quy tắc tính khối lượng sau trừ bì/độ ẩm/tạp chất, bảng khấu trừ,
-  đơn vị và xử lý giá trị ngoài phạm vi trước khi viết hàm tính.
-- [x] Bổ sung tìm supplier: ưu tiên CCCD khớp chính xác; nếu không có CCCD hoặc
-  không tìm thấy thì dùng số điện thoại đã chuẩn hóa; trả danh sách ứng viên để
-  người dùng chọn khi có nhiều kết quả (2026-11-10).
-- [ ] Đổi khu vực danh mục thành **Thêm dữ liệu**, bỏ CRUD `ITEM` khỏi UI nhưng
-  giữ `ITEM` làm dữ liệu nền; thêm quản lý/chọn nhanh biển số.
-- [ ] Tách màn hình và điều hướng **Bán hàng** (`EXPORT_TICKET`) và
-  **Giao hàng** (`EXPORT_DELIVERY`); không đổi quy tắc tồn kho hiện tại.
-- [x] Chốt chỉ số dashboard: ngày giao đã xác nhận, doanh thu đã giao và lãi
-  gộp theo snapshot giá vốn; API hỗ trợ khoảng ngày và mặt hàng tùy chọn
+- [x] Qu?n l? b?ng `VEHICLE` v?i bi?n s? duy nh?t, tr?ng th�i ho?t �?ng v� audit;
+  cho ph�p ch?n l?i bi?n s? ? phi?u nh?p v� phi?u giao, l�u snapshot tr�n m?i
+  giao d?ch (2026-11-09).
+- [x] Chốt và triển khai BRULE-112 theo `appendix_direct` + `apply_appendix_exactly`: bảng 11x10 với moisture exact 1 chữ số, công thức exact không chia 100/không đổi phép trừ bì, validation và tổng tiền (2026-11-10).
+- [x] B? sung t?m supplier: �u ti�n CCCD kh?p ch�nh x�c; n?u kh�ng c� CCCD ho?c
+  kh�ng t?m th?y th? d�ng s? �i?n tho?i �? chu?n h�a; tr? danh s�ch ?ng vi�n �?
+  ng�?i d�ng ch?n khi c� nhi?u k?t qu? (2026-11-10).
+- [ ] �?i khu v?c danh m?c th�nh **Th�m d? li?u**, b? CRUD `ITEM` kh?i UI nh�ng
+  gi? `ITEM` l�m d? li?u n?n; th�m qu?n l?/ch?n nhanh bi?n s?.
+- [ ] T�ch m�n h?nh v� �i?u h�?ng **B�n h�ng** (`EXPORT_TICKET`) v�
+  **Giao h�ng** (`EXPORT_DELIVERY`); kh�ng �?i quy t?c t?n kho hi?n t?i.
+- [x] Ch?t ch? s? dashboard: ng�y giao �? x�c nh?n, doanh thu �? giao v� l?i
+  g?p theo snapshot gi� v?n; API h? tr? kho?ng ng�y v� m?t h�ng t�y ch?n
   (2026-11-10).
-- [x] Chốt và lưu snapshot giá vốn/kg trên phiếu bán theo giá vốn bình quân từ
-  `PRICE_LOCK` đã xác nhận; không tính lãi gộp khi thiếu dữ liệu (2026-11-10).
-- [x] Trả giá thị trường hôm nay từ `MARKET_PRICE`, gồm nguồn và thời điểm cập
-  nhật; hỗ trợ nạp/cập nhật thủ công, tự sinh thời điểm khi bỏ trống và không
-  tự động đồng bộ (2026-11-10).
-- [x] Bổ sung API dữ liệu chỉ đọc cho xem trước phiếu chốt giá và từng lần giao;
-  dữ liệu lấy từ bản ghi đã lưu, sẵn sàng cho frontend tạo mẫu PDF (2026-11-10).
-- [x] Hiển thị từng lần cân cùng tổng số bao/khối lượng lũy kế sau từng lần (2026-11-10).
-- [ ] Viết unit/integration/UI test cho validation, tra cứu supplier, xe dùng
-  lại, tính tổng/trừ bì, dashboard, giá thiếu, phân quyền và bản in.
+- [x] Ch?t v� l�u snapshot gi� v?n/kg tr�n phi?u b�n theo gi� v?n b?nh qu�n t?
+  `PRICE_LOCK` �? x�c nh?n; kh�ng t�nh l?i g?p khi thi?u d? li?u (2026-11-10).
+- [x] Tr? gi� th? tr�?ng h�m nay t? `MARKET_PRICE`, g?m ngu?n v� th?i �i?m c?p
+  nh?t; h? tr? n?p/c?p nh?t th? c�ng, t? sinh th?i �i?m khi b? tr?ng v� kh�ng
+  t? �?ng �?ng b? (2026-11-10).
+- [x] B? sung API d? li?u ch? �?c cho xem tr�?c phi?u ch?t gi� v� t?ng l?n giao;
+  d? li?u l?y t? b?n ghi �? l�u, s?n s�ng cho frontend t?o m?u PDF (2026-11-10).
+- [x] Hi?n th? t?ng l?n c�n c�ng t?ng s? bao/kh?i l�?ng l?y k? sau t?ng l?n (2026-11-10).
+- [ ] Vi?t unit/integration/UI test cho validation, tra c?u supplier, xe d�ng
+  l?i, t�nh t?ng/tr? b?, dashboard, gi� thi?u, ph�n quy?n v� b?n in.
 
-## P1 — Sau MVP
+## P1 � Sau MVP
 
-- [ ] Upload ảnh minh chứng lên storage thật.
-- [ ] Audit log chi tiết.
-- [ ] Đối soát số dư với giao dịch.
-- [ ] Đồng bộ giá thị trường tự động.
-- [x] Cải thiện bộ lọc và phân trang.
+- [ ] Upload ?nh minh ch?ng l�n storage th?t.
+- [ ] Audit log chi ti?t.
+- [ ] �?i so�t s? d� v?i giao d?ch.
+- [ ] �?ng b? gi� th? tr�?ng t? �?ng.
+- [x] C?i thi?n b? l?c v� ph�n trang.
 
-## P2 — Chưa triển khai
+## P2 � Ch�a tri?n khai
 
-- [ ] Nhiều kho.
-- [ ] Chuyển kho.
-- [ ] Quản lý công nợ khách hàng.
-- [ ] Tích hợp cân điện tử.
+- [ ] Nhi?u kho.
+- [ ] Chuy?n kho.
+- [ ] Qu?n l? c�ng n? kh�ch h�ng.
+- [ ] T�ch h?p c�n �i?n t?.

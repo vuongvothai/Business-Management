@@ -82,16 +82,17 @@ class ImportServiceTest {
         when(importRepository.save(any(ImportTicket.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
         ImportRequest request = new ImportRequest(
-                1L, 2L, null, null, null, null, null, LocalDate.of(2026, 11, 5),
+                1L, 2L, null, null, null, new BigDecimal("0.5"), null, LocalDate.of(2026, 11, 5),
                 java.util.List.of(
                         new ImportWeightRequest(new BigDecimal("120.300"), 2),
                         new ImportWeightRequest(new BigDecimal("80.700"), 1)),
-                new BigDecimal("12.5"), new BigDecimal("1.8"), null, null, null, "note", null);
+                new BigDecimal("15.1"), new BigDecimal("1.8"), null, null, null, "note", null);
 
         ImportResponse response = service.create(request);
 
         assertThat(response.numberOfBags()).isEqualTo(3);
         assertThat(response.totalKg()).isEqualByComparingTo("201.000");
+        assertThat(response.totalDeductionAmount()).isEqualByComparingTo("683.40");
         assertThat(response.weights()).hasSize(2);
         assertThat(response.weights().get(0).cumulativeBagCount()).isEqualTo(2);
         assertThat(response.weights().get(0).cumulativeWeightKg()).isEqualByComparingTo("120.300");
