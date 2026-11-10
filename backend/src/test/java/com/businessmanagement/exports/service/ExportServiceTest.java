@@ -20,6 +20,8 @@ import com.businessmanagement.master.repository.ExportDeliveryRepository;
 import com.businessmanagement.master.repository.ExportTicketRepository;
 import com.businessmanagement.master.repository.ItemRepository;
 import com.businessmanagement.master.repository.PriceLockRepository;
+import com.businessmanagement.vehicles.entity.Vehicle;
+import com.businessmanagement.vehicles.repository.VehicleRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -45,6 +47,8 @@ class ExportServiceTest {
     private AppUserRepository appUserRepository;
     @Mock
     private PriceLockRepository priceLockRepository;
+    @Mock
+    private VehicleRepository vehicleRepository;
 
     private ExportService service;
     private Customer customer;
@@ -124,6 +128,33 @@ class ExportServiceTest {
         assertThat(second.remainingVolume()).isZero();
         assertThat(second.status()).isEqualTo("COMPLETED");
         assertThat(item.getAvailableKg()).isEqualByComparingTo("-100");
+    }
+
+    @Test
+    void deliverPersistsVehicleAndWarehouseSnapshots() {
+        ExportTicket ticket = new ExportTicket(
+                customer, item, new BigDecimal("100"), new BigDecimal("50000"),
+                LocalDate.of(2026, 11, 6), null, "test", user);
+        Vehicle vehicle = new Vehicle("51C-123.45");
+        when(exportRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(ticket));
+        when(itemRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(item));
+        when(deliveryRepository.sumDelivered(1L, DeliveryStatus.CONFIRMED))
+                .thenReturn(BigDecimal.ZERO);
+        when(appUserRepository.findTopByOrderByIdAsc()).thenReturn(Optional.of(user));
+        when(vehicleRepository.findById(3L)).thenReturn(Optional.of(vehicle));
+        when(deliveryRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        service = new ExportService(exportRepository, deliveryRepository, customerRepository,
+                itemRepository, appUserRepository, vehicleRepository, priceLockRepository);
+
+        service.deliver(1L, new DeliveryRequest(new BigDecimal("40"),
+                LocalDate.of(2026, 11, 7), 3L, "Kho bốc A", "Kho giao B", "test", null));
+
+        org.mockito.ArgumentCaptor<com.businessmanagement.exports.entity.ExportDelivery> captor =
+                org.mockito.ArgumentCaptor.forClass(com.businessmanagement.exports.entity.ExportDelivery.class);
+        org.mockito.Mockito.verify(deliveryRepository).save(captor.capture());
+        assertThat(captor.getValue().getTruckLicensePlate()).isEqualTo("51C-123.45");
+        assertThat(captor.getValue().getLoadingWarehouse()).isEqualTo("Kho bốc A");
+        assertThat(captor.getValue().getImportWarehouse()).isEqualTo("Kho giao B");
     }
 
     @Test

@@ -48,6 +48,7 @@
 - [ ] Tách giao diện bán/giao; thêm màn hình **Thêm dữ liệu** không có CRUD `ITEM`.
 - [x] Bổ sung trường kho bốc/kho giao và snapshot trên từng lần giao, đồng bộ DTO/API/test legacy (2026-11-10).
 - [x] Chuẩn hóa CCCD và số điện thoại khi cập nhật supplier, nhất quán với luồng tạo/tìm kiếm (2026-11-10).
+- [x] Bổ sung unit test xác nhận snapshot xe và kho trên lần giao (2026-11-10).
 - [x] Dashboard doanh thu/lãi gộp theo ngày và API giá cà phê hôm nay (2026-11-10).
 - [x] API dữ liệu chỉ đọc cho xem trước/in chứng từ chốt giá và giao hàng (2026-11-10).
 - [x] Bổ sung bộ unit/controller test cho các module backend chính (2026-11-10).
