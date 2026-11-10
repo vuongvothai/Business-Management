@@ -44,9 +44,9 @@
   (2026-11-10).
 - [x] Chốt và lưu snapshot giá vốn/kg trên phiếu bán theo giá vốn bình quân từ
   `PRICE_LOCK` đã xác nhận; không tính lãi gộp khi thiếu dữ liệu (2026-11-10).
-- [ ] Trả giá thị trường hôm nay từ `MARKET_PRICE`, gồm nguồn và thời điểm cập
-  nhật; bảo đảm dữ liệu ghi tay cũng có thời điểm ghi nhận, xác định cách cập
-  nhật và không tự động đồng bộ khi chưa chọn nguồn.
+- [x] Trả giá thị trường hôm nay từ `MARKET_PRICE`, gồm nguồn và thời điểm cập
+  nhật; hỗ trợ nạp/cập nhật thủ công, tự sinh thời điểm khi bỏ trống và không
+  tự động đồng bộ (2026-11-10).
 - [x] Bổ sung API dữ liệu chỉ đọc cho xem trước phiếu chốt giá và từng lần giao;
   dữ liệu lấy từ bản ghi đã lưu, sẵn sàng cho frontend tạo mẫu PDF (2026-11-10).
 - [x] Hiển thị từng lần cân cùng tổng số bao/khối lượng lũy kế sau từng lần (2026-11-10).

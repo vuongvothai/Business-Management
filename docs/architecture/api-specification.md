@@ -338,10 +338,15 @@ phiếu chưa đảm bảo điền snapshot; chỉ trả lãi gộp khi chính s
 được triển khai và có snapshot hợp lệ. Không thay bằng giá trị 0 khi thiếu.
 
 Giá hôm nay đọc từ `MARKET_PRICE` theo đúng ngày hiện tại, trả kèm
-`source`/`fetchedAt`. Bản ghi nhập thủ công cũng phải có nguồn và thời điểm
-ghi nhận. Nếu chưa có bản ghi hôm nay, trả trạng thái thiếu dữ liệu/null;
-không tự dùng giá ngày cũ. Quy trình nạp/cập nhật `MARKET_PRICE` (thủ công hay
-nguồn ngoài) là phần cần chốt riêng; chưa lập kế hoạch tự động đồng bộ.
+`source`/`fetchedAt`. Đã triển khai nạp thủ công:
+
+- `POST /api/market-prices/{itemId}/{priceDate}` tạo giá.
+- `PUT /api/market-prices/{itemId}/{priceDate}` cập nhật giá.
+
+`pricePerKg` phải lớn hơn 0, `source` bắt buộc; `fetchedAt` được tự sinh nếu
+bỏ trống. Cặp `itemId + priceDate` là duy nhất; không có đồng bộ tự động.
+Nếu chưa có bản ghi hôm nay, API trả trạng thái thiếu dữ liệu/null và không tự
+dùng giá ngày cũ.
 
 ### Dữ liệu chứng từ in
 

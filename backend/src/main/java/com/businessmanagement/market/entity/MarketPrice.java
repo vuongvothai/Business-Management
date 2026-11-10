@@ -13,9 +13,10 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "market_price")
+@Table(name = "market_price", uniqueConstraints = @UniqueConstraint(name = "uk_market_price_item_date", columnNames = {"item_id", "price_date"}))
 public class MarketPrice {
 
     @Id
@@ -33,10 +34,10 @@ public class MarketPrice {
     @Column(name = "price_per_kg", nullable = false, precision = 15, scale = 2)
     private BigDecimal pricePerKg;
 
-    @Column(length = 255)
+        @Column(nullable = false, length = 255)
     private String source;
 
-    @Column(name = "fetched_at")
+        @Column(name = "fetched_at", nullable = false)
     private LocalDateTime fetchedAt;
 
     protected MarketPrice() {
@@ -57,4 +58,10 @@ public class MarketPrice {
     public BigDecimal getPricePerKg() { return pricePerKg; }
     public String getSource() { return source; }
     public LocalDateTime getFetchedAt() { return fetchedAt; }
+
+    public void update(BigDecimal pricePerKg, String source, LocalDateTime fetchedAt) {
+        this.pricePerKg = pricePerKg;
+        this.source = source;
+        this.fetchedAt = fetchedAt;
+    }
 }
