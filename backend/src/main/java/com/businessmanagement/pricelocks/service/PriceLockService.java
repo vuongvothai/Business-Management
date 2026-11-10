@@ -37,10 +37,18 @@ public class PriceLockService {
 
     @Transactional
     public PriceLockResponse create(PriceLockRequest request) {
+        if (request.lockDate().isAfter(java.time.LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "lockDate must not be in the future");
+        }
         Supplier supplier = supplierRepository.findByIdForUpdate(request.supplierId())
                 .orElseThrow(() -> notFound("Supplier", request.supplierId()));
         Item item = itemRepository.findById(request.itemId())
                 .orElseThrow(() -> notFound("Item", request.itemId()));
+        if (request.lockedVolume().scale() > 3 || request.lockedPricePerKg().scale() > 2) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "lockedVolume supports at most 3 decimals and lockedPricePerKg at most 2 decimals");
+        }
         if (supplier.getUsableCoffeeKg().compareTo(request.lockedVolume()) < 0) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,

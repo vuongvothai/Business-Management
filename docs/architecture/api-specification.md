@@ -209,6 +209,8 @@ Quy tắc:
 - `lockedVolume` phải lớn hơn 0 và không vượt `supplier.usableCoffeeKg`.
 - `lockedPricePerKg` phải lớn hơn 0.
 - `amount` được backend tính bằng `lockedVolume * lockedPricePerKg`.
+- `lockDate` không được nằm trong tương lai; khối lượng hỗ trợ tối đa 3 chữ số
+  thập phân và đơn giá tối đa 2 chữ số thập phân.
 - Request và kiểm tra/trừ `supplier.usable_coffee_kg` phải chạy trong
   cùng transaction.
 

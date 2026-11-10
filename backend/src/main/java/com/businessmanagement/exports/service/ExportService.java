@@ -76,6 +76,8 @@ public class ExportService {
         Item item = itemRepository.findById(request.itemId())
                 .orElseThrow(() -> notFound("Item", request.itemId()));
         AppUser user = resolveUser(request.createdByUserId());
+        validateDecimalScale(request.committedVolume(), 3, "committedVolume");
+        validateDecimalScale(request.sellingPricePerKg(), 2, "sellingPricePerKg");
         validateExportDates(request.exportDate(), request.deliveryDueDate());
         ExportTicket ticket = new ExportTicket(customer, item, request.committedVolume(),
                 request.sellingPricePerKg(), request.exportDate(), request.deliveryDueDate(),
@@ -99,6 +101,7 @@ public class ExportService {
         Item item = itemRepository.findByIdForUpdate(ticket.getItem().getId())
                 .orElseThrow(() -> notFound("Item", ticket.getItem().getId()));
         BigDecimal delivered = deliveryRepository.sumDelivered(exportId, DeliveryStatus.CONFIRMED);
+        validateDecimalScale(request.deliveredVolume(), 3, "deliveredVolume");
         BigDecimal newTotal = delivered.add(request.deliveredVolume());
         if (newTotal.compareTo(ticket.getCommittedVolume()) > 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -128,6 +131,13 @@ public class ExportService {
                 .map(ticket -> ExportResponse.from(ticket,
                         deliveryRepository.sumDelivered(ticket.getId(), DeliveryStatus.CONFIRMED)))
                 .toList();
+    }
+
+    private void validateDecimalScale(BigDecimal value, int scale, String field) {
+        if (value.scale() > scale) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    field + " supports at most " + scale + " decimals");
+        }
     }
 
     private void validateExportDates(java.time.LocalDate exportDate, java.time.LocalDate deliveryDueDate) {

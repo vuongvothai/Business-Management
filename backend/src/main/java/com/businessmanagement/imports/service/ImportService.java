@@ -77,6 +77,10 @@ public class ImportService {
         int numberOfBags = request.weights().stream()
                 .mapToInt(ImportWeightRequest::bagCount)
                 .sum();
+        if (totalKg.scale() > 3) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "weightKg supports at most 3 decimals");
+        }
 
         ImportTicket ticket = new ImportTicket(
                 supplier, item, request.importDate(), request.moisturePercent(),
