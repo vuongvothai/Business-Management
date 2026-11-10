@@ -309,7 +309,10 @@ bản kế tiếp, nhưng vẫn dùng chung hai resource trên.
 | `GET` | `/api/vehicles?active=true` | Lấy biển số đang được phép chọn |
 | `POST` | `/api/vehicles` | Thêm biển số dùng lại |
 | `PUT` | `/api/vehicles/{id}` | Sửa biển số theo quyền |
-| `DELETE` | `/api/vehicles/{id}` | Ẩn bằng `active=false`, không xóa lịch sử |
+| `DELETE` | `/api/vehicles/{id}` | Ẩn bằng `active=false`, không xóa lịch sử; chỉ `ADMIN` |
+
+Các API `GET` danh mục và xe cho phép ba role đăng nhập đọc dữ liệu để chọn
+trong biểu mẫu. Thao tác tạo, sửa, xóa danh mục và xe chỉ dành cho `ADMIN`.
 
 Phiếu nhập và phiếu giao nhận nhận `vehicleId` đang hoạt động. Backend chuẩn
 hóa biển số bằng trim/uppercase và chụp thành `truckLicensePlate` trong bản ghi

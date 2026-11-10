@@ -46,6 +46,8 @@
 | `POST /api/price-locks` | `ADMIN`, `ACCOUNTANT` |
 | `GET /api/inventory/summary` | `ADMIN`, `ACCOUNTANT` |
 | `POST /api/exports` | `ADMIN`, `ACCOUNTANT` |
+| `GET /api/suppliers`, `/api/items`, `/api/customers`, `/api/vehicles` | Ba role đăng nhập |
+| `POST/PUT/DELETE /api/vehicles` | `ADMIN` |
 
 ## 5. Lưu ý khác. 
 
