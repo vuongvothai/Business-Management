@@ -68,7 +68,7 @@ public class SupplierController {
     @PutMapping("/{id}")
     public SupplierResponse update(@PathVariable Long id, @Valid @RequestBody SupplierRequest request) {
         Supplier supplier = find(id);
-        supplier.update(request.name(), request.identityNo(), request.phone(), request.address());
+        supplier.update(request.name(), clean(request.identityNo()), normalizePhone(request.phone()), request.address());
         return SupplierResponse.from(repository.save(supplier));
     }
 
