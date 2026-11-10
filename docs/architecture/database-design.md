@@ -206,6 +206,9 @@ giao. Phiếu không phụ thuộc trực tiếp vào `IMPORT_TICKET`.
 | `delivery_id` | `BIGINT` | PK |
 | `export_id` | `BIGINT` | FK, NOT NULL |
 | `vehicle_id` | `BIGINT` | FK tới `vehicle.vehicle_id`, NULL |
+| `truck_license_plate` | `VARCHAR(30)` | NULL, snapshot biển số tại thời điểm giao |
+| `loading_warehouse` | `VARCHAR(255)` | NULL |
+| `import_warehouse` | `VARCHAR(255)` | NULL |
 | `delivered_volume` | `DECIMAL(14,3)` | NOT NULL, > 0 |
 | `delivery_date` | `DATE` | NOT NULL |
 | `truck_license_plate` | `VARCHAR(30)` | NULL, snapshot biển số tại thời điểm giao |
@@ -219,8 +222,8 @@ giao. Phiếu không phụ thuộc trực tiếp vào `IMPORT_TICKET`.
 `delivered_volume` khỏi `ITEM.available_kg`. Tạo phiếu cam kết không làm thay
 đổi tồn kho. Cam kết bán có thể vượt tồn hiện tại.
 
-`vehicle_id` và `truck_license_plate` là trường mục tiêu chưa có trong
-migration/entity hiện hành. Snapshot biển số phải được lưu độc lập để giữ
+`vehicle_id`, `truck_license_plate`, `loading_warehouse` và `import_warehouse`
+được lưu trên từng lần giao. Snapshot biển số phải được lưu độc lập để giữ
 nguyên lịch sử dù xe bị đổi tên hoặc ẩn.
 
 ### `expense` và `expense_detail`

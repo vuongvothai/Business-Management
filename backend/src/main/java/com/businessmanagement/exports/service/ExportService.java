@@ -106,7 +106,8 @@ public class ExportService {
         AppUser user = resolveUser(request.createdByUserId());
         Vehicle vehicle = resolveActiveVehicle(request.vehicleId());
         deliveryRepository.save(new ExportDelivery(ticket, request.deliveredVolume(),
-                request.deliveryDate(), vehicle, request.note(), user));
+                request.deliveryDate(), vehicle, request.loadingWarehouse(),
+                request.importWarehouse(), request.note(), user));
         item.addAvailableKg(request.deliveredVolume().negate());
         ticket.updateDeliveryStatus(newTotal);
         return ExportResponse.from(ticket, newTotal);

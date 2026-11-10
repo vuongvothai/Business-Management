@@ -6,10 +6,12 @@ import java.time.LocalDate;
 
 public record DeliveryResponse(Long id, BigDecimal deliveredVolume,
                                 LocalDate deliveryDate, Long vehicleId, String truckLicensePlate,
+                                String loadingWarehouse, String importWarehouse,
                                 String note, String status) {
     public static DeliveryResponse from(ExportDelivery delivery) {
         return new DeliveryResponse(delivery.getId(), delivery.getDeliveredVolume(),
                 delivery.getDeliveryDate(), delivery.getVehicle() == null ? null : delivery.getVehicle().getId(),
-                delivery.getTruckLicensePlate(), delivery.getNote(), delivery.getStatus().name());
+                delivery.getTruckLicensePlate(), delivery.getLoadingWarehouse(),
+                delivery.getImportWarehouse(), delivery.getNote(), delivery.getStatus().name());
     }
 }

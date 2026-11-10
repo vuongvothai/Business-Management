@@ -46,6 +46,7 @@
 - [x] Quản lý chi phí `EXPENSE`/`EXPENSE_DETAIL` theo kỳ, tự tính tổng tiền và phân quyền (2026-11-10).
 - [x] Triển khai BRULE-112 theo lựa chọn `appendix_direct` + `apply_appendix_exactly`: bảng moisture exact 1 chữ số và công thức exact `total_kg * ((percent + impurity_percent) + (number_of_bags * tare_weight))`, cập nhật test (2026-11-10).
 - [ ] Tách giao diện bán/giao; thêm màn hình **Thêm dữ liệu** không có CRUD `ITEM`.
+- [x] Bổ sung trường kho bốc/kho giao và snapshot trên từng lần giao, đồng bộ DTO/API/test legacy (2026-11-10).
 - [x] Dashboard doanh thu/lãi gộp theo ngày và API giá cà phê hôm nay (2026-11-10).
 - [x] API dữ liệu chỉ đọc cho xem trước/in chứng từ chốt giá và giao hàng (2026-11-10).
 - [x] Bổ sung bộ unit/controller test cho các module backend chính (2026-11-10).

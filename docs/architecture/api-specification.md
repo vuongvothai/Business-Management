@@ -259,6 +259,9 @@ Ghi nhận một lần giao thực tế:
 {
   "deliveredVolume": 3000.0,
   "deliveryDate": "2026-11-06",
+  "vehicleId": 3,
+  "loadingWarehouse": "Kho bốc A",
+  "importWarehouse": "Kho giao khách",
   "note": "Giao lần 1"
 }
 ```
@@ -266,6 +269,8 @@ Ghi nhận một lần giao thực tế:
 Quy tắc:
 
 - `deliveredVolume > 0`.
+- `vehicleId` nếu có phải là xe đang hoạt động; backend lưu snapshot biển số.
+- `loadingWarehouse` và `importWarehouse` là thông tin tùy chọn, được lưu trên từng lần giao.
 - Tổng các lần giao không bị hủy không được vượt `committedVolume`.
 - Khi xác nhận giao, backend trừ `ITEM.available_kg`.
 - Nếu tồn kho sau giao âm, API vẫn ghi nhận thành công.

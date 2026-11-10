@@ -68,15 +68,24 @@ public class ExportDelivery {
     }
 
     public ExportDelivery(ExportTicket exportTicket, BigDecimal deliveredVolume,
-                           LocalDate deliveryDate, Vehicle vehicle, String note, AppUser createdBy) {
+                           LocalDate deliveryDate, Vehicle vehicle,
+                           String loadingWarehouse, String importWarehouse,
+                           String note, AppUser createdBy) {
         this.exportTicket = exportTicket;
         this.deliveredVolume = deliveredVolume;
         this.deliveryDate = deliveryDate;
         this.vehicle = vehicle;
         this.truckLicensePlate = vehicle == null ? null : vehicle.getLicensePlate();
+        this.loadingWarehouse = loadingWarehouse;
+        this.importWarehouse = importWarehouse;
         this.status = DeliveryStatus.CONFIRMED;
         this.note = note;
         this.createdBy = createdBy;
+    }
+
+    public ExportDelivery(ExportTicket exportTicket, BigDecimal deliveredVolume,
+                           LocalDate deliveryDate, Vehicle vehicle, String note, AppUser createdBy) {
+        this(exportTicket, deliveredVolume, deliveryDate, vehicle, null, null, note, createdBy);
     }
 
     @PrePersist
