@@ -50,6 +50,7 @@
 - [x] Chuẩn hóa CCCD và số điện thoại khi cập nhật supplier, nhất quán với luồng tạo/tìm kiếm (2026-11-10).
 - [x] Bổ sung unit test xác nhận snapshot xe và kho trên lần giao (2026-11-10).
 - [x] Bổ sung controller test cho request giao hàng mở rộng và validation độ dài kho (2026-11-10).
+- [x] Chuẩn hóa biển số xe trước khi lưu, tránh trùng do khác hoa/thường hoặc khoảng trắng (2026-11-10).
 - [x] Dashboard doanh thu/lãi gộp theo ngày và API giá cà phê hôm nay (2026-11-10).
 - [x] API dữ liệu chỉ đọc cho xem trước/in chứng từ chốt giá và giao hàng (2026-11-10).
 - [x] Bổ sung bộ unit/controller test cho các module backend chính (2026-11-10).

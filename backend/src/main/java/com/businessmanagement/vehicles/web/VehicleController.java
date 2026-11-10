@@ -31,7 +31,9 @@ public class VehicleController {
     }
     @PutMapping("/{id}")
     public VehicleResponse update(@PathVariable Long id, @Valid @RequestBody VehicleRequest request) {
-        Vehicle vehicle = find(id); vehicle.updateLicensePlate(request.licensePlate()); return save(vehicle);
+        Vehicle vehicle = find(id);
+        vehicle.updateLicensePlate(request.licensePlate());
+        return save(vehicle);
     }
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

@@ -35,11 +35,18 @@ public class Vehicle {
     }
 
     public Vehicle(String licensePlate) {
-        this.licensePlate = licensePlate;
+        this.licensePlate = normalize(licensePlate);
     }
 
     public void updateLicensePlate(String licensePlate) {
-        this.licensePlate = licensePlate;
+        this.licensePlate = normalize(licensePlate);
+    }
+
+    private static String normalize(String licensePlate) {
+        if (licensePlate == null || licensePlate.isBlank()) {
+            throw new IllegalArgumentException("licensePlate must not be blank");
+        }
+        return licensePlate.trim().toUpperCase(java.util.Locale.ROOT);
     }
 
     public void deactivate() {

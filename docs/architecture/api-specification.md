@@ -311,9 +311,10 @@ bản kế tiếp, nhưng vẫn dùng chung hai resource trên.
 | `PUT` | `/api/vehicles/{id}` | Sửa biển số theo quyền |
 | `DELETE` | `/api/vehicles/{id}` | Ẩn bằng `active=false`, không xóa lịch sử |
 
-Phiếu nhập và phiếu giao nhận `vehicleId` đang hoạt động. Backend chụp biển số
-thành `truckLicensePlate` trong bản ghi nghiệp vụ; không tin snapshot do client
-tự gửi. Biển số đã dùng không được xóa cứng.
+Phiếu nhập và phiếu giao nhận nhận `vehicleId` đang hoạt động. Backend chuẩn
+hóa biển số bằng trim/uppercase và chụp thành `truckLicensePlate` trong bản ghi
+nghiệp vụ; không tin snapshot do client tự gửi. Biển số trùng sau chuẩn hóa bị
+từ chối với lỗi `409`; biển số đã dùng không được xóa cứng.
 
 ### Trường nhập mở rộng
 
