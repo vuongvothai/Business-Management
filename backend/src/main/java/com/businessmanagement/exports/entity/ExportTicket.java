@@ -105,6 +105,14 @@ public class ExportTicket {
         this.revenue = committedVolume.multiply(sellingPricePerKg);
     }
 
+    public void snapshotCostPerKg(BigDecimal costPerKg) {
+        if (costPerKg == null || costPerKg.signum() <= 0) {
+            throw new IllegalArgumentException("Cost per kg must be positive");
+        }
+        this.avgCostPerKg = costPerKg;
+        this.estimatedProfit = revenue.subtract(committedVolume.multiply(costPerKg));
+    }
+
     public void updateDeliveryStatus(BigDecimal deliveredVolume) {
         status = deliveredVolume.compareTo(committedVolume) >= 0
                 ? ExportStatus.COMPLETED : ExportStatus.PARTIALLY_DELIVERED;
@@ -129,6 +137,7 @@ public class ExportTicket {
     public BigDecimal getSellingPricePerKg() { return sellingPricePerKg; }
     public BigDecimal getRevenue() { return revenue; }
     public BigDecimal getAvgCostPerKg() { return avgCostPerKg; }
+    public BigDecimal getEstimatedProfit() { return estimatedProfit; }
     public LocalDate getExportDate() { return exportDate; }
     public LocalDate getDeliveryDueDate() { return deliveryDueDate; }
     public String getNote() { return note; }

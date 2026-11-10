@@ -19,6 +19,7 @@ import com.businessmanagement.master.repository.CustomerRepository;
 import com.businessmanagement.master.repository.ExportDeliveryRepository;
 import com.businessmanagement.master.repository.ExportTicketRepository;
 import com.businessmanagement.master.repository.ItemRepository;
+import com.businessmanagement.master.repository.PriceLockRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -42,6 +43,8 @@ class ExportServiceTest {
     private ItemRepository itemRepository;
     @Mock
     private AppUserRepository appUserRepository;
+    @Mock
+    private PriceLockRepository priceLockRepository;
 
     private ExportService service;
     private Customer customer;
@@ -52,7 +55,7 @@ class ExportServiceTest {
     void setUp() {
         service = new ExportService(
                 exportRepository, deliveryRepository, customerRepository,
-                itemRepository, appUserRepository);
+                itemRepository, appUserRepository, null, priceLockRepository);
         customer = new Customer("Customer");
         item = new Item("Green coffee", "Grade A", "KG");
         user = new AppUser("System administrator", new Role("ADMIN"));
@@ -66,6 +69,8 @@ class ExportServiceTest {
         when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
         when(itemRepository.findById(2L)).thenReturn(Optional.of(item));
         when(appUserRepository.findTopByOrderByIdAsc()).thenReturn(Optional.of(user));
+        when(priceLockRepository.summarizeByItem(2L)).thenReturn(new com.businessmanagement.master.repository.PriceLockSummary(
+                new BigDecimal("100"), new BigDecimal("1200000")));
         when(exportRepository.save(any(ExportTicket.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -76,6 +81,23 @@ class ExportServiceTest {
         assertThat(response.deliveredVolume()).isZero();
         assertThat(response.remainingVolume()).isEqualByComparingTo("100");
         assertThat(item.getAvailableKg()).isZero();
+        assertThat(response.avgCostPerKg()).isEqualByComparingTo("12000");
+        assertThat(response.estimatedProfit()).isEqualByComparingTo("3800000");
+    }
+
+    @Test
+    void createLeavesCostUnavailableWhenNoPriceLockSnapshotExists() {
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
+        when(itemRepository.findById(2L)).thenReturn(Optional.of(item));
+        when(appUserRepository.findTopByOrderByIdAsc()).thenReturn(Optional.of(user));
+        when(priceLockRepository.summarizeByItem(2L)).thenReturn(new com.businessmanagement.master.repository.PriceLockSummary(BigDecimal.ZERO, BigDecimal.ZERO));
+        when(exportRepository.save(any(ExportTicket.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ExportResponse response = service.create(new ExportRequest(1L, 2L, new BigDecimal("100"),
+                new BigDecimal("50000"), LocalDate.of(2026, 11, 6), null, "test", null));
+
+        assertThat(response.avgCostPerKg()).isNull();
+        assertThat(response.estimatedProfit()).isNull();
     }
 
     @Test

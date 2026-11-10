@@ -91,11 +91,12 @@ mặt hàng, nhập hàng, cân, chốt giá, xuất hàng, tồn kho và chi ph
    chụp lại biển số trên phiếu nhập/giao để lịch sử không đổi khi xe bị ẩn.
 3. Mở rộng create/list/detail phiếu nhập để đọc/ghi các trường được duyệt,
    hiển thị kết quả từng lần cân và tổng lũy kế.
-4. Chốt công thức và mốc ngày. Đề xuất ban đầu: ghi nhận theo ngày giao đã
-   xác nhận; doanh thu = kg giao × giá bán/kg; lãi gộp = doanh thu trừ giá vốn
-   snapshot/kg × kg giao. Trường `avg_cost_per_kg` hiện nullable và service
-   chưa đảm bảo ghi snapshot; phải chốt/triển khai nguồn giá vốn trước khi dùng
-   để báo cáo. Chi phí chưa phân bổ không được gọi là lãi ròng.
+4. Đã chốt công thức và mốc ngày: ghi nhận theo ngày giao đã xác nhận;
+   doanh thu = kg giao × giá bán/kg; lãi gộp = doanh thu trừ giá vốn
+   snapshot/kg × kg giao. Snapshot `avg_cost_per_kg` khi tạo phiếu bán lấy từ
+   giá vốn bình quân của các `PRICE_LOCK` đã xác nhận cùng mặt hàng; nếu thiếu
+   dữ liệu hợp lệ thì để trống và không tính lãi gộp. Chi phí chưa phân bổ
+   không được gọi là lãi ròng.
 5. Tạo API dashboard theo `fromDate`, `toDate`, `itemId` tùy chọn; trả đủ
    ngày trong khoảng, số liệu 0 cho ngày không giao, và dữ liệu giá hôm nay
    rõ ràng gồm nguồn/thời điểm. Giá không có cho hôm nay phải trả là thiếu,

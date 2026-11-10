@@ -15,6 +15,8 @@ import com.businessmanagement.master.repository.CustomerRepository;
 import com.businessmanagement.master.repository.ExportDeliveryRepository;
 import com.businessmanagement.master.repository.ExportTicketRepository;
 import com.businessmanagement.master.repository.ItemRepository;
+import com.businessmanagement.master.repository.PriceLockRepository;
+import com.businessmanagement.master.repository.PriceLockSummary;
 import com.businessmanagement.vehicles.entity.Vehicle;
 import com.businessmanagement.vehicles.repository.VehicleRepository;
 import jakarta.transaction.Transactional;
@@ -34,6 +36,7 @@ public class ExportService {
     private final ItemRepository itemRepository;
     private final AppUserRepository appUserRepository;
     private final VehicleRepository vehicleRepository;
+    private final PriceLockRepository priceLockRepository;
 
     public ExportService(ExportTicketRepository exportRepository,
                          ExportDeliveryRepository deliveryRepository,
@@ -46,6 +49,7 @@ public class ExportService {
         this.itemRepository = itemRepository;
         this.appUserRepository = appUserRepository;
         this.vehicleRepository = null;
+        this.priceLockRepository = null;
     }
 
     @Autowired
@@ -54,13 +58,15 @@ public class ExportService {
                          CustomerRepository customerRepository,
                          ItemRepository itemRepository,
                          AppUserRepository appUserRepository,
-                         VehicleRepository vehicleRepository) {
+                         VehicleRepository vehicleRepository,
+                         PriceLockRepository priceLockRepository) {
         this.exportRepository = exportRepository;
         this.deliveryRepository = deliveryRepository;
         this.customerRepository = customerRepository;
         this.itemRepository = itemRepository;
         this.appUserRepository = appUserRepository;
         this.vehicleRepository = vehicleRepository;
+        this.priceLockRepository = priceLockRepository;
     }
 
     @Transactional
@@ -70,9 +76,18 @@ public class ExportService {
         Item item = itemRepository.findById(request.itemId())
                 .orElseThrow(() -> notFound("Item", request.itemId()));
         AppUser user = resolveUser(request.createdByUserId());
-        ExportTicket ticket = exportRepository.save(new ExportTicket(
-                customer, item, request.committedVolume(), request.sellingPricePerKg(),
-                request.exportDate(), request.deliveryDueDate(), request.note(), user));
+        ExportTicket ticket = new ExportTicket(customer, item, request.committedVolume(),
+                request.sellingPricePerKg(), request.exportDate(), request.deliveryDueDate(),
+                request.note(), user);
+        if (priceLockRepository != null) {
+            PriceLockSummary summary = priceLockRepository.summarizeByItem(item.getId());
+            if (summary != null && summary.volume() != null && summary.amount() != null
+                    && summary.volume().signum() > 0 && summary.amount().signum() > 0) {
+                ticket.snapshotCostPerKg(summary.amount().divide(summary.volume(), 2,
+                        java.math.RoundingMode.HALF_UP));
+            }
+        }
+        ticket = exportRepository.save(ticket);
         return ExportResponse.from(ticket, BigDecimal.ZERO);
     }
 

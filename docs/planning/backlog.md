@@ -42,8 +42,8 @@
 - [x] Chốt chỉ số dashboard: ngày giao đã xác nhận, doanh thu đã giao và lãi
   gộp theo snapshot giá vốn; API hỗ trợ khoảng ngày và mặt hàng tùy chọn
   (2026-11-10).
-- [ ] Chốt và lưu snapshot giá vốn/kg trên phiếu bán theo chính sách giá vốn
-  được duyệt; không tính lãi gộp dựa trên trường nullable chưa được điền.
+- [x] Chốt và lưu snapshot giá vốn/kg trên phiếu bán theo giá vốn bình quân từ
+  `PRICE_LOCK` đã xác nhận; không tính lãi gộp khi thiếu dữ liệu (2026-11-10).
 - [ ] Trả giá thị trường hôm nay từ `MARKET_PRICE`, gồm nguồn và thời điểm cập
   nhật; bảo đảm dữ liệu ghi tay cũng có thời điểm ghi nhận, xác định cách cập
   nhật và không tự động đồng bộ khi chưa chọn nguồn.
