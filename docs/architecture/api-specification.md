@@ -341,7 +341,9 @@ khác từ chú thích trong ERD.
 API trả đủ từng ngày trong khoảng, kể cả ngày không có giao; chỉ tính giao
 `CONFIRMED`, hỗ trợ lọc theo `itemId` và yêu cầu quyền `ADMIN` hoặc `ACCOUNTANT`.
 
-Đã triển khai `GET /api/market-prices/today` (alias `/api/market-price/today`).
+Đã triển khai `GET /api/market-prices/today` (alias `/api/market-price/today`). Ngày
+giá không được nằm trong tương lai; backend từ chối ngày tương lai để không tạo
+dữ liệu thị trường không hợp lệ.
 API đọc đúng ngày hiện tại từ `MARKET_PRICE`, trả `source`, `fetchedAt` và đánh
 `MISSING` khi mặt hàng chưa có giá hôm nay; không dùng giá của ngày cũ.
 

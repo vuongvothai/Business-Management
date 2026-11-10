@@ -22,6 +22,9 @@ public class MarketPriceService {
     public MarketPriceService(MarketPriceRepository prices, ItemRepository items) { this.prices = prices; this.items = items; }
     @Transactional
     public MarketPriceResponse create(Long itemId, LocalDate priceDate, MarketPriceRequest request) {
+        if (priceDate == null || priceDate.isAfter(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "priceDate must not be in the future");
+        }
         Item item = items.findById(itemId).orElseThrow(() -> notFound("Item", itemId));
         if (prices.findByItemIdAndPriceDate(itemId, priceDate).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -34,6 +37,9 @@ public class MarketPriceService {
 
     @Transactional
     public MarketPriceResponse update(Long itemId, LocalDate priceDate, MarketPriceRequest request) {
+        if (priceDate == null || priceDate.isAfter(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "priceDate must not be in the future");
+        }
         MarketPrice price = prices.findByItemIdAndPriceDate(itemId, priceDate)
                 .orElseThrow(() -> notFound("MarketPrice", itemId + "/" + priceDate));
         price.update(request.pricePerKg(), request.source(), timestamp(request));

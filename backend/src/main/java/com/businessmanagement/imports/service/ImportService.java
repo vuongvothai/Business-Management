@@ -162,6 +162,12 @@ public class ImportService {
     }
 
     private AppUser resolveUser(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_WEIGHER"))) {
+            return appUserRepository.findByUsername(authentication.getName())
+                    .orElseThrow(() -> notFound("User", authentication.getName()));
+        }
         if (id != null) {
             return appUserRepository.findById(id)
                     .orElseThrow(() -> notFound("User", id));
