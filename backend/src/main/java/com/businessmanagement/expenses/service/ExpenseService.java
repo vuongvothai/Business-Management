@@ -42,7 +42,21 @@ public class ExpenseService {
 
     @Transactional
     public List<ExpenseResponse> list() {
-        return expenseRepository.findAll().stream().map(ExpenseResponse::from).toList();
+        return list(null, null);
+    }
+
+    @Transactional
+    public List<ExpenseResponse> list(java.time.LocalDate fromDate, java.time.LocalDate toDate) {
+        if ((fromDate == null) != (toDate == null)) {
+            throw new IllegalArgumentException("fromDate and toDate must be provided together");
+        }
+        if (fromDate != null && toDate.isBefore(fromDate)) {
+            throw new IllegalArgumentException("toDate must not be before fromDate");
+        }
+        List<Expense> expenses = fromDate == null
+                ? expenseRepository.findAll()
+                : expenseRepository.findByPeriodStartLessThanEqualAndPeriodEndGreaterThanEqual(toDate, fromDate);
+        return expenses.stream().map(ExpenseResponse::from).toList();
     }
 
     @Transactional

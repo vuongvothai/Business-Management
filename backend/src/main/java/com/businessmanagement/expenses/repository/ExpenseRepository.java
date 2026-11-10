@@ -11,6 +11,10 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     @EntityGraph(attributePaths = "details")
     List<Expense> findAll();
 
+    @EntityGraph(attributePaths = "details")
+    List<Expense> findByPeriodStartLessThanEqualAndPeriodEndGreaterThanEqual(
+            java.time.LocalDate toDate, java.time.LocalDate fromDate);
+
     @Override
     @EntityGraph(attributePaths = "details")
     Optional<Expense> findById(Long id);

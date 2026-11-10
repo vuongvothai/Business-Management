@@ -23,6 +23,15 @@ class ExpenseControllerTest {
     @InjectMocks ExpenseController controller;
 
     @Test
+    void delegatesPeriodFilter() {
+        LocalDate from = LocalDate.of(2026, 11, 1);
+        LocalDate to = LocalDate.of(2026, 11, 30);
+        when(service.list(from, to)).thenReturn(List.of());
+
+        assertThat(controller.list(from, to)).isEmpty();
+    }
+
+    @Test
     void delegatesExpenseCrud() {
         ExpenseRequest request = new ExpenseRequest(LocalDate.of(2026, 11, 1),
                 LocalDate.of(2026, 11, 30), "note", null,
@@ -31,12 +40,12 @@ class ExpenseControllerTest {
                 request.periodStart(), request.periodEnd(), "note", 1L, null, List.of());
         when(service.create(any())).thenReturn(response);
         when(service.get(1L)).thenReturn(response);
-        when(service.list()).thenReturn(List.of(response));
+        when(service.list(null, null)).thenReturn(List.of(response));
         when(service.update(any(), any())).thenReturn(response);
 
         assertThat(controller.create(request)).isSameAs(response);
         assertThat(controller.get(1L)).isSameAs(response);
-        assertThat(controller.list()).containsExactly(response);
+        assertThat(controller.list(null, null)).containsExactly(response);
         assertThat(controller.update(1L, request)).isSameAs(response);
         controller.delete(1L);
     }

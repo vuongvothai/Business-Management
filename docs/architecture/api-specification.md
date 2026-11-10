@@ -362,6 +362,8 @@ không tạo giao dịch và không thay đổi số dư/trạng thái.
 ## 6. Chi phí theo kỳ
 
 Đã triển khai nhóm API `/api/expenses` cho `EXPENSE` và `EXPENSE_DETAIL`.
+`GET /api/expenses?fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD` lọc các kỳ chi phí
+chồng lấp khoảng ngày, bao gồm cả ngày biên; bỏ trống query để lấy toàn bộ.
 `EXPENSE_DETAIL.amount` lưu số tiền của từng danh mục. `EXPENSE` tự tính
 `totalAmount` là tổng tiền của nhiều danh mục trong một khoảng thời gian, gồm
 `periodStart` và `periodEnd`, thay cho một ngày chi phí đơn lẻ. Một expense có

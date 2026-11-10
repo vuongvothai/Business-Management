@@ -47,6 +47,7 @@
 - [ ] Tách giao diện bán/giao; thêm màn hình **Thêm dữ liệu** không có CRUD `ITEM`.
 - [x] Dashboard doanh thu/lãi gộp theo ngày và API giá cà phê hôm nay (2026-11-10).
 - [x] API dữ liệu chỉ đọc cho xem trước/in chứng từ chốt giá và giao hàng (2026-11-10).
+- [x] Lọc chi phí theo khoảng kỳ, hỗ trợ ngày biên và kiểm tra khoảng hợp lệ (2026-11-10).
 
 ## Bước tiếp theo
 
