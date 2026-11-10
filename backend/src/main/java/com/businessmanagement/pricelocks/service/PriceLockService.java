@@ -16,6 +16,8 @@ import java.math.BigDecimal;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 public class PriceLockService {
@@ -72,6 +74,12 @@ public class PriceLockService {
     }
 
     private AppUser resolveUser(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getName())) {
+            return appUserRepository.findByUsername(authentication.getName())
+                    .orElseThrow(() -> notFound("User", authentication.getName()));
+        }
         if (id != null) {
             return appUserRepository.findById(id)
                     .orElseThrow(() -> notFound("User", id));

@@ -54,6 +54,7 @@
 - [x] Siết phân quyền đọc danh mục/xe cho ba role và ghi rõ thao tác quản trị chỉ dành cho ADMIN (2026-11-10).
 - [x] Giới hạn WEIGHER chỉ xem phiếu nhập do chính mình tạo ở cả danh sách và chi tiết (2026-11-10).
 - [x] Ghi nhận người dùng đăng nhập khi WEIGHER tạo phiếu nhập, không tin `createdByUserId` từ client (2026-11-10).
+- [x] Ghi nhận người dùng đăng nhập cho phiếu chốt giá, phiếu bán/giao và chi phí; không tin `createdByUserId` từ client khi đã có JWT (2026-11-10).
 - [x] Từ chối tạo/cập nhật giá thị trường có ngày trong tương lai (2026-11-10).
 - [x] Kiểm tra ngày nhập/giao không vượt ngày hiện tại và ngày dự kiến giao không trước ngày bán (2026-11-10).
 - [x] Kiểm soát scale số thập phân theo DECIMAL của import, price lock và export (2026-11-10).

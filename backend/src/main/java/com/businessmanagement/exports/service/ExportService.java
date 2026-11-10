@@ -26,6 +26,8 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 public class ExportService {
@@ -163,6 +165,12 @@ public class ExportService {
     }
 
     private AppUser resolveUser(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getName())) {
+            return appUserRepository.findByUsername(authentication.getName())
+                    .orElseThrow(() -> notFound("User", authentication.getName()));
+        }
         if (id != null) {
             return appUserRepository.findById(id)
                     .orElseThrow(() -> notFound("User", id));

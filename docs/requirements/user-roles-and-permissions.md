@@ -36,7 +36,9 @@
   bản ghi của người khác trả `404` để không tiết lộ sự tồn tại.
 - `ACCOUNTANT` xem dữ liệu cần cho chốt giá, tồn kho và xuất hàng.
 - `ADMIN` không bị giới hạn phạm vi dữ liệu.
-- Mọi thao tác tạo, sửa, xác nhận hoặc hủy phải ghi nhận người thực hiện.
+- Mọi thao tác tạo, sửa, xác nhận hoặc hủy phải ghi nhận người thực hiện từ
+  tài khoản đăng nhập; các trường `createdByUserId` trong request chỉ là fallback
+  tương thích khi chạy không có security context.
 
 ## 4. Quyền API đề xuất
 
