@@ -15,6 +15,7 @@ import com.businessmanagement.dashboard.dto.DashboardResponse;
 import com.businessmanagement.dashboard.service.DashboardService;
 import com.businessmanagement.dashboard.web.DashboardController;
 import com.businessmanagement.exports.dto.DeliveryPrintData;
+import com.businessmanagement.exports.dto.DeliveryRequest;
 import com.businessmanagement.exports.service.ExportService;
 import com.businessmanagement.exports.web.ExportController;
 import com.businessmanagement.market.dto.MarketPriceTodayResponse;
@@ -126,6 +127,27 @@ class BacklogControllerWebTest {
         mockMvc.perform(get("/api/market-prices/today")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.prices[0].status").value("MISSING"))
                 .andExpect(jsonPath("$.prices[0].pricePerKg").doesNotExist());
+    }
+
+    @Test
+    void validatesDeliveryWarehouseFieldsAndForwardsThem() throws Exception {
+        mockMvc.perform(post("/api/exports/8/deliveries").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"deliveredVolume\":4,\"deliveryDate\":\"2026-11-06\",\"loadingWarehouse\":\"Kho bốc A\",\"importWarehouse\":\"Kho giao B\"}"))
+                .andExpect(status().isOk());
+        org.mockito.ArgumentCaptor<DeliveryRequest> captor =
+                org.mockito.ArgumentCaptor.forClass(DeliveryRequest.class);
+        verify(exportService).deliver(org.mockito.ArgumentMatchers.eq(8L), captor.capture());
+        org.junit.jupiter.api.Assertions.assertEquals("Kho bốc A", captor.getValue().loadingWarehouse());
+        org.junit.jupiter.api.Assertions.assertEquals("Kho giao B", captor.getValue().importWarehouse());
+    }
+
+    @Test
+    void rejectsOversizedDeliveryWarehouseField() throws Exception {
+        String oversized = "x".repeat(256);
+        mockMvc.perform(post("/api/exports/8/deliveries").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"deliveredVolume\":4,\"deliveryDate\":\"2026-11-06\",\"loadingWarehouse\":\"" + oversized + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
     }
 
     @Test
