@@ -43,6 +43,7 @@
 - [x] Bổ sung thêm, sửa và xóa nhà cung cấp, khách hàng và mặt hàng trên frontend.
 - [x] Bổ sung module `VEHICLE` và trường nhập/giao mở rộng (`vehicleId`, snapshot biển số, kho, bì, kết quả mẫu thử) (2026-11-09).
 - [x] Tìm supplier theo CCCD chính xác, fallback số điện thoại chuẩn hóa, trả danh sách ứng viên (2026-11-10).
+- [x] Chuẩn hóa số điện thoại customer khi tạo/cập nhật, đồng nhất với supplier (2026-11-10).
 - [x] Quản lý chi phí `EXPENSE`/`EXPENSE_DETAIL` theo kỳ, tự tính tổng tiền và phân quyền (2026-11-10).
 - [x] Triển khai BRULE-112 theo lựa chọn `appendix_direct` + `apply_appendix_exactly`: bảng moisture exact 1 chữ số và công thức exact `total_kg * ((percent + impurity_percent) + (number_of_bags * tare_weight))`, cập nhật test (2026-11-10).
 - [ ] Tách giao diện bán/giao; thêm màn hình **Thêm dữ liệu** không có CRUD `ITEM`.

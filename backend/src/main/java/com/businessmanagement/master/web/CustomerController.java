@@ -42,14 +42,14 @@ public class CustomerController {
     @ResponseStatus(HttpStatus.CREATED)
     public CustomerResponse create(@Valid @RequestBody CustomerRequest request) {
         Customer customer = new Customer(request.name());
-        customer.update(request.name(), request.phone(), request.address());
+        customer.update(request.name(), normalizePhone(request.phone()), request.address());
         return CustomerResponse.from(repository.save(customer));
     }
 
     @PutMapping("/{id}")
     public CustomerResponse update(@PathVariable Long id, @Valid @RequestBody CustomerRequest request) {
         Customer customer = find(id);
-        customer.update(request.name(), request.phone(), request.address());
+        customer.update(request.name(), normalizePhone(request.phone()), request.address());
         return CustomerResponse.from(repository.save(customer));
     }
 
@@ -60,6 +60,16 @@ public class CustomerController {
             throw notFound(id);
         }
         repository.deleteById(id);
+    }
+
+    private String normalizePhone(String value) {
+        if (value == null || value.isBlank()) return null;
+        String digits = value.trim().replaceAll("\\D", "");
+        if (digits.isEmpty() || digits.length() > 30) {
+            throw new IllegalArgumentException("phone không hợp lệ");
+        }
+        if (digits.startsWith("84") && digits.length() > 2) return "0" + digits.substring(2);
+        return digits;
     }
 
     private Customer find(Long id) {

@@ -297,7 +297,7 @@ bản kế tiếp, nhưng vẫn dùng chung hai resource trên.
 
 `GET /api/suppliers/search?identityNo=&phone=` đã triển khai.
 
-- Khi tạo hoặc cập nhật supplier, backend trim CCCD và chuẩn hóa số điện thoại về chữ số dạng nội địa.
+- Khi tạo hoặc cập nhật supplier/customer, backend trim CCCD và chuẩn hóa số điện thoại về chữ số dạng nội địa.
 - Nếu có CCCD, tìm chính xác theo `identityNo` trước.
 - Nếu không nhập CCCD hoặc CCCD không có kết quả và có số điện thoại, fallback
   sang số điện thoại đã chuẩn hóa, bao gồm dạng `+84`.
