@@ -369,7 +369,8 @@ Giá hôm nay đọc từ `MARKET_PRICE` theo đúng ngày hiện tại, trả k
 - `PUT /api/market-prices/{itemId}/{priceDate}` cập nhật giá.
 
 `pricePerKg` phải lớn hơn 0, `source` bắt buộc; `fetchedAt` được tự sinh nếu
-bỏ trống. Cặp `itemId + priceDate` là duy nhất; không có đồng bộ tự động.
+bỏ trống và không được nằm trong tương lai. Cặp `itemId + priceDate` là duy nhất;
+không có đồng bộ tự động.
 Nếu chưa có bản ghi hôm nay, API trả trạng thái thiếu dữ liệu/null và không tự
 dùng giá ngày cũ.
 

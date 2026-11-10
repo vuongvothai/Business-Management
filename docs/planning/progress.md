@@ -56,6 +56,7 @@
 - [x] Ghi nhận người dùng đăng nhập khi WEIGHER tạo phiếu nhập, không tin `createdByUserId` từ client (2026-11-10).
 - [x] Ghi nhận người dùng đăng nhập cho phiếu chốt giá, phiếu bán/giao và chi phí; không tin `createdByUserId` từ client khi đã có JWT (2026-11-10).
 - [x] Từ chối tạo/cập nhật giá thị trường có ngày trong tương lai (2026-11-10).
+- [x] Từ chối thời điểm `fetchedAt` của giá thị trường nằm trong tương lai (2026-11-10).
 - [x] Kiểm tra ngày nhập/giao không vượt ngày hiện tại và ngày dự kiến giao không trước ngày bán (2026-11-10).
 - [x] Kiểm soát scale số thập phân theo DECIMAL của import, price lock và export (2026-11-10).
 - [x] Kiểm soát scale tối đa 2 chữ số cho chi phí và giá thị trường (2026-11-10).

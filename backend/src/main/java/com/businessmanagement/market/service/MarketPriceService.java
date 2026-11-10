@@ -55,7 +55,13 @@ public class MarketPriceService {
     }
 
     private java.time.LocalDateTime timestamp(MarketPriceRequest request) {
-        return request.fetchedAt() == null ? java.time.LocalDateTime.now() : request.fetchedAt();
+        java.time.LocalDateTime fetchedAt = request.fetchedAt() == null
+                ? java.time.LocalDateTime.now() : request.fetchedAt();
+        if (fetchedAt.isAfter(java.time.LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "fetchedAt must not be in the future");
+        }
+        return fetchedAt;
     }
 
     private ResponseStatusException notFound(String resource, Object id) {
