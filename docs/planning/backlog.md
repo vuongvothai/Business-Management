@@ -39,8 +39,9 @@
   giữ `ITEM` làm dữ liệu nền; thêm quản lý/chọn nhanh biển số.
 - [ ] Tách màn hình và điều hướng **Bán hàng** (`EXPORT_TICKET`) và
   **Giao hàng** (`EXPORT_DELIVERY`); không đổi quy tắc tồn kho hiện tại.
-- [ ] Chốt chỉ số dashboard: ngày ghi nhận, doanh thu đã giao, lãi gộp và cách
-  xử lý chi phí; sau đó tạo API theo khoảng ngày và mặt hàng tùy chọn.
+- [x] Chốt chỉ số dashboard: ngày giao đã xác nhận, doanh thu đã giao và lãi
+  gộp theo snapshot giá vốn; API hỗ trợ khoảng ngày và mặt hàng tùy chọn
+  (2026-11-10).
 - [ ] Chốt và lưu snapshot giá vốn/kg trên phiếu bán theo chính sách giá vốn
   được duyệt; không tính lãi gộp dựa trên trường nullable chưa được điền.
 - [ ] Trả giá thị trường hôm nay từ `MARKET_PRICE`, gồm nguồn và thời điểm cập

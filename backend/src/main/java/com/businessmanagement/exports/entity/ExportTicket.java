@@ -128,6 +128,7 @@ public class ExportTicket {
     public BigDecimal getCommittedVolume() { return committedVolume; }
     public BigDecimal getSellingPricePerKg() { return sellingPricePerKg; }
     public BigDecimal getRevenue() { return revenue; }
+    public BigDecimal getAvgCostPerKg() { return avgCostPerKg; }
     public LocalDate getExportDate() { return exportDate; }
     public LocalDate getDeliveryDueDate() { return deliveryDueDate; }
     public String getNote() { return note; }

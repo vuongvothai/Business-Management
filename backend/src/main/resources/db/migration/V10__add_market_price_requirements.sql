@@ -1,0 +1,3 @@
+ALTER TABLE market_price
+    MODIFY source VARCHAR(255) NOT NULL,
+    MODIFY fetched_at DATETIME NOT NULL;

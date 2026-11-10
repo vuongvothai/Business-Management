@@ -45,7 +45,7 @@
 - [x] Tìm supplier theo CCCD chính xác, fallback số điện thoại chuẩn hóa, trả danh sách ứng viên (2026-11-10).
 - [x] Quản lý chi phí `EXPENSE`/`EXPENSE_DETAIL` theo kỳ, tự tính tổng tiền và phân quyền (2026-11-10).
 - [ ] Tách giao diện bán/giao; thêm màn hình **Thêm dữ liệu** không có CRUD `ITEM`.
-- [ ] Dashboard doanh thu/lãi gộp theo ngày và API giá cà phê hôm nay.
+- [x] Dashboard doanh thu/lãi gộp theo ngày và API giá cà phê hôm nay (2026-11-10).
 - [ ] Xem trước/tải/in chứng từ chốt giá và giao hàng.
 
 ## Bước tiếp theo

@@ -315,11 +315,16 @@ từ chú thích hiện tại trong ERD.
 
 ### Dashboard và giá thị trường hôm nay
 
-`GET /api/dashboard?fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD&itemId=`
+Đã triển khai `GET /api/dashboard?fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD&itemId=`.
+API trả đủ từng ngày trong khoảng, kể cả ngày không có giao; chỉ tính giao
+`CONFIRMED`, hỗ trợ lọc theo `itemId` và yêu cầu quyền `ADMIN` hoặc `ACCOUNTANT`.
 
-Response dự kiến gồm danh sách mỗi ngày trong khoảng chọn (ngày không có giao
-trả số 0), doanh thu, lãi gộp và giá hôm nay theo mặt hàng. Ngày giao đã xác
-nhận là mốc tính thực tế đề xuất:
+Đã triển khai `GET /api/market-prices/today` (alias `/api/market-price/today`).
+API đọc đúng ngày hiện tại từ `MARKET_PRICE`, trả `source`, `fetchedAt` và đánh
+`MISSING` khi mặt hàng chưa có giá hôm nay; không dùng giá của ngày cũ.
+
+Response dashboard gồm doanh thu, lãi gộp và giá hôm nay theo mặt hàng. Ngày
+ giao đã xác nhận là mốc tính thực tế:
 
 - `revenue = deliveredVolume * sellingPricePerKg`
 - `grossProfit = revenue - deliveredVolume * avgCostPerKgSnapshot`

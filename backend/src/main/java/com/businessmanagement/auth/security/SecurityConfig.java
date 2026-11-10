@@ -34,7 +34,7 @@ public class SecurityConfig {
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(authenticationEntryPoint()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/inventory/summary").hasAnyRole("ADMIN", "ACCOUNTANT")
+                        .requestMatchers(HttpMethod.GET, "/api/inventory/summary", "/api/dashboard", "/api/market-prices/**", "/api/market-price/**").hasAnyRole("ADMIN", "ACCOUNTANT")
                         .requestMatchers("/api/imports/**").hasAnyRole("ADMIN", "WEIGHER")
                         .requestMatchers("/api/price-locks/**").hasAnyRole("ADMIN", "ACCOUNTANT")
                         .requestMatchers("/api/exports/**", "/api/expenses/**").hasAnyRole("ADMIN", "ACCOUNTANT")

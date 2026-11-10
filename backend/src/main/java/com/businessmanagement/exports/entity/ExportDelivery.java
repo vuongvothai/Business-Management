@@ -93,4 +93,5 @@ public class ExportDelivery {
     public LocalDate getDeliveryDate() { return deliveryDate; }
     public DeliveryStatus getStatus() { return status; }
     public String getNote() { return note; }
+    public ExportTicket getExportTicket() { return exportTicket; }
 }
