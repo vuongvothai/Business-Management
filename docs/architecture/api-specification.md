@@ -306,8 +306,10 @@ tự gửi. Biển số đã dùng không được xóa cứng.
 `importWarehouse`, `tareWeight` và `sampleTestResult`. API
 `GET/POST/PUT/DELETE /api/vehicles` quản lý biển số dùng lại; DELETE chỉ ẩn xe.
 Backend xác thực xe active và vẫn tự tính
-tổng bao/kg từ các lần cân. Quy tắc tính khối lượng tính tiền và khấu trừ phải
-được chốt trước khi thêm kết quả tính vào contract; không suy luận công thức
+tổng bao/kg từ các lần cân. Mỗi phần tử `weights` hiện trả thêm
+`cumulativeBagCount` và `cumulativeWeightKg`, theo thứ tự lần cân ổn định.
+Quy tắc tính khối lượng tính tiền và khấu trừ phải được chốt trước khi thêm
+kết quả tính vào contract; không suy luận công thức
 từ chú thích hiện tại trong ERD.
 
 `POST /api/exports/{exportId}/deliveries` đã nhận `vehicleId` và trả snapshot

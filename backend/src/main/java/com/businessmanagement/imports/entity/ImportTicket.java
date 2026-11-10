@@ -16,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -106,6 +107,7 @@ public class ImportTicket {
     private AppUser createdBy;
 
     @OneToMany(mappedBy = "importTicket", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createdAt ASC, id ASC")
     private List<ImportWeight> weights = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)

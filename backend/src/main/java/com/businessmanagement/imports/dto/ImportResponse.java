@@ -3,6 +3,7 @@ package com.businessmanagement.imports.dto;
 import com.businessmanagement.imports.entity.ImportTicket;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public record ImportResponse(
@@ -49,12 +50,24 @@ public record ImportResponse(
                 ticket.getTareWeight(), ticket.getSampleTestResult(),
                 ticket.getImportDate(),
                 ticket.getNumberOfBags(),
-                ticket.getWeights().stream().map(ImportWeightResponse::from).toList(),
+                cumulativeWeights(ticket),
                 ticket.getTotalKg(),
                 ticket.getMoisturePercent(),
                 ticket.getImpurityPercent(),
                 ticket.getPhotoUrl(),
                 ticket.getNote(),
                 ticket.getStatus().name());
+    }
+
+    private static List<ImportWeightResponse> cumulativeWeights(ImportTicket ticket) {
+        List<ImportWeightResponse> result = new ArrayList<>();
+        int bags = 0;
+        BigDecimal weightKg = BigDecimal.ZERO;
+        for (var weight : ticket.getWeights()) {
+            bags += weight.getBagCount();
+            weightKg = weightKg.add(weight.getWeightKg());
+            result.add(ImportWeightResponse.from(weight, bags, weightKg));
+        }
+        return result;
     }
 }

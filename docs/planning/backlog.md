@@ -49,7 +49,7 @@
   nhật và không tự động đồng bộ khi chưa chọn nguồn.
 - [x] Bổ sung API dữ liệu chỉ đọc cho xem trước phiếu chốt giá và từng lần giao;
   dữ liệu lấy từ bản ghi đã lưu, sẵn sàng cho frontend tạo mẫu PDF (2026-11-10).
-- [ ] Hiển thị từng lần cân cùng tổng số bao/khối lượng lũy kế sau từng lần.
+- [x] Hiển thị từng lần cân cùng tổng số bao/khối lượng lũy kế sau từng lần (2026-11-10).
 - [ ] Viết unit/integration/UI test cho validation, tra cứu supplier, xe dùng
   lại, tính tổng/trừ bì, dashboard, giá thiếu, phân quyền và bản in.
 

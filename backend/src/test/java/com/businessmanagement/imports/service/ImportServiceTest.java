@@ -93,6 +93,10 @@ class ImportServiceTest {
         assertThat(response.numberOfBags()).isEqualTo(3);
         assertThat(response.totalKg()).isEqualByComparingTo("201.000");
         assertThat(response.weights()).hasSize(2);
+        assertThat(response.weights().get(0).cumulativeBagCount()).isEqualTo(2);
+        assertThat(response.weights().get(0).cumulativeWeightKg()).isEqualByComparingTo("120.300");
+        assertThat(response.weights().get(1).cumulativeBagCount()).isEqualTo(3);
+        assertThat(response.weights().get(1).cumulativeWeightKg()).isEqualByComparingTo("201.000");
         assertThat(supplier.getUsableCoffeeKg()).isEqualByComparingTo("201.000");
         assertThat(item.getAvailableKg()).isEqualByComparingTo("201.000");
         verify(importRepository).save(any(ImportTicket.class));
