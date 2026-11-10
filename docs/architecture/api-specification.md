@@ -269,6 +269,7 @@ Ghi nhận một lần giao thực tế:
 Quy tắc:
 
 - `deliveredVolume > 0`.
+- `deliveryDate` không được nằm trong tương lai.
 - `vehicleId` nếu có phải là xe đang hoạt động; backend lưu snapshot biển số.
 - `loadingWarehouse` và `importWarehouse` là thông tin tùy chọn, được lưu trên từng lần giao.
 - Tổng các lần giao không bị hủy không được vượt `committedVolume`.

@@ -69,6 +69,7 @@ public class ImportService {
                 .orElseThrow(() -> notFound("Item", request.itemId()));
         AppUser user = resolveUser(request.createdByUserId());
         Vehicle vehicle = resolveActiveVehicle(request.vehicleId());
+        validateImportDate(request.importDate());
 
         BigDecimal totalKg = request.weights().stream()
                 .map(ImportWeightRequest::weightKg)
@@ -142,6 +143,13 @@ public class ImportService {
                 result.getSize(),
                 result.getTotalElements(),
                 result.getTotalPages());
+    }
+
+    private void validateImportDate(LocalDate importDate) {
+        if (importDate.isAfter(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "importDate must not be in the future");
+        }
     }
 
     private void ensureVisibleToCurrentUser(ImportTicket ticket) {

@@ -76,6 +76,7 @@ public class ExportService {
         Item item = itemRepository.findById(request.itemId())
                 .orElseThrow(() -> notFound("Item", request.itemId()));
         AppUser user = resolveUser(request.createdByUserId());
+        validateExportDates(request.exportDate(), request.deliveryDueDate());
         ExportTicket ticket = new ExportTicket(customer, item, request.committedVolume(),
                 request.sellingPricePerKg(), request.exportDate(), request.deliveryDueDate(),
                 request.note(), user);
@@ -105,6 +106,7 @@ public class ExportService {
         }
         AppUser user = resolveUser(request.createdByUserId());
         Vehicle vehicle = resolveActiveVehicle(request.vehicleId());
+        validateDeliveryDate(request.deliveryDate());
         deliveryRepository.save(new ExportDelivery(ticket, request.deliveredVolume(),
                 request.deliveryDate(), vehicle, request.loadingWarehouse(),
                 request.importWarehouse(), request.note(), user));
@@ -126,6 +128,20 @@ public class ExportService {
                 .map(ticket -> ExportResponse.from(ticket,
                         deliveryRepository.sumDelivered(ticket.getId(), DeliveryStatus.CONFIRMED)))
                 .toList();
+    }
+
+    private void validateExportDates(java.time.LocalDate exportDate, java.time.LocalDate deliveryDueDate) {
+        if (deliveryDueDate != null && deliveryDueDate.isBefore(exportDate)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "deliveryDueDate must not be before exportDate");
+        }
+    }
+
+    private void validateDeliveryDate(java.time.LocalDate deliveryDate) {
+        if (deliveryDate.isAfter(java.time.LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "deliveryDate must not be in the future");
+        }
     }
 
     private Vehicle resolveActiveVehicle(Long id) {
