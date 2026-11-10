@@ -36,18 +36,21 @@ public class ImportService {
     private final ItemRepository itemRepository;
     private final AppUserRepository appUserRepository;
     private final VehicleRepository vehicleRepository;
+    private final com.businessmanagement.audit.service.AuditLogService auditLogService;
 
     @Autowired
     public ImportService(ImportTicketRepository importRepository,
                           SupplierRepository supplierRepository,
                           ItemRepository itemRepository,
                           AppUserRepository appUserRepository,
-                          VehicleRepository vehicleRepository) {
+                          VehicleRepository vehicleRepository,
+                          com.businessmanagement.audit.service.AuditLogService auditLogService) {
         this.importRepository = importRepository;
         this.supplierRepository = supplierRepository;
         this.itemRepository = itemRepository;
         this.appUserRepository = appUserRepository;
         this.vehicleRepository = vehicleRepository;
+        this.auditLogService = auditLogService;
     }
 
     public ImportService(ImportTicketRepository importRepository,
@@ -59,6 +62,7 @@ public class ImportService {
         this.itemRepository = itemRepository;
         this.appUserRepository = appUserRepository;
         this.vehicleRepository = null;
+        this.auditLogService = null;
     }
 
     @Transactional
@@ -105,7 +109,10 @@ public class ImportService {
 
         supplier.addUsableCoffeeKg(totalKg);
         item.addAvailableKg(totalKg);
-        return ImportResponse.from(importRepository.save(ticket));
+        ImportTicket saved = importRepository.save(ticket);
+        if (auditLogService != null) auditLogService.record(user, "CREATE", "IMPORT_TICKET", saved.getId(),
+                "supplierId=" + supplier.getId() + ", itemId=" + item.getId() + ", totalKg=" + totalKg);
+        return ImportResponse.from(saved);
     }
 
     @Transactional
@@ -189,7 +196,7 @@ public class ImportService {
                         HttpStatus.INTERNAL_SERVER_ERROR, "No application user is configured"));
     }
 
-    private ResponseStatusException notFound(String resource, Long id) {
+    private ResponseStatusException notFound(String resource, Object id) {
         return new ResponseStatusException(HttpStatus.NOT_FOUND, resource + " not found: " + id);
     }
 }

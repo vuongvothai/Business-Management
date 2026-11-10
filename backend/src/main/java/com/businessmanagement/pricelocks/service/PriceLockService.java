@@ -89,7 +89,7 @@ public class PriceLockService {
                         HttpStatus.INTERNAL_SERVER_ERROR, "No application user is configured"));
     }
 
-    private ResponseStatusException notFound(String resource, Long id) {
+    private ResponseStatusException notFound(String resource, Object id) {
         return new ResponseStatusException(HttpStatus.NOT_FOUND, resource + " not found: " + id);
     }
 }

@@ -226,6 +226,22 @@ giao. Phiếu không phụ thuộc trực tiếp vào `IMPORT_TICKET`.
 được lưu trên từng lần giao. Snapshot biển số phải được lưu độc lập để giữ
 nguyên lịch sử dù xe bị đổi tên hoặc ẩn.
 
+### `audit_log`
+
+Lưu vết thao tác nghiệp vụ với người thực hiện, loại thao tác, bản ghi liên quan,
+chi tiết tóm tắt và thời điểm. Audit log không thay thế các cột `created_by`/
+`updated_by` trên chứng từ.
+
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| `audit_id` | `BIGINT` | PK |
+| `user_id` | `BIGINT` | FK tới `app_user.user_id`, NOT NULL |
+| `action` | `VARCHAR(30)` | NOT NULL |
+| `entity_type` | `VARCHAR(50)` | NOT NULL |
+| `entity_id` | `VARCHAR(100)` | NOT NULL |
+| `details` | `VARCHAR(1000)` | NULL |
+| `created_at` | `DATETIME` | NOT NULL |
+
 ### `expense` và `expense_detail`
 
 Không tách bảng danh mục chi phí độc lập. Tên danh mục được lưu trực tiếp ở
