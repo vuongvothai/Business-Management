@@ -343,9 +343,11 @@ nguồn ngoài) là phần cần chốt riêng; chưa lập kế hoạch tự đ
 
 ### Dữ liệu chứng từ in
 
-- `GET /api/price-locks/{id}/print-data`: dữ liệu chỉ đọc cho phiếu chốt giá.
+Đã triển khai các API chỉ đọc:
+
+- `GET /api/price-locks/{id}/print-data`: dữ liệu phiếu chốt giá.
 - `GET /api/exports/{exportId}/deliveries/{deliveryId}/print-data`: dữ liệu
-  chỉ đọc cho một lần giao.
+  từng lần giao, gồm snapshot biển số và thông tin kho nếu có.
 
 Frontend dùng response để xem trước và tạo/in mẫu PDF. Việc xem, tải hoặc in
 không tạo giao dịch và không thay đổi số dư/trạng thái.

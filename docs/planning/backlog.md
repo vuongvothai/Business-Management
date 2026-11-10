@@ -47,8 +47,8 @@
 - [ ] Trả giá thị trường hôm nay từ `MARKET_PRICE`, gồm nguồn và thời điểm cập
   nhật; bảo đảm dữ liệu ghi tay cũng có thời điểm ghi nhận, xác định cách cập
   nhật và không tự động đồng bộ khi chưa chọn nguồn.
-- [ ] Bổ sung xem trước và tệp/mẫu PDF in phiếu chốt giá, từng lần giao; dữ liệu
-  lấy từ API và chỉ đọc.
+- [x] Bổ sung API dữ liệu chỉ đọc cho xem trước phiếu chốt giá và từng lần giao;
+  dữ liệu lấy từ bản ghi đã lưu, sẵn sàng cho frontend tạo mẫu PDF (2026-11-10).
 - [ ] Hiển thị từng lần cân cùng tổng số bao/khối lượng lũy kế sau từng lần.
 - [ ] Viết unit/integration/UI test cho validation, tra cứu supplier, xe dùng
   lại, tính tổng/trừ bì, dashboard, giá thiếu, phân quyền và bản in.

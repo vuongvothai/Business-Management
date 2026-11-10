@@ -16,6 +16,8 @@ import com.businessmanagement.master.repository.PriceLockRepository;
 import com.businessmanagement.master.repository.SupplierRepository;
 import com.businessmanagement.pricelocks.dto.PriceLockRequest;
 import com.businessmanagement.pricelocks.dto.PriceLockResponse;
+import com.businessmanagement.pricelocks.dto.PriceLockPrintData;
+import com.businessmanagement.pricelocks.entity.PriceLock;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -71,6 +73,22 @@ class PriceLockServiceTest {
         assertThat(response.status()).isEqualTo("CONFIRMED");
         assertThat(supplier.getUsableCoffeeKg()).isEqualByComparingTo("151");
         verify(priceLockRepository).save(any());
+    }
+
+    @Test
+    void printDataIsReadOnlyAndContainsSnapshotFields() {
+        PriceLock lock = new PriceLock(supplier, item,
+                LocalDate.of(2026, 11, 5), new BigDecimal("10"), new BigDecimal("42000"),
+                new BigDecimal("420000"), "note", user);
+        setId(lock, 55L);
+        when(priceLockRepository.findById(55L)).thenReturn(Optional.of(lock));
+
+        PriceLockPrintData result = service.printData(55L);
+
+        assertThat(result.supplierName()).isEqualTo("Supplier");
+        assertThat(result.quantityKg()).isEqualByComparingTo("10");
+        assertThat(result.pricePerKg()).isEqualByComparingTo("42000");
+        verify(priceLockRepository, org.mockito.Mockito.never()).save(any());
     }
 
     @Test

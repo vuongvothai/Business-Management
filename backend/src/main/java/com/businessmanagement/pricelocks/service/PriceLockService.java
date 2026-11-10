@@ -9,6 +9,7 @@ import com.businessmanagement.master.repository.PriceLockRepository;
 import com.businessmanagement.master.repository.SupplierRepository;
 import com.businessmanagement.pricelocks.dto.PriceLockRequest;
 import com.businessmanagement.pricelocks.dto.PriceLockResponse;
+import com.businessmanagement.pricelocks.dto.PriceLockPrintData;
 import com.businessmanagement.pricelocks.entity.PriceLock;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
@@ -53,6 +54,13 @@ public class PriceLockService {
                 request.lockedPricePerKg(), amount, request.note(), user);
         supplier.subtractUsableCoffeeKg(request.lockedVolume());
         return PriceLockResponse.from(priceLockRepository.save(priceLock));
+    }
+
+    @Transactional
+    public PriceLockPrintData printData(Long id) {
+        PriceLock lock = priceLockRepository.findById(id)
+                .orElseThrow(() -> notFound("PriceLock", id));
+        return PriceLockPrintData.from(lock);
     }
 
     private AppUser resolveUser(Long id) {

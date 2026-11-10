@@ -3,6 +3,7 @@ package com.businessmanagement.exports.web;
 import com.businessmanagement.exports.dto.DeliveryRequest;
 import com.businessmanagement.exports.dto.ExportRequest;
 import com.businessmanagement.exports.dto.ExportResponse;
+import com.businessmanagement.exports.dto.DeliveryPrintData;
 import com.businessmanagement.exports.service.ExportService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -29,6 +30,12 @@ public class ExportController {
     @ResponseStatus(HttpStatus.CREATED)
     public ExportResponse create(@Valid @RequestBody ExportRequest request) {
         return service.create(request);
+    }
+
+    @GetMapping("/{exportId}/deliveries/{deliveryId}/print-data")
+    public DeliveryPrintData deliveryPrintData(@PathVariable Long exportId,
+                                                @PathVariable Long deliveryId) {
+        return service.deliveryPrintData(exportId, deliveryId);
     }
 
     @PostMapping("/{exportId}/deliveries")

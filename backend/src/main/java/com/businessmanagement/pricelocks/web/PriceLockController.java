@@ -2,6 +2,9 @@ package com.businessmanagement.pricelocks.web;
 
 import com.businessmanagement.pricelocks.dto.PriceLockRequest;
 import com.businessmanagement.pricelocks.dto.PriceLockResponse;
+import com.businessmanagement.pricelocks.dto.PriceLockPrintData;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import com.businessmanagement.pricelocks.service.PriceLockService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -19,6 +22,11 @@ public class PriceLockController {
 
     public PriceLockController(PriceLockService service) {
         this.service = service;
+    }
+
+    @GetMapping("/{id}/print-data")
+    public PriceLockPrintData printData(@PathVariable Long id) {
+        return service.printData(id);
     }
 
     @PostMapping

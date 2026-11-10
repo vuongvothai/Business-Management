@@ -3,6 +3,7 @@ package com.businessmanagement.exports.service;
 import com.businessmanagement.exports.dto.DeliveryRequest;
 import com.businessmanagement.exports.dto.ExportRequest;
 import com.businessmanagement.exports.dto.ExportResponse;
+import com.businessmanagement.exports.dto.DeliveryPrintData;
 import com.businessmanagement.exports.entity.DeliveryStatus;
 import com.businessmanagement.exports.entity.ExportDelivery;
 import com.businessmanagement.exports.entity.ExportTicket;
@@ -94,6 +95,13 @@ public class ExportService {
         item.addAvailableKg(request.deliveredVolume().negate());
         ticket.updateDeliveryStatus(newTotal);
         return ExportResponse.from(ticket, newTotal);
+    }
+
+    @Transactional
+    public DeliveryPrintData deliveryPrintData(Long exportId, Long deliveryId) {
+        ExportDelivery delivery = deliveryRepository.findForPrint(exportId, deliveryId)
+                .orElseThrow(() -> notFound("Delivery", deliveryId));
+        return DeliveryPrintData.from(delivery);
     }
 
     @Transactional
