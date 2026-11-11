@@ -1,5 +1,9 @@
 # Đặc tả API
 
+## Audit logs
+
+`GET /api/audit-logs` is read-only and ADMIN-only. Optional filters: `actor` (username contains), `entityType`, `from`, and `to` ISO date-time values. Audit records are immutable; no update/delete API exists.
+
 ## Quy ước chung
 
 - Base path: `/api`
