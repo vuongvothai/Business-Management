@@ -4,6 +4,7 @@ import com.businessmanagement.exports.dto.DeliveryRequest;
 import com.businessmanagement.exports.dto.ExportRequest;
 import com.businessmanagement.exports.dto.ExportResponse;
 import com.businessmanagement.exports.dto.DeliveryPrintData;
+import com.businessmanagement.audit.service.AuditLogService;
 import com.businessmanagement.exports.entity.DeliveryStatus;
 import com.businessmanagement.exports.entity.ExportDelivery;
 import com.businessmanagement.exports.entity.ExportTicket;
@@ -39,17 +40,20 @@ public class ExportService {
     private final AppUserRepository appUserRepository;
     private final VehicleRepository vehicleRepository;
     private final PriceLockRepository priceLockRepository;
+    private final AuditLogService auditLogService;
 
     public ExportService(ExportTicketRepository exportRepository,
                          ExportDeliveryRepository deliveryRepository,
                          CustomerRepository customerRepository,
                          ItemRepository itemRepository,
-                         AppUserRepository appUserRepository) {
+                         AppUserRepository appUserRepository,
+                         AuditLogService auditLogService) {
         this.exportRepository = exportRepository;
         this.deliveryRepository = deliveryRepository;
         this.customerRepository = customerRepository;
         this.itemRepository = itemRepository;
         this.appUserRepository = appUserRepository;
+        this.auditLogService = auditLogService;
         this.vehicleRepository = null;
         this.priceLockRepository = null;
     }
@@ -61,12 +65,14 @@ public class ExportService {
                          ItemRepository itemRepository,
                          AppUserRepository appUserRepository,
                          VehicleRepository vehicleRepository,
-                         PriceLockRepository priceLockRepository) {
+                         PriceLockRepository priceLockRepository,
+                         AuditLogService auditLogService) {
         this.exportRepository = exportRepository;
         this.deliveryRepository = deliveryRepository;
         this.customerRepository = customerRepository;
         this.itemRepository = itemRepository;
         this.appUserRepository = appUserRepository;
+        this.auditLogService = auditLogService;
         this.vehicleRepository = vehicleRepository;
         this.priceLockRepository = priceLockRepository;
     }
@@ -93,6 +99,7 @@ public class ExportService {
             }
         }
         ticket = exportRepository.save(ticket);
+        auditLogService.record(user, "CREATE", "EXPORT", ticket.getId(), "Export created");
         return ExportResponse.from(ticket, BigDecimal.ZERO);
     }
 
@@ -117,6 +124,7 @@ public class ExportService {
                 request.importWarehouse(), request.note(), user));
         item.addAvailableKg(request.deliveredVolume().negate());
         ticket.updateDeliveryStatus(newTotal);
+        auditLogService.record(user, "CREATE", "DELIVERY", exportId, "Delivery created");
         return ExportResponse.from(ticket, newTotal);
     }
 

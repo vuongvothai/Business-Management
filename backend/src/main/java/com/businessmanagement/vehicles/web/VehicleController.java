@@ -4,6 +4,10 @@ import com.businessmanagement.vehicles.dto.VehicleRequest;
 import com.businessmanagement.vehicles.dto.VehicleResponse;
 import com.businessmanagement.vehicles.entity.Vehicle;
 import com.businessmanagement.vehicles.repository.VehicleRepository;
+import com.businessmanagement.audit.service.AuditLogService;
+import com.businessmanagement.master.entity.AppUser;
+import com.businessmanagement.master.repository.AppUserRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -15,7 +19,11 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/vehicles")
 public class VehicleController {
     private final VehicleRepository repository;
-    public VehicleController(VehicleRepository repository) { this.repository = repository; }
+    private final AuditLogService auditLogService;
+    private final AppUserRepository users;
+    public VehicleController(VehicleRepository repository, AuditLogService auditLogService, AppUserRepository users) {
+        this.repository = repository; this.auditLogService = auditLogService; this.users = users;
+    }
 
     @GetMapping
     public List<VehicleResponse> list(@RequestParam(defaultValue = "true") boolean active) {
@@ -27,20 +35,28 @@ public class VehicleController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public VehicleResponse create(@Valid @RequestBody VehicleRequest request) {
-        return save(new Vehicle(request.licensePlate()));
+        Vehicle vehicle = saveEntity(new Vehicle(request.licensePlate()));
+        auditLogService.record(currentUser(), "CREATE", "VEHICLE", vehicle.getId(), "Vehicle created");
+        return VehicleResponse.from(vehicle);
     }
     @PutMapping("/{id}")
     public VehicleResponse update(@PathVariable Long id, @Valid @RequestBody VehicleRequest request) {
         Vehicle vehicle = find(id);
         vehicle.updateLicensePlate(request.licensePlate());
-        return save(vehicle);
+        Vehicle saved = saveEntity(vehicle);
+        auditLogService.record(currentUser(), "UPDATE", "VEHICLE", id, "Vehicle updated");
+        return VehicleResponse.from(saved);
     }
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) { Vehicle vehicle = find(id); vehicle.deactivate(); repository.save(vehicle); }
-    private VehicleResponse save(Vehicle vehicle) {
-        try { return VehicleResponse.from(repository.save(vehicle)); }
+    public void delete(@PathVariable Long id) { Vehicle vehicle = find(id); vehicle.deactivate(); repository.save(vehicle); auditLogService.record(currentUser(), "HIDE", "VEHICLE", id, "Vehicle hidden"); }
+    private Vehicle saveEntity(Vehicle vehicle) {
+        try { return repository.save(vehicle); }
         catch (DataIntegrityViolationException ex) { throw new ResponseStatusException(HttpStatus.CONFLICT, "License plate already exists"); }
+    }
+    private AppUser currentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return users.findByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
     }
     private Vehicle find(Long id) { return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found: " + id)); }
 }

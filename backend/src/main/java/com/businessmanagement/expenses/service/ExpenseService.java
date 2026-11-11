@@ -3,6 +3,7 @@ package com.businessmanagement.expenses.service;
 import com.businessmanagement.expenses.dto.ExpenseDetailRequest;
 import com.businessmanagement.expenses.dto.ExpenseRequest;
 import com.businessmanagement.expenses.dto.ExpenseResponse;
+import com.businessmanagement.audit.service.AuditLogService;
 import com.businessmanagement.expenses.entity.Expense;
 import com.businessmanagement.expenses.entity.ExpenseDetail;
 import com.businessmanagement.expenses.repository.ExpenseRepository;
@@ -22,10 +23,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class ExpenseService {
     private final ExpenseRepository expenseRepository;
     private final AppUserRepository appUserRepository;
+    private final AuditLogService auditLogService;
 
-    public ExpenseService(ExpenseRepository expenseRepository, AppUserRepository appUserRepository) {
+    public ExpenseService(ExpenseRepository expenseRepository, AppUserRepository appUserRepository,
+            AuditLogService auditLogService) {
         this.expenseRepository = expenseRepository;
         this.appUserRepository = appUserRepository;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional
@@ -34,7 +38,9 @@ public class ExpenseService {
         validateCategories(request.details());
         Expense expense = new Expense(request.periodStart(), request.periodEnd(), request.note(), user);
         request.details().forEach(detail -> expense.addDetail(new ExpenseDetail(detail.categoryName().trim(), detail.amount())));
-        return ExpenseResponse.from(expenseRepository.save(expense));
+        Expense saved = expenseRepository.save(expense);
+        auditLogService.record(user, "CREATE", "EXPENSE", saved.getId(), "Expense created");
+        return ExpenseResponse.from(saved);
     }
 
     @Transactional
@@ -68,13 +74,17 @@ public class ExpenseService {
         AppUser updater = resolveUser(request.createdByUserId());
         expense.replaceDetails(request.periodStart(), request.periodEnd(), request.note(), updater);
         request.details().forEach(detail -> expense.addDetail(new ExpenseDetail(detail.categoryName().trim(), detail.amount())));
-        return ExpenseResponse.from(expenseRepository.save(expense));
+        Expense saved = expenseRepository.save(expense);
+        auditLogService.record(updater, "UPDATE", "EXPENSE", saved.getId(), "Expense updated");
+        return ExpenseResponse.from(saved);
     }
 
     @Transactional
     public void delete(Long id) {
-        if (!expenseRepository.existsById(id)) throw notFound(id);
-        expenseRepository.deleteById(id);
+        Expense expense = find(id);
+        AppUser user = resolveUser(null);
+        expenseRepository.delete(expense);
+        auditLogService.record(user, "DELETE", "EXPENSE", id, "Expense deleted");
     }
 
     private void validateCategories(List<ExpenseDetailRequest> details) {

@@ -26,15 +26,18 @@ public class PriceLockService {
     private final SupplierRepository supplierRepository;
     private final ItemRepository itemRepository;
     private final AppUserRepository appUserRepository;
+    private final com.businessmanagement.audit.service.AuditLogService auditLogService;
 
     public PriceLockService(PriceLockRepository priceLockRepository,
                             SupplierRepository supplierRepository,
                             ItemRepository itemRepository,
-                            AppUserRepository appUserRepository) {
+                            AppUserRepository appUserRepository,
+                            com.businessmanagement.audit.service.AuditLogService auditLogService) {
         this.priceLockRepository = priceLockRepository;
         this.supplierRepository = supplierRepository;
         this.itemRepository = itemRepository;
         this.appUserRepository = appUserRepository;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional
@@ -63,7 +66,10 @@ public class PriceLockService {
                 supplier, item, request.lockDate(), request.lockedVolume(),
                 request.lockedPricePerKg(), amount, request.note(), user);
         supplier.subtractUsableCoffeeKg(request.lockedVolume());
-        return PriceLockResponse.from(priceLockRepository.save(priceLock));
+        PriceLock saved = priceLockRepository.save(priceLock);
+        if (auditLogService != null) auditLogService.record(user, "CREATE", "PRICE_LOCK", saved.getId(),
+                "supplierId=" + supplier.getId() + ", itemId=" + item.getId() + ", volume=" + request.lockedVolume());
+        return PriceLockResponse.from(saved);
     }
 
     @Transactional
