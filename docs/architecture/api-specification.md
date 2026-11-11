@@ -64,6 +64,16 @@ Role hiện tại:
 Tài khoản seed ban đầu là `admin/password`; cần đổi mật khẩu trước khi dùng
 production và đặt `JWT_SECRET` dài tối thiểu 32 ký tự.
 
+## Inventory and supplier reconciliation (ADMIN-only)
+
+### `GET /api/inventory/reconciliation`
+
+Returns a read-only report comparing imported, price-locked, delivered, expected, and currently persisted supplier/item balances. Discrepancies are reported; the endpoint never changes balances.
+
+### `POST /api/inventory/reconciliation/confirm`
+
+Records an administrator's confirmation of the current report. The optional body is `{ "note": "..." }`. Confirmation stores the calculated discrepancies and audit event, but never automatically adjusts supplier or inventory balances.
+
 ## 1. Tạo phiếu nhập kho
 
 ### `POST /api/imports`

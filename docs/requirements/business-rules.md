@@ -70,7 +70,15 @@
 | BRULE-406 | Mỗi mặt hàng có tối đa một `MARKET_PRICE` cho một `price_date`. |
 | BRULE-407 | Mỗi giá được dùng để hiển thị phải có nguồn và thời điểm ghi nhận; giá nhập thủ công cũng ghi nhận thời điểm lưu. |
 
-## 6. Trạng thái
+## 6. Đối soát tồn kho và số dư
+
+| Mã | Quy tắc |
+|---|---|
+| BRULE-501 | Báo cáo đối soát chỉ đọc, so sánh số liệu giao dịch với số dư đã lưu và hiển thị chênh lệch. |
+| BRULE-502 | Chỉ ADMIN được xem báo cáo và xác nhận đối soát. |
+| BRULE-503 | Xác nhận đối soát chỉ ghi nhận người dùng, thời điểm, ghi chú và chênh lệch; không tự động điều chỉnh bất kỳ số dư nào. |
+
+## 7. Trạng thái
 
 ```text
 IMPORT_TICKET: DRAFT -> CONFIRMED
