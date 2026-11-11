@@ -66,6 +66,7 @@
 - [x] Bổ sung bộ unit/controller test cho các module backend chính (2026-11-10).
 - [x] Lọc chi phí theo khoảng kỳ, hỗ trợ ngày biên và kiểm tra khoảng hợp lệ (2026-11-10).
 - [x] Khởi tạo audit log nghiệp vụ và ghi nhận tạo phiếu nhập (2026-11-10).
+- [x] Hoàn thiện Audit Log: API ADMIN chỉ đọc, bộ lọc actor/entity/date, bất biến DB; ghi nhận export, delivery, expense và vehicle (2026-11-11).
 
 ## Bước tiếp theo
 

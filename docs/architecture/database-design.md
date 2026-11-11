@@ -1,5 +1,9 @@
 # Thiết kế cơ sở dữ liệu
 
+## Audit log
+
+`audit_log` is append-only. Migration V12 adds database triggers rejecting UPDATE and DELETE; the application exposes only the ADMIN read endpoint.
+
 ## Nguyên tắc
 
 - Sử dụng MySQL.
