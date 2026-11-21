@@ -11,15 +11,19 @@ import com.businessmanagement.market.repository.MarketPriceRepository;
 import com.businessmanagement.master.repository.ItemRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MarketPriceService {
     private final MarketPriceRepository prices;
     private final ItemRepository items;
-    public MarketPriceService(MarketPriceRepository prices, ItemRepository items) { this.prices = prices; this.items = items; }
+    private final CoffeeMarketPriceFetcher marketPriceFetcher;
+    @Autowired
+    public MarketPriceService(MarketPriceRepository prices, ItemRepository items, CoffeeMarketPriceFetcher marketPriceFetcher) { this.prices = prices; this.items = items; this.marketPriceFetcher = marketPriceFetcher; }
     @Transactional
     public MarketPriceResponse create(Long itemId, LocalDate priceDate, MarketPriceRequest request) {
         if (priceDate == null || priceDate.isAfter(LocalDate.now())) {
@@ -71,6 +75,7 @@ public class MarketPriceService {
     @Transactional
     public MarketPriceTodayResponse today() {
         LocalDate today = LocalDate.now();
+        syncOnlinePrice(today);
         Map<Long, MarketPrice> byItem = new HashMap<>();
         for (MarketPrice price : prices.findByPriceDate(today)) byItem.put(price.getItem().getId(), price);
         var result = items.findAll().stream().map(item -> {
@@ -79,5 +84,19 @@ public class MarketPriceService {
                     price == null ? null : price.getPricePerKg(), price == null ? null : price.getSource(), price == null ? null : price.getFetchedAt());
         }).toList();
         return new MarketPriceTodayResponse(today, result);
+    }
+
+    private void syncOnlinePrice(LocalDate priceDate) {
+        if (marketPriceFetcher == null) {
+            return;
+        }
+        BigDecimal onlinePrice = marketPriceFetcher.fetchAveragePrice();
+        for (Item item : items.findAll()) {
+            MarketPrice price = prices.findByItemIdAndPriceDate(item.getId(), priceDate)
+                    .orElseGet(() -> new MarketPrice(item, priceDate, onlinePrice,
+                            "giacaphe.com", java.time.LocalDateTime.now()));
+            price.update(onlinePrice, "giacaphe.com", java.time.LocalDateTime.now());
+            prices.save(price);
+        }
     }
 }
