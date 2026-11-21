@@ -39,6 +39,8 @@ class PriceLockServiceTest {
     private ItemRepository itemRepository;
     @Mock
     private AppUserRepository appUserRepository;
+    @Mock
+    private com.businessmanagement.audit.service.AuditLogService auditLogService;
 
     private PriceLockService service;
     private Supplier supplier;
@@ -48,7 +50,7 @@ class PriceLockServiceTest {
     @BeforeEach
     void setUp() {
         service = new PriceLockService(
-                priceLockRepository, supplierRepository, itemRepository, appUserRepository);
+                priceLockRepository, supplierRepository, itemRepository, appUserRepository, auditLogService);
         supplier = new Supplier("Supplier", "0900000000");
         item = new Item("Green coffee", "Grade A", "KG");
         user = new AppUser("System administrator", new Role("ADMIN"));

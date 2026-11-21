@@ -49,6 +49,8 @@ class ExportServiceTest {
     private PriceLockRepository priceLockRepository;
     @Mock
     private VehicleRepository vehicleRepository;
+    @Mock
+    private com.businessmanagement.audit.service.AuditLogService auditLogService;
 
     private ExportService service;
     private Customer customer;
@@ -59,7 +61,7 @@ class ExportServiceTest {
     void setUp() {
         service = new ExportService(
                 exportRepository, deliveryRepository, customerRepository,
-                itemRepository, appUserRepository, null, priceLockRepository);
+                itemRepository, appUserRepository, null, priceLockRepository, auditLogService);
         customer = new Customer("Customer");
         item = new Item("Green coffee", "Grade A", "KG");
         user = new AppUser("System administrator", new Role("ADMIN"));
@@ -144,7 +146,7 @@ class ExportServiceTest {
         when(vehicleRepository.findById(3L)).thenReturn(Optional.of(vehicle));
         when(deliveryRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         service = new ExportService(exportRepository, deliveryRepository, customerRepository,
-                itemRepository, appUserRepository, vehicleRepository, priceLockRepository);
+                itemRepository, appUserRepository, vehicleRepository, priceLockRepository, auditLogService);
 
         service.deliver(1L, new DeliveryRequest(new BigDecimal("40"),
                 LocalDate.of(2026, 11, 7), 3L, "Kho bốc A", "Kho giao B", "test", null));

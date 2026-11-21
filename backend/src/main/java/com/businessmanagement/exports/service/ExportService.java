@@ -99,7 +99,9 @@ public class ExportService {
             }
         }
         ticket = exportRepository.save(ticket);
-        auditLogService.record(user, "CREATE", "EXPORT", ticket.getId(), "Export created");
+        if (auditLogService != null) {
+            auditLogService.record(user, "CREATE", "EXPORT", ticket.getId(), "Export created");
+        }
         return ExportResponse.from(ticket, BigDecimal.ZERO);
     }
 
@@ -124,7 +126,9 @@ public class ExportService {
                 request.importWarehouse(), request.note(), user));
         item.addAvailableKg(request.deliveredVolume().negate());
         ticket.updateDeliveryStatus(newTotal);
-        auditLogService.record(user, "CREATE", "DELIVERY", exportId, "Delivery created");
+        if (auditLogService != null) {
+            auditLogService.record(user, "CREATE", "DELIVERY", exportId, "Delivery created");
+        }
         return ExportResponse.from(ticket, newTotal);
     }
 
