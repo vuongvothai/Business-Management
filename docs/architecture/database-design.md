@@ -279,10 +279,203 @@ có `source` và thời điểm ghi nhận; khi nhập thủ công, thời đi�
 Schema hiện tại cho phép các cột này `NULL`, nên cần quyết định backfill và
 siết ràng buộc trong migration nếu dùng làm dữ liệu dashboard.
 
+### `consignment_ticket`
+
+Phiếu nhập gửi kho (ký gửi chờ chốt giá). Khác với `import_ticket` ở chỗ quyền
+sở hữu hàng vẫn thuộc về khách (`customer_id`) cho đến khi chốt giá. Hàng gửi
+kho không làm thay đổi `supplier.usable_coffee_kg` hay `item.available_kg`.
+
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| `consignment_id` | `BIGINT` | PK |
+| `customer_id` | `BIGINT` | FK tới `customer.customer_id`, NOT NULL |
+| `item_id` | `BIGINT` | FK, NOT NULL |
+| `vehicle_id` | `BIGINT` | FK tới `vehicle.vehicle_id`, NULL |
+| `truck_license_plate` | `VARCHAR(30)` | NULL, snapshot biển số |
+| `number_of_bags` | `INT` | NOT NULL, > 0, backend tính từ `CONSIGNMENT_WEIGHT` |
+| `gross_weight_kg` | `DECIMAL(14,3)` | NOT NULL, > 0, trọng lượng có bì |
+| `tare_weight_kg` | `DECIMAL(14,3)` | NOT NULL, >= 0, trọng lượng bì |
+| `net_weight_kg` | `DECIMAL(14,3)` | NOT NULL, > 0, `gross_weight_kg - tare_weight_kg` |
+| `moisture_percent` | `DECIMAL(5,2)` | NULL, từ 0 đến 100 |
+| `impurity_percent` | `DECIMAL(5,2)` | NULL, từ 0 đến 100 |
+| `black_broken_ratio` | `DECIMAL(5,2)` | NULL, tỷ lệ đen/vỡ/sâu (%) |
+| `screen_size` | `VARCHAR(20)` | NULL, R13, R16, R18... |
+| `standard_weight_kg` | `DECIMAL(14,3)` | NOT NULL, >= 0, **trọng lượng quy chuẩn**, tự tính |
+| `moisture_standard` | `DECIMAL(5,2)` | NOT NULL, mặc định 12.5, chuẩn độ ẩm |
+| `impurity_standard` | `DECIMAL(5,2)` | NOT NULL, mặc định 1.0, chuẩn tạp chất |
+| `free_storage_days` | `INT` | NOT NULL, mặc định 0, miễn phí lưu kho X ngày |
+| `storage_fee_per_ton_month` | `DECIMAL(12,2)` | NULL, phí lưu kho/tấn/tháng sau miễn phí |
+| `natural_loss_rate` | `DECIMAL(5,2)` | NULL, tỷ lệ hao hụt tự nhiên/tháng (%) |
+| `photo_url` | `VARCHAR(1000)` | NULL |
+| `consignment_date` | `DATE` | NOT NULL, ngày nhập gửi |
+| `note` | `VARCHAR(1000)` | NULL |
+| `status` | `VARCHAR(20)` | NOT NULL: `DRAFT`, `CONFIRMED`, `CANCELLED` |
+| `created_by` | `BIGINT` | FK tới `user.user_id`, NOT NULL |
+| `created_at` | `DATETIME` | NOT NULL |
+| `updated_at` | `DATETIME` | NOT NULL |
+
+**Trọng lượng quy chuẩn** (`standard_weight_kg`) là cơ sở tính tiền duy nhất
+cho hàng gửi kho, được tính tự động:
+
+`standard_weight_kg = net_weight_kg × (1 - max(0, moisture_percent - moisture_standard)/100) × (1 - max(0, impurity_percent - impurity_standard)/100)`
+
+Backend phải tính `standard_weight_kg` trong cùng transaction khi xác nhận
+phiếu; client không được ghi đè.
+
+### `consignment_weight`
+
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| `cw_id` | `BIGINT` | PK |
+| `consignment_id` | `BIGINT` | FK, NOT NULL |
+| `weight_kg` | `DECIMAL(12,3)` | NOT NULL, > 0 |
+| `bag_count` | `TINYINT` | NOT NULL, >= 1 |
+| `created_by` | `BIGINT` | FK, NOT NULL |
+| `created_at` | `DATETIME` | NOT NULL |
+
+Tương tự `IMPORT_WEIGHT`, mỗi dòng là một lần cân. `SUM(weight_kg)` phải
+bằng `consignment_ticket.gross_weight_kg`.
+
+### `consignment_balance`
+
+Sổ Hàng Gửi Kho (Ledger 1) — theo dõi số dư hàng gửi theo từng khách hàng
+và mặt hàng.
+
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| `balance_id` | `BIGINT` | PK |
+| `customer_id` | `BIGINT` | FK, NOT NULL |
+| `item_id` | `BIGINT` | FK, NOT NULL |
+| `total_sent_kg` | `DECIMAL(14,3)` | NOT NULL, >= 0, tổng đã gửi (quy chuẩn) |
+| `total_locked_kg` | `DECIMAL(14,3)` | NOT NULL, >= 0, tổng đã chốt giá |
+| `total_withdrawn_kg` | `DECIMAL(14,3)` | NOT NULL, >= 0, tổng đã rút |
+| `remaining_kg` | `DECIMAL(14,3)` | NOT NULL, >= 0, **tự tính** = `total_sent_kg - total_locked_kg - total_withdrawn_kg` |
+| `updated_at` | `DATETIME` | NOT NULL |
+
+Tạo `UNIQUE(customer_id, item_id)` để mỗi khách chỉ có một số dư cho mỗi mặt
+hàng. Backend cập nhật trong transaction khi xác nhận nhập gửi, chốt giá, hoặc
+rút hàng.
+
+### `consignment_price_lock`
+
+Phiếu chốt giá từ hàng gửi kho. Khác với `PRICE_LOCK` (chốt giá hàng mua đứt)
+ở chỗ: gắn với `customer_id` và `consignment_id`, có đối trừ tạm ứng, và lưu
+ngày giờ đến phút/giây.
+
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| `cpl_id` | `BIGINT` | PK |
+| `customer_id` | `BIGINT` | FK, NOT NULL |
+| `consignment_id` | `BIGINT` | FK, NOT NULL, phiếu gửi gốc |
+| `item_id` | `BIGINT` | FK, NOT NULL |
+| `locked_volume` | `DECIMAL(14,3)` | NOT NULL, > 0, khối lượng chốt (quy chuẩn) |
+| `locked_at` | `DATETIME` | NOT NULL, ngày giờ chốt đến phút/giây |
+| `locked_price_per_kg` | `DECIMAL(15,2)` | NOT NULL, > 0 |
+| `gross_amount` | `DECIMAL(18,2)` | NOT NULL, >= 0, `locked_volume * locked_price_per_kg` |
+| `advance_deduction_amount` | `DECIMAL(18,2)` | NOT NULL, mặc định 0, đối trừ tạm ứng (gốc + lãi) |
+| `net_amount` | `DECIMAL(18,2)` | NOT NULL, >= 0, `gross_amount - advance_deduction_amount` |
+| `note` | `VARCHAR(1000)` | NULL |
+| `status` | `VARCHAR(20)` | NOT NULL: `DRAFT`, `CONFIRMED` |
+| `created_by` | `BIGINT` | FK, NULL |
+| `created_at` | `DATETIME` | NOT NULL |
+| `updated_at` | `DATETIME` | NOT NULL |
+
+Backend kiểm tra `locked_volume <= consignment_balance.remaining_kg` trong
+transaction. Khi xác nhận, trừ `consignment_balance.total_locked_kg` và cập
+nhật `remaining_kg`.
+
+### `advance_payment`
+
+Phiếu ứng tiền trên hàng đã gửi kho (Trường hợp A). Gắn với `customer_id` và
+`consignment_id`, tính lãi suất theo ngày.
+
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| `advance_id` | `BIGINT` | PK |
+| `customer_id` | `BIGINT` | FK, NOT NULL |
+| `consignment_id` | `BIGINT` | FK, NOT NULL, phiếu gửi làm cơ sở |
+| `advance_amount` | `DECIMAL(18,2)` | NOT NULL, > 0, số tiền ứng |
+| `advance_date` | `DATE` | NOT NULL, ngày ứng |
+| `interest_rate` | `DECIMAL(8,4)` | NOT NULL, > 0, lãi suất/tháng (ex: 0.8) |
+| `max_advance_percent` | `INT` | NOT NULL, 0-100, hạn mức ứng tối đa (%) |
+| `market_price_at_advance` | `DECIMAL(15,2)` | NOT NULL, giá thị trường tại thời điểm ứng |
+| `interest_days` | `INT` | NOT NULL, >= 0, số ngày tính lãi (đến ngày chốt) |
+| `interest_amount` | `DECIMAL(18,2)` | NOT NULL, >= 0, `advance_amount * interest_rate / 30 * interest_days` |
+| `total_repayment` | `DECIMAL(18,2)` | NOT NULL, >= 0, `advance_amount + interest_amount` |
+| `status` | `VARCHAR(20)` | NOT NULL: `ACTIVE`, `SETTLED` |
+| `created_by` | `BIGINT` | FK, NOT NULL |
+| `created_at` | `DATETIME` | NOT NULL |
+| `updated_at` | `DATETIME` | NOT NULL |
+
+Backend kiểm tra `advance_amount <= consignment_balance.remaining_kg * market_price_at_advance * max_advance_percent / 100` khi tạo. Khi chốt giá, `interest_days` được cập nhật và `interest_amount` tính lại.
+
+### `forward_contract`
+
+Phiếu chốt giá trước – Giao hàng sau (Trường hợp B / Hợp đồng bao tiêu).
+Sổ Hợp Đồng / Chốt Trước (Ledger 2).
+
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| `fc_id` | `BIGINT` | PK |
+| `customer_id` | `BIGINT` | FK, NOT NULL |
+| `item_id` | `BIGINT` | FK, NOT NULL |
+| `contract_code` | `VARCHAR(50)` | NOT NULL, UNIQUE, mã hợp đồng |
+| `committed_volume` | `DECIMAL(14,3)` | NOT NULL, > 0, khối lượng cam kết (quy chuẩn) |
+| `locked_price_per_kg` | `DECIMAL(15,2)` | NOT NULL, > 0, đơn giá đã chốt |
+| `delivery_deadline` | `DATE` | NOT NULL, hạn chót giao hàng |
+| `deposit_amount` | `DECIMAL(18,2)` | NOT NULL, >= 0, số tiền đặt cọc |
+| `delivered_volume` | `DECIMAL(14,3)` | NOT NULL, mặc định 0, khối lượng đã giao |
+| `remaining_volume` | `DECIMAL(14,3)` | NOT NULL, **tự tính** = `committed_volume - delivered_volume` |
+| `status` | `VARCHAR(20)` | NOT NULL: `ACTIVE`, `COMPLETED`, `OVERDUE`, `CANCELLED` |
+| `created_by` | `BIGINT` | FK, NOT NULL |
+| `created_at` | `DATETIME` | NOT NULL |
+| `updated_at` | `DATETIME` | NOT NULL |
+
+### `forward_contract_delivery`
+
+Giao hàng theo hợp đồng bao tiêu. Mapping nhiều phiếu cân vào 1 phiếu chốt.
+
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| `fcd_id` | `BIGINT` | PK |
+| `fc_id` | `BIGINT` | FK, NOT NULL |
+| `consignment_weight_id` | `BIGINT` | FK tới `consignment_weight.cw_id`, NULL, phiếu cân thực tế |
+| `delivered_volume` | `DECIMAL(14,3)` | NOT NULL, > 0, khối lượng giao (quy chuẩn) |
+| `delivery_date` | `DATE` | NOT NULL |
+| `excess_volume` | `DECIMAL(14,3)` | NOT NULL, mặc định 0, phần giao dư |
+| `excess_handling` | `VARCHAR(30)` | NULL: `MARKET_PRICE`, `NEW_CONSIGNMENT` |
+| `note` | `VARCHAR(1000)` | NULL |
+| `created_by` | `BIGINT` | FK, NOT NULL |
+| `created_at` | `DATETIME` | NOT NULL |
+
+Backend kiểm tra `SUM(delivered_volume) <= committed_volume` khi xác nhận.
+Phần `excess_volume` được xử lý theo `excess_handling`.
+
+### `cash_ledger`
+
+Sổ Công Nợ Tiền & Lãi (Ledger 3) — theo dõi tiền mặt đã ứng/cọc, tiền lãi
+phát sinh, và tiền hàng đã chốt giá phải trả khách.
+
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| `ledger_id` | `BIGINT` | PK |
+| `customer_id` | `BIGINT` | FK, NOT NULL, UNIQUE |
+| `total_advanced` | `DECIMAL(18,2)` | NOT NULL, >= 0, tổng tiền đã ứng |
+| `total_interest` | `DECIMAL(18,2)` | NOT NULL, >= 0, tổng lãi phát sinh |
+| `total_locked_amount` | `DECIMAL(18,2)` | NOT NULL, >= 0, tổng tiền hàng đã chốt phải trả |
+| `total_deposit_paid` | `DECIMAL(18,2)` | NOT NULL, >= 0, tổng tiền cọc đã chi |
+| `net_balance` | `DECIMAL(18,2)` | NOT NULL, **tự tính** = `total_locked_amount - total_advanced - total_interest - total_deposit_paid` |
+| `updated_at` | `DATETIME` | NOT NULL |
+
+`net_balance > 0`: doanh nghiệp nợ khách. `net_balance < 0`: khách nợ doanh
+nghiệp. Backend cập nhật trong transaction khi có giao dịch chốt giá, ứng
+tiền, hoặc cọc.
 
 ## Quan hệ
 
 Chi tiết quan hệ giữa các bảng được mô tả trong [erd.mmd](./erd.mmd).
+
+### Ngiệp vụ nhập/chốt/xuất truyền thống
 
 Khi tạo hoặc sửa `price_lock`, backend phải khóa `supplier` liên quan
 trong transaction và áp dụng:
@@ -295,3 +488,55 @@ hàng của lần chốt.
 `supplier.usable_coffee_kg` và `item.available_kg` là các số dư tổng hợp được
 cập nhật trong cùng transaction với nghiệp vụ nhập/chốt/xuất. Cần có tác vụ
 đối soát định kỳ với các giao dịch để phát hiện sai lệch.
+
+### Nghiệp vụ hàng gửi kho
+
+Khi xác nhận `CONSIGNMENT_TICKET`:
+- Backend tính `standard_weight_kg` từ `net_weight_kg`, `moisture_percent`,
+  `impurity_percent` và các ngưỡng chuẩn.
+- Cộng `standard_weight_kg` vào `CONSIGNMENT_BALANCE.total_sent_kg` (theo
+  `customer_id` + `item_id`).
+- Cập nhật `CONSIGNMENT_BALANCE.remaining_kg`.
+
+Khi xác nhận `CONSIGNMENT_PRICE_LOCK`:
+- Kiểm tra `locked_volume <= CONSIGNMENT_BALANCE.remaining_kg`.
+- Cộng `locked_volume` vào `CONSIGNMENT_BALANCE.total_locked_kg`.
+- Cập nhật `CONSIGNMENT_BALANCE.remaining_kg`.
+- Nếu có `ADVANCE_PAYMENT` đang `ACTIVE`, tính `interest_days` và
+  `interest_amount`, set `ADVANCE_PAYMENT.status = SETTLED`.
+- Cộng `gross_amount` vào `CASH_LEDGER.total_locked_amount`.
+- Cộng `interest_amount` vào `CASH_LEDGER.total_interest`.
+- Tính `CASH_LEDGER.net_balance`.
+
+### Nghiệp vụ ứng tiền (Trường hợp A)
+
+Khi tạo `ADVANCE_PAYMENT`:
+- Kiểm tra `advance_amount <= CONSIGNMENT_BALANCE.remaining_kg *
+  market_price_at_advance * max_advance_percent / 100`.
+- Cộng `advance_amount` vào `CASH_LEDGER.total_advanced`.
+
+### Nghiệp vụ chốt trước (Trường hợp B)
+
+Khi tạo `FORWARD_CONTRACT`:
+- Cộng `deposit_amount` vào `CASH_LEDGER.total_deposit_paid`.
+
+Khi xác nhận `FORWARD_CONTRACT_DELIVERY`:
+- Kiểm tra `SUM(delivered_volume) <= FORWARD_CONTRACT.committed_volume`.
+- Cộng `delivered_volume` vào `FORWARD_CONTRACT.delivered_volume`.
+- Tính `FORWARD_CONTRACT.remaining_volume`.
+- Nếu `remaining_volume <= 0`, set `FORWARD_CONTRACT.status = COMPLETED`.
+- Nếu có `excess_volume > 0`, xử lý theo `excess_handling`.
+
+### 3 Sổ cái (Ledgers) — Nguyên tắc cập nhật
+
+| Nghiệp vụ | Sổ 1 (Hàng Gửi) | Sổ 2 (Hợp Đồng) | Sổ 3 (Tiền & Lãi) |
+|---|---|---|---|
+| Nhập gửi kho | `total_sent_kg` += | — | — |
+| Chốt giá từ hàng gửi | `total_locked_kg` += | — | `total_locked_amount` += |
+| Ứng tiền | — | — | `total_advanced` += |
+| Ký hợp đồng | — | `committed_volume` set | `total_deposit_paid` += |
+| Giao theo hợp đồng | — | `delivered_volume` += | — |
+| Đối trừ tạm ứng | — | — | `total_interest` += |
+
+Mỗi giao dịch chỉ cập nhật đúng sổ của nó, không trộn lẫn. Tất cả cập nhật
+phải chạy trong transaction với locking appropriate.

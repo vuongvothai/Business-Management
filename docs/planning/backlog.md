@@ -66,3 +66,44 @@
 - [ ] Chuy?n kho.
 - [ ] Qu?n l? c�ng n? kh�ch h�ng.
 - [ ] T�ch h?p c�n �i?n t?.
+
+## P0 - Nghiệp vụ hàng gửi kho & ứng tiền (Mới)
+
+- [ ] **Migration M13:** Tạo 8 bảng mới: `consignment_ticket`, `consignment_weight`, `consignment_balance`, `consignment_price_lock`, `advance_payment`, `forward_contract`, `forward_contract_delivery`, `cash_ledger`; thêm FK, index, trigger audit.
+- [ ] **Backend - Hàng gửi kho:**
+  - [ ] CRUD `CONSIGNMENT_TICKET` với validation: tính `net_weight_kg` từ `gross_weight_kg - tare_weight_kg`, tính `standard_weight_kg` từ công thức quy chuẩn.
+  - [ ] CRUD `CONSIGNMENT_WEIGHT` (nhiều lần cân, tổng hợp số bao và khối lượng).
+  - [ ] Xác nhận phiếu gửi -> cập nhật `CONSIGNMENT_BALANCE` (total_sent_kg, remaining_kg) trong transaction.
+  - [ ] API `GET /api/consignment/balance/{customerId}` - xem số dư hàng gửi.
+  - [ ] API `POST /api/consignment/{id}/withdraw` - rút hàng, cập nhật `total_withdrawn_kg`.
+- [ ] **Backend - Chốt giá từ hàng gửi:**
+  - [ ] CRUD `CONSIGNMENT_PRICE_LOCK` với validation: `locked_volume <= consignment_balance.remaining_kg`, tính `gross_amount`, `net_amount`.
+  - [ ] Khi xác nhận: trừ `consignment_balance`, đối trừ `advance_payment` (nếu có), cập nhật `cash_ledger`.
+  - [ ] API `POST /api/consignment/price-lock` - chốt giá từ hàng gửi.
+- [ ] **Backend - Ứng tiền (Trường hợp A):**
+  - [ ] CRUD `ADVANCE_PAYMENT` với validation: `advance_amount <= remaining_kg * market_price * max_advance_percent / 100`.
+  - [ ] Tính `interest_amount` theo ngày khi chốt giá.
+  - [ ] API `POST /api/advance-payment` - tạo phiếu ứng tiền.
+  - [ ] API `GET /api/advance-payment/active/{consignmentId}` - xem ứng tiền đang hoạt động.
+- [ ] **Backend - Chốt trước (Trường hợp B):**
+  - [ ] CRUD `FORWARD_CONTRACT` với validation: `committed_volume > 0`, `delivery_deadline >= today`.
+  - [ ] CRUD `FORWARD_CONTRACT_DELIVERY` với validation: `SUM(delivered_volume) <= committed_volume`, xử lý `excess_volume`.
+  - [ ] API `POST /api/forward-contract` - tạo hợp đồng bao tiêu.
+  - [ ] API `POST /api/forward-contract/{id}/delivery` - giao hàng theo hợp đồng.
+  - [ ] API `GET /api/forward-contract/{customerId}/progress` - xem tiến độ giao hàng.
+- [ ] **Backend - 3 Sổ cái (Ledgers):**
+  - [ ] API `GET /api/ledger/consignment/{customerId}` - Sổ Hàng Gửi Kho.
+  - [ ] API `GET /api/ledger/forward-contract/{customerId}` - Sổ Hợp Đồng.
+  - [ ] API `GET /api/ledger/cash/{customerId}` - Sổ Công Nợ Tiền & Lãi.
+  - [ ] API `GET /api/ledger/all/{customerId}` - tổng hợp 3 sổ.
+- [ ] **Frontend:**
+  - [ ] Màn hình **Hàng Gửi Kho** - tạo phiếu gửi, xem số dư, rút hàng.
+  - [ ] Màn hình **Chốt Giá Hàng Gửi** - chốt giá từ hàng gửi, xem đối trừ ứng tiền.
+  - [ ] Màn hình **Ứng Tiền** - tạo phiếu ứng, xem lãi suất, theo dõi trạng thái.
+  - [ ] Màn hình **Hợp Đồng Bao Tiêu** - tạo chốt trước, theo dõi tiến độ giao, xử lý giao dư/thiếu.
+  - [ ] Dashboard 3 sổ cái - hiển thị song song 3 sổ cho mỗi khách.
+- [ ] **Test:**
+  - [ ] Unit test: tính `standard_weight_kg`, tính `interest_amount`, tính `net_amount`, tính `remaining_kg`.
+  - [ ] Integration test: transaction nhập gửi -> chốt giá -> đối trừ ứng tiền.
+  - [ ] Integration test: hợp đồng bao tiêu -> giao nhiều lần -> xử lý dư.
+  - [ ] UI test: quy trình end-to-end hàng gửi kho.
