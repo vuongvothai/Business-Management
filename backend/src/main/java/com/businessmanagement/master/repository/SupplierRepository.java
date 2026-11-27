@@ -7,6 +7,6 @@ import java.util.Optional;
 
 public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     Optional<Supplier> findByIdentityNo(String identityNo);
-    List<Supplier> findByPhoneContainingOrderByName();
+    List<Supplier> findByPhoneContainingOrderByName(String phone);
     List<Supplier> findByNameContainingIgnoreCaseOrderByName(String name);
 }
