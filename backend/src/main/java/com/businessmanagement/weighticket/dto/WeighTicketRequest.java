@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record WeighTicketRequest(
-        @NotBlank String code,
+        String code,
         @NotBlank String direction,
         @NotNull LocalDateTime weighedAt,
         Long warehouseId,

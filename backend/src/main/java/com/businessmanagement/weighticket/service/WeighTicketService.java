@@ -27,7 +27,7 @@ public class WeighTicketService {
     @Transactional
     public WeighTicketResponse create(WeighTicketRequest req) {
         WeighTicket t = new WeighTicket();
-        t.setCode(req.code());
+            t.setCode(generateCode());
         t.setDirection(req.direction());
         t.setWeighedAt(req.weighedAt());
         t.setWarehouseId(req.warehouseId());
@@ -108,4 +108,10 @@ public class WeighTicketService {
         t.setStatus("CONFIRMED");
         return get(t.getWeighTicketId());
     }
+
+        private String generateCode() {
+            String prefix = "PC";
+            long count = ticketRepository.count() + 1;
+            return prefix + String.format("%08d", count);
+        }
 }
