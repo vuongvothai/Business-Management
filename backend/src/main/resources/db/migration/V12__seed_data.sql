@@ -16,3 +16,12 @@ INSERT INTO item (name, category, unit) VALUES
 
 INSERT INTO expense_category (category_name) VALUES
 ('Nhân công'), ('Vận chuyển'), ('Điện nước'), ('Khác');
+
+INSERT INTO supplier (name, identity_no, phone, address) VALUES
+('Võ Thái Vương', '079123456789', '0909123456', 'Ea Na'),
+('Nguyễn Văn A', '079987654321', '0909987654', 'Ea Na'),
+('Trần Thị B', '079111222333', '0909111222', 'Krông Ana');
+
+INSERT INTO customer (name, phone, address) VALUES
+('Công ty TNHH Minh Phát', '0500123456', 'Buôn Drai'),
+('HTX Nông Sản Ea Na', '0500987654', 'Ea Na');
