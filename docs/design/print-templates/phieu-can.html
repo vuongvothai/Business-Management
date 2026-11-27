@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Phiếu Mua Cân - Có Tên Công Ty</title>
+<style>
+  /* Thiết lập khổ giấy in A4 DỌC, phiếu nằm nửa trên */
+  @media print {
+    @page {
+      size: A4 portrait; /* Khổ giấy A4 dọc (210mm x 297mm) */
+      margin: 0;         /* Xóa lề mặc định của trình duyệt */
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: none;
+      display: block !important;
+    }
+    .no-print {
+      display: none !important;
+    }
+    .ticket-container {
+      box-shadow: none !important;
+      border: none !important;
+      width: 210mm !important;
+      height: 148mm !important; /* Khóa chặt chiều cao nửa tờ A4 */
+      margin: 0 !important;
+      padding: 5mm 12mm !important;
+    }
+    .cut-line {
+      display: block !important;
+      width: 100%;
+      border-bottom: 1px dashed #999;
+      margin: 0;
+    }
+  }
+
+  /* Giao diện hiển thị xem trước trên màn hình */
+  body {
+    font-family: "Times New Roman", Times, serif;
+    background-color: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin: 0;
+    color: #000;
+  }
+
+  /* Khung phiếu nửa tờ A4 (210mm x 148mm) */
+  .ticket-container {
+    width: 210mm;
+    height: 148mm;
+    background: #fff;
+    padding: 5mm 12mm;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-size: 17px;
+    line-height: 1.32;
+  }
+
+  .cut-line {
+    display: none;
+  }
+
+  /* Phần thông tin Công ty / Vựa thu mua */
+  .company-header {
+    text-align: left;
+    border-bottom: 1px solid #000;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+  }
+
+  .company-name {
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .company-info {
+    font-size: 16px;
+    font-style: italic;
+  }
+
+  /* Tiêu đề chính */
+  .header-title {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Bố cục chia 2 cột chính */
+  .main-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+  }
+
+  .col-left {
+    width: 56%;
+  }
+
+  .col-right {
+    width: 44%;
+  }
+
+  .row {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 1.5px;
+  }
+
+  .col-left .label {
+    width: 145px;
+    flex-shrink: 0;
+  }
+
+  .val-text {
+    font-weight: bold;
+  }
+
+  .val-num {
+    width: 90px;
+    text-align: right;
+    font-weight: bold;
+    padding-right: 8px;
+    flex-shrink: 0;
+  }
+
+  .unit {
+    width: 25px;
+  }
+
+  .col-right .label {
+    width: 135px;
+    flex-shrink: 0;
+  }
+
+  .sub-val {
+    display: inline-block;
+    min-width: 45px;
+    text-align: right;
+    font-weight: bold;
+  }
+
+  .row-split {
+    display: flex;
+    justify-content: space-between;
+  }
+  .unit-price-box {
+    width: 42%;
+    display: flex;
+  }
+  .unit-price-box .label {
+    width: 65px;
+  }
+
+  /* Khu vực chữ ký dưới cùng */
+  .signatures {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding: 0 25px;
+    font-weight: bold;
+    font-size: 15px;
+  }
+
+  /* Nút thao tác */
+  .actions {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+  }
+  .btn {
+    padding: 8px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    font-family: sans-serif;
+    font-weight: 600;
+  }
+  .btn-print {
+    background-color: #0d6efd;
+    color: white;
+  }
+  .btn-print:hover {
+    background-color: #0b5ed7;
+  }
+</style>
+</head>
+<body>
+
+  <div class="actions no-print">
+    <button class="btn btn-print" onclick="window.print()">🖨️ In Phiếu Cân (Nửa Trên A4)</button>
+  </div>
+
+  <!-- Khung Phiếu Cân -->
+  <div class="ticket-container" id="phieu-can">
+    
+    <!-- THÔNG TIN CÔNG TY -->
+    <div class="company-header">
+      <div class="company-name" id="ten_cong_ty">CÔNG TY TNHH</div>
+      <div class="company-info">
+        Địa chỉ: <span id="dia_chi_cong_ty">Thôn 1, Xã Ea Na, Huyện Krông Ana, Tỉnh Đắk Lắk</span>
+      </div>
+    </div>
+
+    <div class="header-title">PHIẾU MUA CÂN</div>
+
+    <div class="main-grid">
+      <!-- CỘT TRÁI -->
+      <div class="col-left">
+        <div class="row">
+          <span class="label">Số phiếu :</span>
+          <span class="val-text" id="so_phieu">100426091550</span>
+        </div>
+        <div class="row">
+          <span class="label">Khách hàng :</span>
+          <span class="val-text" id="khach_hang">Võ Thái Vương</span>
+        </div>
+        <div class="row">
+          <span class="label">Số xe :</span>
+          <span class="val-text" id="so_xe">17H01506</span>
+        </div>
+        <div class="row">
+          <span class="label">Trọng lượng tổng :</span>
+          <span class="val-num" id="tl_tong">5,000.0</span>
+          <span class="unit">kg</span>
+        </div>
+        <div class="row">
+          <span class="label">Trọng lượng xe :</span>
+          <span class="val-num" id="tl_xe"></span>
+          <span class="unit">kg</span>
+        </div>
+        <div class="row">
+          <span class="label">Trọng lượng hàng :</span>
+          <span class="val-num" id="tl_hang">5,000.0</span>
+          <span class="unit">kg</span>
+        </div>
+        <div class="row">
+          <span class="label">Trừ bì :</span>
+          <span class="val-num" id="tru_bi">20.0</span>
+          <span class="unit">kg</span>
+        </div>
+        <div class="row">
+          <span class="label">TL hàng sau trừ bì :</span>
+          <span class="val-num" id="tl_sau_bi">4,980.0</span>
+          <span class="unit">kg</span>
+        </div>
+        <div class="row">
+          <span class="label">SL trừ/cộng :</span>
+          <span class="val-num" id="sl_tru_cong">-12.5</span>
+          <span class="unit">kg</span>
+        </div>
+        <div class="row">
+          <span class="label">SL quy chuẩn :</span>
+          <span class="val-num" id="sl_quy_chuan">4,972.50</span>
+          <span class="unit">kg</span>
+        </div>
+        <div class="row">
+          <span class="label">KCS :</span>
+          <span class="val-text" id="kcs">Thuan</span>
+        </div>
+        <div class="row">
+          <span class="label">SL cấn trừ :</span>
+          <span class="val-num" id="sl_can_tru"></span>
+        </div>
+        <div class="row">
+          <span class="label">SL gửi :</span>
+          <span class="val-num" id="sl_gui"></span>
+        </div>
+        <div class="row row-split">
+          <div style="display: flex;">
+            <span class="label">SL bán :</span>
+            <span class="val-text" id="sl_ban"></span>
+          </div>
+          <div class="unit-price-box">
+            <span class="label">Đơn giá :</span>
+            <span class="val-text" id="don_gia"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CỘT PHẢI -->
+      <div class="col-right">
+        <div class="row">
+          <span class="label">Loại hàng :</span>
+          <span class="val-text" id="loai_hang">Cafe</span>
+        </div>
+        <div class="row">
+          <span class="label">Ngày cân :</span>
+          <span class="val-text" id="ngay_can">10/04/2026</span>
+        </div>
+        <div class="row">
+          <span class="label">Giờ cân 1 :</span>
+          <span class="val-text" id="gio_can_1">9:16:46 AM</span>
+        </div>
+        <div class="row">
+          <span class="label">Giờ cân 2 :</span>
+          <span class="val-text" id="gio_can_2"></span>
+        </div>
+        <div class="row">
+          <span class="label">Nhập/Xuất :</span>
+          <span class="val-text" id="nhap_xuat">Nhập</span>
+        </div>
+        <div class="row">
+          <span class="label">Mẫu :</span>
+          <span>
+            <span class="val-text" id="mau_1">400</span> / 
+            <span class="val-text" id="mau_2">6.00</span>
+          </span>
+        </div>
+        <div class="row">
+          <span class="label">TC :</span>
+          <span class="sub-val" id="tc">-0.50</span>
+        </div>
+        <div class="row">
+          <span class="label">Độ ẩm :</span>
+          <span class="val-text" id="do_am">14.50</span>
+        </div>
+        <div class="row">
+          <span class="label">Dem :</span>
+          <span class="val-text" id="dem"></span>
+        </div>
+        <div class="row">
+          <span class="label">SL trứng :</span>
+          <span class="val-text" id="sl_trung"></span>
+        </div>
+        <div class="row">
+          <span class="label">Tổng QC (%) :</span>
+          <span class="val-text" id="tong_qc">-0.25</span>
+        </div>
+        <div class="row">
+          <span class="label">Cộng Trừ Ngoài (kg) :</span>
+          <span class="val-text" id="cong_tru_ngoai">5.00</span>
+        </div>
+        <div class="row">
+          <span class="label">Ghi Chú :</span>
+          <span class="val-text" id="ghi_chu">Điều chỉnh tăng</span>
+        </div>
+        <div class="row">
+          <span class="label">Tổng Tiền :</span>
+          <span class="val-text" id="tong_tien"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHỮ KÝ -->
+    <div class="signatures">
+      <div>Khách hàng</div>
+      <div>Bảo vệ</div>
+      <div>Người cân</div>
+    </div>
+  </div>
+
+  <!-- Đường kẻ đứt mờ ở giữa tờ A4 để rọc giấy -->
+  <div class="cut-line"></div>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-# Business Requirements Document (BRD)
+﻿# Business Requirements Document (BRD)
 
 ## 1. Tổng quan
 
@@ -51,7 +51,7 @@
 16. **Hệ thống 3 sổ cái (Ledgers):** Sổ Hàng Gửi Kho, Sổ Hợp Đồng/Chốt Trước,
     Sổ Công Nợ Tiền & Lãi.
 
-### Phạm vi phiên bản kế tiếp (đã lập kế hoạch, chưa triển khai)
+### Phạm vi phiên bản kế tiếp
 
 1. Mở rộng dữ liệu phiếu nhập: biển số xe, kho bốc, kho nhập, trừ bì và kết
    quả mẫu thử.
@@ -65,6 +65,25 @@
 6. Hiển thị biểu đồ doanh thu/lợi nhuận theo khoảng ngày được chọn và giá cà
    phê hôm nay lấy từ API.
 7. Xuất mẫu phiếu chốt giá và phiếu giao hàng ở dạng thân thiện để in.
+
+### Phạm vi mở rộng (theo ERD mới)
+
+ERD: [erd.mmd](../architecture/erd.mmd). Kế hoạch:
+[planning/roadmap.md](../planning/roadmap.md).
+
+1. **Mua:** `PURCHASE_CONTRACT`, `PURCHASE_DELIVERY`.
+2. **Bán 3 loại:** `SALES_CONTRACT.contract_type` = `DIRECT`, `LOCKED`,
+   `FROM_CONSIGNMENT`; `SALES_DELIVERY`.
+3. **Phiếu cân:** `WEIGH_TICKET`, `WEIGH_TICKET_LINE` dùng chung.
+4. **Tồn kho:** `WAREHOUSE`, `INVENTORY_TRANSACTION`.
+5. **Tiền:** `PAYMENT_VOUCHER`, `PAYMENT_ALLOCATION`, `DEBT_LEDGER`;
+   `EXPENSE_CATEGORY`.
+6. **Gửi kho:** `CONSIGNMENT_TICKET`, `CONSIGNMENT_BALANCE`,
+   `CONSIGNMENT_PRICE_LOCK`, `ADVANCE_PAYMENT`.
+7. **Gửi kho khách:** `CUSTOMER_CONSIGNMENT_TICKET`,
+   `CUSTOMER_CONSIGNMENT_BALANCE`.
+8. **Sổ vay:** `LOAN_CONTRACT`, `LOAN_TRANSACTION`.
+9. **Nâng cao:** `REPORT_SCHEDULE`, `ALERT_RULE`.
 
 ## 2. Đối tượng sử dụng
 

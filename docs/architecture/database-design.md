@@ -1,4 +1,4 @@
-# Thiết kế cơ sở dữ liệu
+﻿# Thiết kế cơ sở dữ liệu
 
 ## Audit log
 
@@ -17,10 +17,8 @@
 
 ## Mô hình dữ liệu và trạng thái triển khai
 
-Các bảng dưới đây mô tả schema mục tiêu. Migration hiện hành chưa có bảng
-`vehicle` và các trường mở rộng phiếu nhập/giao được ghi rõ là kế hoạch; không
-coi mô tả ERD là bằng chứng schema đã tồn tại trong database. Xem roadmap và
-[kế hoạch baseline](../planning/version-baseline.md) trước khi tạo migration.
+Các bảng dưới đây mô tả schema mục tiêu theo ERD mới. Migration sẽ viết lại
+từ `V1` (`V1`–`V12`), không giữ `V1`–`V13` cũ.
 
 ### `supplier`
 
@@ -129,10 +127,7 @@ transaction. Client không được tự ghi đè hai giá trị này.
 `vehicle_id` phục vụ chọn nhanh; `truck_license_plate` là snapshot để lịch sử
 không thay đổi khi bản ghi biển số được cập nhật hoặc ẩn khỏi danh sách.
 
-Các cột mở rộng phiếu nhập ở bảng trên là mục tiêu phiên bản kế tiếp; schema
-đang chạy hiện chưa có `vehicle_id`, `truck_license_plate`,
-`loading_warehouse`, `import_warehouse`, `tare_weight` và
-`sample_test_result`.
+Các cột mở rộng phiếu nhập theo ERD mới.
 
 ### `import_weight`
 
@@ -199,6 +194,13 @@ giao. Phiếu không phụ thuộc trực tiếp vào `IMPORT_TICKET`.
 | `export_id` | `BIGINT` | PK |
 | `customer_id` | `BIGINT` | FK, NOT NULL |
 | `item_id` | `BIGINT` | FK, NOT NULL |
+| `ticket_type` | `VARCHAR(20)` | NOT NULL, mặc định `DIRECT`: `DIRECT`, `LOCKED`, `FROM_CONSIGNMENT` — **kế hoạch**, xem [README.md](../design/README.md) |
+| `weigh_ticket_id` | `BIGINT` | FK tới `weigh_ticket`, NULL — **kế hoạch** |
+| `warehouse_id` | `BIGINT` | FK tới `warehouse`, NULL — **kế hoạch** |
+| `customer_consignment_id` | `BIGINT` | FK tới `customer_consignment_ticket`, NULL, bắt buộc khi `FROM_CONSIGNMENT` — **kế hoạch** |
+| `deposit_amount` | `DECIMAL(18,2)` | NOT NULL, mặc định 0 — **kế hoạch** |
+| `customer_reported_kg` | `DECIMAL(14,3)` | NULL, khối lượng quy chuẩn khách báo lại — **kế hoạch** |
+| `diff_kg` | `DECIMAL(14,3)` | NULL, tự tính = `delivered − customer_reported` — **kế hoạch** |
 | `committed_volume` | `DECIMAL(14,3)` | NOT NULL, > 0 |
 `delivery_due_date` không còn thuộc mô hình hiện tại; ngày giao thực tế nằm ở
 `export_delivery.delivery_date`.
@@ -225,6 +227,12 @@ giao. Phiếu không phụ thuộc trực tiếp vào `IMPORT_TICKET`.
 `EXPORT_DELIVERY`, backend khóa `ITEM` trong transaction và trừ
 `delivered_volume` khỏi `ITEM.available_kg`. Tạo phiếu cam kết không làm thay
 đổi tồn kho. Cam kết bán có thể vượt tồn hiện tại.
+
+Các cột `ticket_type`, `weigh_ticket_id`, `warehouse_id`,
+`customer_consignment_id`, `deposit_amount`, `customer_reported_kg` và
+`diff_kg` thuộc ERD mới. ERD thay
+`export_ticket`/`export_delivery` bằng `SALES_CONTRACT`/`SALES_DELIVERY`; xem
+[erd.mmd](./erd.mmd) và [design/README.md](../design/README.md) mục 2.
 
 `vehicle_id`, `truck_license_plate`, `loading_warehouse` và `import_warehouse`
 được lưu trên từng lần giao. Snapshot biển số phải được lưu độc lập để giữ
@@ -540,3 +548,24 @@ Khi xác nhận `FORWARD_CONTRACT_DELIVERY`:
 
 Mỗi giao dịch chỉ cập nhật đúng sổ của nó, không trộn lẫn. Tất cả cập nhật
 phải chạy trong transaction với locking appropriate.
+
+## Mở rộng theo ERD mới
+
+Các nhóm nghiệp vụ dưới đây đã có trong ERD và sẽ viết trong migration mới
+(`V1`–`V12`, xem [roadmap.md](../planning/roadmap.md)):
+
+- Mua: `PURCHASE_CONTRACT`, `PURCHASE_DELIVERY`.
+- Bán: `SALES_CONTRACT` (3 loại), `SALES_DELIVERY`.
+- Phiếu cân: `WEIGH_TICKET`, `WEIGH_TICKET_LINE`.
+- Tồn kho: `WAREHOUSE`, `INVENTORY_TRANSACTION`.
+- Tiền: `PAYMENT_VOUCHER`, `PAYMENT_ALLOCATION`, `DEBT_LEDGER`,
+  `EXPENSE_CATEGORY`.
+- Gửi kho: `CONSIGNMENT_TICKET`, `CONSIGNMENT_BALANCE`,
+  `CONSIGNMENT_PRICE_LOCK`, `ADVANCE_PAYMENT`.
+- Gửi kho khách: `CUSTOMER_CONSIGNMENT_TICKET`,
+  `CUSTOMER_CONSIGNMENT_BALANCE`.
+- Sổ vay: `LOAN_CONTRACT`, `LOAN_TRANSACTION`.
+- Nâng cao: `REPORT_SCHEDULE`, `ALERT_RULE`.
+
+ERD: [erd.mmd](./erd.mmd). Thiết kế: [design/README.md](../design/README.md).
+Mẫu in: [design/print-templates/](../design/print-templates/README.md).

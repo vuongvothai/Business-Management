@@ -1,234 +1,240 @@
-﻿erDiagram
+﻿
+erDiagram
 
-    SUPPLIER {
-        bigint supplier_id PK
-        string name "Tên nhà cung cấp"
-        string identity_no "CCCD hoặc mã định danh"
-        string phone "Số điện thoại"
-        string address "Địa chỉ"
-        decimal usable_coffee_kg "Số cà phê hữu dụng còn lại (kg)"
-        datetime created_at
-        datetime updated_at
-    }
+    %% =========================
+    %% 1. DANH MUC
+    %% =========================
 
     ROLE {
         bigint role_id PK
-        string role_name UK "ADMIN, WEIGHER hoặc ACCOUNTANT"
+        string role_name UK
     }
 
     USER {
         bigint user_id PK
-        string full_name "Họ và tên người dùng"
+        string username UK
+        string password_hash
+        string full_name
         bigint role_id FK
+        boolean active
         datetime created_at
         datetime updated_at
     }
 
-    CUSTOMER {
-        bigint customer_id PK
-        string name "Tên khách hàng"
-        string phone "Số điện thoại"
-        string address "Địa chỉ"
+    WAREHOUSE {
+        bigint warehouse_id PK
+        string code UK
+        string name
+        string address
+        boolean active
         datetime created_at
         datetime updated_at
     }
 
     ITEM {
         bigint item_id PK
-        string name "Tên mặt hàng"
-        string category "Phân loại mặt hàng"
-        string unit "Đơn vị tính"
-        decimal available_kg "Tồn kho khả dụng (kg)"
+        string name
+        string category
+        string unit
+        decimal actual_stock_kg
+        decimal standard_stock_kg
         datetime created_at
         datetime updated_at
     }
 
     VEHICLE {
         bigint vehicle_id PK
-        string license_plate UK "Biển số xe"
-        boolean active "Còn hiển thị trong danh sách chọn"
+        string license_plate UK
+        boolean active
         datetime created_at
         datetime updated_at
+    }
+
+    SUPPLIER {
+        bigint supplier_id PK
+        string name
+        string identity_no
+        string phone
+        string address
+        decimal usable_coffee_kg
+        datetime created_at
+        datetime updated_at
+    }
+
+    CUSTOMER {
+        bigint customer_id PK
+        string name
+        string phone
+        string address
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% =========================
+    %% 2. CAN HANG
+    %% =========================
+
+    WEIGH_TICKET {
+        bigint weigh_ticket_id PK
+        string code UK
+        string direction
+        datetime weighed_at
+        bigint warehouse_id FK
+        bigint vehicle_id FK
+        string truck_license_plate
+        int total_bags
+        decimal gross_weight_kg
+        decimal tare_weight_kg
+        decimal net_weight_kg
+        decimal moisture_pct
+        decimal impurity_pct
+        decimal moisture_std
+        decimal impurity_std
+        decimal standard_weight_kg
+        string sample_test_result
+        string photo_url
+        string note
+        string status
+        bigint created_by FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    WEIGH_TICKET_LINE {
+        bigint weigh_line_id PK
+        bigint weigh_ticket_id FK
+        int line_no
+        decimal weight_kg
+        int bag_count
+        string bag_type
+        decimal tare_per_bag_kg
+        bigint created_by FK
+        datetime created_at
+    }
+
+    %% =========================
+    %% 3. THU MUA
+    %% =========================
+
+    PURCHASE_CONTRACT {
+        bigint purchase_contract_id PK
+        string contract_code UK
+        bigint supplier_id FK
+        bigint item_id FK
+        decimal committed_volume_kg
+        decimal delivered_volume_kg
+        decimal remaining_volume_kg
+        decimal locked_price_per_kg
+        date contract_date
+        date delivery_deadline
+        string note
+        string status
+        bigint created_by FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    PURCHASE_DELIVERY {
+        bigint purchase_delivery_id PK
+        bigint purchase_contract_id FK
+        bigint import_id FK
+        decimal delivered_actual_kg
+        decimal delivered_standard_kg
+        date delivery_date
+        string status
     }
 
     IMPORT_TICKET {
         bigint import_id PK
+        bigint weigh_ticket_id FK
         bigint supplier_id FK
         bigint item_id FK
-        bigint vehicle_id FK "Xe chọn từ danh sách, có thể null"
-        string truck_license_plate "Biển số xe"
-        string loading_warehouse "Kho bốc"
-        string import_warehouse "Kho nhập"
-        int number_of_bags "Tổng số bao, tự tính từ IMPORT_WEIGHT"
-        decimal total_kg "Tổng khối lượng, tự tính từ IMPORT_WEIGHT"
-        decimal tare_weight "Trừ bì"
-        string sample_test_result "Mẫu thử"
-        decimal moisture_percent "Tỷ lệ độ ẩm"
-        decimal impurity_percent "Tỷ lệ tạp chất"
-        decimal purchase_price_per_kg "Đơn giá mua"
-        decimal market_price_per_kg "Giá thị trường"
-        decimal market_difference_per_kg "Chênh lệch giá thị trường"
-        decimal total_amount "Thành tiền"
-        decimal total_deduction_amount "Tổng khấu trừ"
-        string photo_url "Ảnh minh chứng"
-        date import_date "Ngày nhập"
-        string note "Ghi chú"
-        string status "DRAFT, CONFIRMED hoặc CANCELLED"
+        bigint warehouse_id FK
+        bigint purchase_contract_id FK
+        int number_of_bags
+        decimal actual_weight_kg
+        decimal standard_weight_kg
+        decimal purchase_price_per_kg
+        decimal market_price_per_kg
+        decimal deduction_amount
+        decimal total_amount
+        date import_date
+        string note
+        string status
         bigint created_by FK
         datetime created_at
         datetime updated_at
-    }
-
-    IMPORT_WEIGHT {
-        bigint weight_id PK
-        bigint import_id FK
-        decimal weight_kg "Khối lượng lần cân (kg)"
-        tinyint bag_count "Số bao của lần cân"
-        bigint created_by FK
-        datetime created_at
     }
 
     PRICE_LOCK {
         bigint price_lock_id PK
         bigint supplier_id FK
         bigint item_id FK
-        decimal locked_volume "Khối lượng chốt (kg)"
-        decimal locked_price_per_kg "Giá chốt trên mỗi kg"
-        decimal amount "Thành tiền, tự tính"
-        date lock_date "Ngày chốt giá"
-        string note "Ghi chú"
-        string status "DRAFT hoặc CONFIRMED"
+        bigint purchase_contract_id FK
+        decimal locked_volume_kg
+        decimal locked_price_per_kg
+        decimal amount
+        date lock_date
+        string note
+        string status
         bigint created_by FK
-        bigint updated_by FK
         datetime created_at
         datetime updated_at
     }
 
-    EXPORT_TICKET {
-        bigint export_id PK
-        bigint customer_id FK
-        bigint item_id FK
-        decimal committed_volume "Khối lượng cam kết bán (kg)"
-        decimal selling_price_per_kg "Giá bán trên mỗi kg"
-        decimal market_price_per_kg "Giá thị trường trên mỗi kg"
-        decimal market_difference_per_kg "Chênh lệch với giá thị trường"
-        decimal avg_cost_per_kg "Giá vốn bình quân trên mỗi kg"
-        decimal revenue "Doanh thu, tự tính"
-        decimal estimated_profit "Lợi nhuận ước tính, tự tính"
-        date export_date "Ngày chốt bán"
-        string note "Ghi chú"
-        string status "DRAFT, CONFIRMED, PARTIALLY_DELIVERED hoặc COMPLETED"
-        bigint created_by FK
-        bigint updated_by FK
-        datetime created_at
-        datetime updated_at
-    }
-
-    EXPORT_DELIVERY {
-        bigint delivery_id PK
-        bigint export_id FK
-        bigint vehicle_id FK "Xe chọn từ danh sách, có thể null"
-        decimal delivered_volume "Khối lượng giao thực tế (kg)"
-        date delivery_date "Ngày giao hàng"
-        string truck_license_plate "Biển số xe"
-        string loading_warehouse "Kho bốc"
-        string import_warehouse "Kho nhập"
-        string status "CONFIRMED hoặc CANCELLED"
-        string note "Ghi chú lần giao"
-        bigint created_by FK
-        datetime created_at
-    }
-
-    EXPENSE {
-        bigint expense_id PK
-        decimal total_amount "Tổng tiền các khoản chi"
-        date period_start "Ngày bắt đầu kỳ chi phí"
-        date period_end "Ngày kết thúc kỳ chi phí"
-        string note "Ghi chú kỳ chi phí"
-        bigint created_by FK
-        bigint updated_by FK
-        datetime created_at
-        datetime updated_at
-    }
-
-    EXPENSE_DETAIL {
-        bigint expense_detail_id PK
-        bigint expense_id FK
-        string category_name "Tên danh mục chi phí"
-        decimal amount "Số tiền của danh mục"
-    }
-
-    MARKET_PRICE {
-        bigint market_price_id PK
-        bigint item_id FK
-        date price_date "Ngày áp dụng giá"
-        decimal price_per_kg "Giá thị trường trên mỗi kg"
-        string source "Nguồn giá"
-        datetime fetched_at
-    }
+    %% =========================
+    %% 4. KY GUI
+    %% =========================
 
     CONSIGNMENT_TICKET {
         bigint consignment_id PK
-        bigint customer_id FK "Khách gửi hàng"
+        bigint weigh_ticket_id FK
+        bigint customer_id FK
         bigint item_id FK
-        bigint vehicle_id FK "Xe chọn, có thể null"
-        string truck_license_plate "Biển số xe snapshot"
-        int number_of_bags "Tổng số bao"
-        decimal gross_weight_kg "Trọng lượng có bì (kg)"
-        decimal tare_weight_kg "Trọng lượng bì (kg)"
-        decimal net_weight_kg "Trọng lượng thực tế (kg)"
-        decimal moisture_percent "Độ ẩm (%)"
-        decimal impurity_percent "Tạp chất (%)"
-        decimal black_broken_ratio "Tỷ lệ đen/vỡ/sâu (%)"
-        string screen_size "Cỡ sàng (R13, R16, R18...)"
-        decimal standard_weight_kg "Trọng lượng quy chuẩn (kg), tự tính"
-        decimal moisture_standard "Chuẩn độ ẩm (ex: 12.5%)"
-        decimal impurity_standard "Chuẩn tạp chất (ex: 1%)"
-        int free_storage_days "Miễn phí lưu kho X ngày đầu"
-        decimal storage_fee_per_ton_month "Phí lưu kho/tấn/tháng sau miễn phí"
-        decimal natural_loss_rate "Tỷ lệ hao hụt tự nhiên/tháng (%)"
-        string photo_url "Ảnh minh chứng"
-        date consignment_date "Ngày nhập gửi"
-        string note "Ghi chú"
-        string status "DRAFT, CONFIRMED, CANCELLED"
+        bigint warehouse_id FK
+        int number_of_bags
+        decimal actual_weight_kg
+        decimal standard_weight_kg
+        decimal moisture_pct
+        decimal impurity_pct
+        decimal black_broken_ratio
+        string screen_size
+        int free_storage_days
+        decimal storage_fee_per_ton_month
+        decimal natural_loss_rate_pct
+        date consignment_date
+        string note
+        string status
         bigint created_by FK
         datetime created_at
         datetime updated_at
-    }
-
-    CONSIGNMENT_WEIGHT {
-        bigint cw_id PK
-        bigint consignment_id FK
-        decimal weight_kg "Khối lượng lần cân (kg)"
-        tinyint bag_count "Số bao"
-        bigint created_by FK
-        datetime created_at
     }
 
     CONSIGNMENT_BALANCE {
         bigint balance_id PK
-        bigint customer_id FK "Khách hàng"
+        bigint customer_id FK
         bigint item_id FK
-        decimal total_sent_kg "Tổng đã gửi (quy chuẩn)"
-        decimal total_locked_kg "Tổng đã chốt giá"
-        decimal total_withdrawn_kg "Tổng đã rút"
-        decimal remaining_kg "Số dư còn lại, tự tính"
+        bigint warehouse_id FK
+        decimal total_sent_kg
+        decimal total_locked_kg
+        decimal total_withdrawn_kg
+        decimal remaining_kg
         datetime updated_at
     }
 
     CONSIGNMENT_PRICE_LOCK {
         bigint cpl_id PK
         bigint customer_id FK
-        bigint consignment_id FK "Phiếu gửi gốc"
+        bigint consignment_id FK
         bigint item_id FK
-        decimal locked_volume "Khối lượng chốt (quy chuẩn)"
-        datetime locked_at "Ngày giờ chốt đến phút/giây"
-        decimal locked_price_per_kg "Đơn giá chốt"
-        decimal gross_amount "Thành tiền gộp"
-        decimal advance_deduction_amount "Đối trừ tạm ứng (gốc + lãi)"
-        decimal net_amount "Số tiền thực nhận"
-        string note "Ghi chú"
-        string status "DRAFT, CONFIRMED"
+        decimal locked_volume_kg
+        datetime locked_at
+        decimal locked_price_per_kg
+        decimal gross_amount
+        decimal advance_deduction_amount
+        decimal net_amount
+        string note
+        string status
         bigint created_by FK
         datetime created_at
         datetime updated_at
@@ -237,107 +243,342 @@
     ADVANCE_PAYMENT {
         bigint advance_id PK
         bigint customer_id FK
-        bigint consignment_id FK "Phiếu gửi làm cơ sở"
-        decimal advance_amount "Số tiền ứng"
-        date advance_date "Ngày ứng"
-        decimal interest_rate "Lãi suất/tháng (ex: 0.8%)"
-        int max_advance_percent "Hạn mức ứng tối đa (%)"
-        decimal market_price_at_advance "Giá thị trường tại thời điểm ứng"
-        int interest_days "Số ngày tính lãi"
-        decimal interest_amount "Tiền lãi phát sinh"
-        decimal total_repayment "Tổng gốc + lãi"
-        string status "ACTIVE, SETTLED"
+        bigint consignment_id FK
+        decimal advance_amount
+        date advance_date
+        decimal monthly_interest_rate_pct
+        decimal market_price_at_advance
+        int interest_days
+        decimal interest_amount
+        decimal total_repayment
+        decimal settled_amount
+        string status
         bigint created_by FK
         datetime created_at
         datetime updated_at
     }
 
-    FORWARD_CONTRACT {
-        bigint fc_id PK
+    %% =========================
+    %% 5. BAN HANG
+    %% =========================
+
+    SALES_CONTRACT {
+        bigint contract_id PK
+        string contract_code UK
+        string contract_type
         bigint customer_id FK
         bigint item_id FK
-        string contract_code "Mã hợp đồng"
-        decimal committed_volume "Khối lượng cam kết (quy chuẩn)"
-        decimal locked_price_per_kg "Đơn giá đã chốt"
-        date delivery_deadline "Hạn chót giao hàng"
-        decimal deposit_amount "Số tiền đặt cọc"
-        decimal delivered_volume "Khối lượng đã giao"
-        decimal remaining_volume "Khối lượng còn phải giao"
-        string status "ACTIVE, COMPLETED, OVERDUE, CANCELLED"
+        decimal committed_volume_kg
+        decimal delivered_volume_kg
+        decimal remaining_volume_kg
+        decimal unit_price_per_kg
+        decimal market_price_per_kg
+        decimal avg_cost_per_kg
+        decimal deposit_amount
+        decimal total_revenue
+        decimal estimated_profit
+        date contract_date
+        date delivery_deadline
+        string note
+        string status
         bigint created_by FK
         datetime created_at
         datetime updated_at
     }
 
-    FORWARD_CONTRACT_DELIVERY {
-        bigint fcd_id PK
-        bigint fc_id FK
-        bigint consignment_weight_id FK "Phiếu cân thực tế"
-        decimal delivered_volume "Khối lượng giao (quy chuẩn)"
-        date delivery_date "Ngày giao"
-        decimal excess_volume "Phần giao dư"
-        string excess_handling "Cách xử lý dư: MARKET_PRICE, NEW_CONSIGNMENT"
-        string note "Ghi chú"
+    SALES_DELIVERY {
+        bigint delivery_id PK
+        bigint contract_id FK
+        bigint weigh_ticket_id FK
+        bigint warehouse_id FK
+        bigint vehicle_id FK
+        string truck_license_plate
+        decimal delivered_actual_kg
+        decimal delivered_standard_kg
+        decimal customer_standard_kg
+        decimal discrepancy_kg
+        string excess_handling
+        date delivery_date
+        string note
+        string status
         bigint created_by FK
         datetime created_at
     }
 
-    CASH_LEDGER {
-        bigint ledger_id PK
+    %% =========================
+    %% 6. QUAN LY KHO
+    %% =========================
+
+    INVENTORY_TRANSACTION {
+        bigint transaction_id PK
+        bigint warehouse_id FK
+        bigint item_id FK
+        string transaction_type
+        string ref_type
+        bigint ref_id
+        decimal actual_in_kg
+        decimal actual_out_kg
+        decimal standard_in_kg
+        decimal standard_out_kg
+        datetime transaction_date
+        string status
+        bigint created_by FK
+        datetime created_at
+    }
+
+    %% =========================
+    %% 7. THANH TOAN VA CHI PHI
+    %% =========================
+
+    PAYMENT_VOUCHER {
+        bigint voucher_id PK
+        string code UK
+        string voucher_type
+        string party_type
+        bigint party_id
+        string payment_method
+        decimal amount
+        date voucher_date
+        string note
+        string status
+        bigint created_by FK
+        datetime created_at
+    }
+
+    PAYMENT_ALLOCATION {
+        bigint allocation_id PK
+        bigint voucher_id FK
+        string ref_type
+        bigint ref_id
+        decimal allocated_amount
+    }
+
+    EXPENSE_CATEGORY {
+        bigint category_id PK
+        string category_name UK
+        boolean active
+    }
+
+    EXPENSE {
+        bigint expense_id PK
+        string payment_method
+        decimal total_amount
+        date period_start
+        date period_end
+        string note
+        string status
+        bigint created_by FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    EXPENSE_DETAIL {
+        bigint expense_detail_id PK
+        bigint expense_id FK
+        bigint category_id FK
+        decimal amount
+        string note
+    }
+
+    MARKET_PRICE {
+        bigint market_price_id PK
+        bigint item_id FK
+        date price_date
+        decimal price_per_kg
+        string source
+        datetime fetched_at
+    }
+
+    %% =========================
+    %% RELATIONSHIPS
+    %% =========================
+
+    ROLE ||--o{ USER : assigns
+
+    WAREHOUSE ||--o{ WEIGH_TICKET : hosts
+    VEHICLE o|--o{ WEIGH_TICKET : weighs
+    USER ||--o{ WEIGH_TICKET : creates
+    WEIGH_TICKET ||--|{ WEIGH_TICKET_LINE : contains
+    USER ||--o{ WEIGH_TICKET_LINE : records
+
+    SUPPLIER ||--o{ PURCHASE_CONTRACT : signs
+    ITEM ||--o{ PURCHASE_CONTRACT : purchases
+    PURCHASE_CONTRACT ||--o{ PURCHASE_DELIVERY : receives
+    IMPORT_TICKET ||--o| PURCHASE_DELIVERY : fulfills
+    PURCHASE_CONTRACT o|--o{ IMPORT_TICKET : applies_to
+
+    SUPPLIER ||--o{ IMPORT_TICKET : supplies
+    ITEM ||--o{ IMPORT_TICKET : imported_as
+    WAREHOUSE ||--o{ IMPORT_TICKET : receives_into
+    WEIGH_TICKET o|--o| IMPORT_TICKET : sources
+    USER ||--o{ IMPORT_TICKET : creates
+
+    SUPPLIER ||--o{ PRICE_LOCK : locks_price
+    ITEM ||--o{ PRICE_LOCK : locked_item
+    PURCHASE_CONTRACT o|--o{ PRICE_LOCK : applies_to
+    USER ||--o{ PRICE_LOCK : creates
+
+    CUSTOMER ||--o{ CONSIGNMENT_TICKET : deposits
+    ITEM ||--o{ CONSIGNMENT_TICKET : consigned_item
+    WAREHOUSE ||--o{ CONSIGNMENT_TICKET : stores_in
+    WEIGH_TICKET o|--o| CONSIGNMENT_TICKET : sources
+    USER ||--o{ CONSIGNMENT_TICKET : creates
+
+    CUSTOMER ||--o{ CONSIGNMENT_BALANCE : owns
+    ITEM ||--o{ CONSIGNMENT_BALANCE : tracks
+    WAREHOUSE ||--o{ CONSIGNMENT_BALANCE : holds
+
+    CUSTOMER ||--o{ CONSIGNMENT_PRICE_LOCK : locks_sale
+    CONSIGNMENT_TICKET o|--o{ CONSIGNMENT_PRICE_LOCK : references
+    ITEM ||--o{ CONSIGNMENT_PRICE_LOCK : item_of
+    USER ||--o{ CONSIGNMENT_PRICE_LOCK : creates
+
+    CUSTOMER ||--o{ ADVANCE_PAYMENT : takes_advance
+    CONSIGNMENT_TICKET o|--o{ ADVANCE_PAYMENT : backed_by
+    USER ||--o{ ADVANCE_PAYMENT : creates
+
+    CUSTOMER ||--o{ SALES_CONTRACT : buys_under
+    ITEM ||--o{ SALES_CONTRACT : sold_item
+    USER ||--o{ SALES_CONTRACT : creates
+    SALES_CONTRACT ||--o{ SALES_DELIVERY : fulfilled_by
+    WEIGH_TICKET o|--o| SALES_DELIVERY : sources
+    WAREHOUSE ||--o{ SALES_DELIVERY : ships_from
+    VEHICLE o|--o{ SALES_DELIVERY : delivers_with
+    USER ||--o{ SALES_DELIVERY : records
+
+    WAREHOUSE ||--o{ INVENTORY_TRANSACTION : records
+    ITEM ||--o{ INVENTORY_TRANSACTION : tracks
+    USER ||--o{ INVENTORY_TRANSACTION : creates
+
+    PAYMENT_VOUCHER ||--|{ PAYMENT_ALLOCATION : allocates
+    USER ||--o{ PAYMENT_VOUCHER : creates
+
+    EXPENSE ||--|{ EXPENSE_DETAIL : itemizes
+    EXPENSE_CATEGORY ||--o{ EXPENSE_DETAIL : classifies
+    USER ||--o{ EXPENSE : creates
+
+    ITEM ||--o{ MARKET_PRICE : priced_at
+
+    %% =========================
+    %% 8. CONG NO
+    %% =========================
+
+    DEBT_LEDGER {
+        bigint debt_id PK
+        string party_type
+        bigint party_id
+        bigint item_id FK
+        decimal debit_amount
+        decimal credit_amount
+        decimal balance_amount
+        date due_date
+        string note
+        datetime created_at
+        datetime updated_at
+    }
+
+    SUPPLIER ||--o{ DEBT_LEDGER : owes
+    CUSTOMER ||--o{ DEBT_LEDGER : receivable
+    ITEM ||--o{ DEBT_LEDGER : debt_item
+    PAYMENT_ALLOCATION ||--o{ DEBT_LEDGER : reduces
+
+    %% =========================
+    %% 9. GUI KHO KHACH
+    %% =========================
+
+    CUSTOMER_CONSIGNMENT_TICKET {
+        bigint cc_id PK
         bigint customer_id FK
-        decimal total_advanced "Tổng tiền đã ứng"
-        decimal total_interest "Tổng lãi phát sinh"
-        decimal total_locked_amount "Tổng tiền hàng đã chốt phải trả"
-        decimal total_deposit_paid "Tổng tiền cọc đã chi"
-        decimal net_balance "Số dư ròng, tự tính"
+        bigint item_id FK
+        bigint warehouse_id FK
+        bigint weigh_ticket_id FK
+        int number_of_bags
+        decimal gross_weight_kg
+        decimal standard_weight_kg
+        date consignment_date
+        string note
+        string status
+        bigint created_by FK
+        datetime created_at
         datetime updated_at
     }
 
-    ROLE ||--o{ USER : "gán"
-    SUPPLIER ||--o{ IMPORT_TICKET : "cung cấp"
-    ITEM ||--o{ IMPORT_TICKET : "được nhập"
-    IMPORT_TICKET ||--|{ IMPORT_WEIGHT : "gồm"
-    VEHICLE ||--o{ IMPORT_TICKET : "được chọn"
-    VEHICLE ||--o{ EXPORT_DELIVERY : "được chọn"
-    VEHICLE ||--o{ CONSIGNMENT_TICKET : "được chọn"
+    CUSTOMER_CONSIGNMENT_BALANCE {
+        bigint balance_id PK
+        bigint customer_id FK
+        bigint item_id FK
+        decimal total_sent_kg
+        decimal total_withdrawn_kg
+        decimal remaining_kg
+    }
 
-    SUPPLIER ||--o{ PRICE_LOCK : "chốt giá"
-    ITEM ||--o{ PRICE_LOCK : "được chốt"
+    CUSTOMER ||--o{ CUSTOMER_CONSIGNMENT_TICKET : deposits_at
+    ITEM ||--o{ CUSTOMER_CONSIGNMENT_TICKET : cc_item
+    WAREHOUSE ||--o{ CUSTOMER_CONSIGNMENT_TICKET : cc_warehouse
+    WEIGH_TICKET o|--o| CUSTOMER_CONSIGNMENT_TICKET : cc_weigh
+    USER ||--o{ CUSTOMER_CONSIGNMENT_TICKET : cc_created
 
-    CUSTOMER ||--o{ EXPORT_TICKET : "nhận hàng"
-    ITEM ||--o{ EXPORT_TICKET : "được xuất"
-    EXPORT_TICKET ||--o{ EXPORT_DELIVERY : "giao nhiều lần"
+    CUSTOMER ||--|| CUSTOMER_CONSIGNMENT_BALANCE : cc_balance
+    ITEM ||--o{ CUSTOMER_CONSIGNMENT_BALANCE : cc_tracks
 
-    CUSTOMER ||--o{ CONSIGNMENT_TICKET : "gửi hàng"
-    ITEM ||--o{ CONSIGNMENT_TICKET : "được gửi"
-    CONSIGNMENT_TICKET ||--|{ CONSIGNMENT_WEIGHT : "gồm"
+    %% =========================
+    %% 10. SO VAY
+    %% =========================
 
-    CUSTOMER ||--|| CONSIGNMENT_BALANCE : "có số dư"
-    ITEM ||--o{ CONSIGNMENT_BALANCE : "theo mặt hàng"
+    LOAN_CONTRACT {
+        bigint loan_id PK
+        string code UK
+        string loan_type
+        string party_type
+        bigint party_id
+        decimal principal_amount
+        decimal interest_rate
+        date start_date
+        date due_date
+        decimal outstanding_principal
+        string status
+        bigint created_by FK
+        datetime created_at
+        datetime updated_at
+    }
 
-    CUSTOMER ||--o{ CONSIGNMENT_PRICE_LOCK : "chốt giá"
-    CONSIGNMENT_TICKET ||--o{ CONSIGNMENT_PRICE_LOCK : "chốt từ"
-    ITEM ||--o{ CONSIGNMENT_PRICE_LOCK : "được chốt"
+    LOAN_TRANSACTION {
+        bigint loan_txn_id PK
+        bigint loan_id FK
+        string txn_type
+        decimal amount
+        date txn_date
+        int interest_days
+        string note
+        bigint created_by FK
+        datetime created_at
+    }
 
-    CUSTOMER ||--o{ ADVANCE_PAYMENT : "ứng tiền"
-    CONSIGNMENT_TICKET ||--o{ ADVANCE_PAYMENT : "ứng trên"
+    LOAN_CONTRACT ||--|{ LOAN_TRANSACTION : has_txn
+    USER ||--o{ LOAN_CONTRACT : loan_created
+    USER ||--o{ LOAN_TRANSACTION : loan_txn_created
 
-    CUSTOMER ||--o{ FORWARD_CONTRACT : "ký hợp đồng"
-    ITEM ||--o{ FORWARD_CONTRACT : "đối tượng"
-    FORWARD_CONTRACT ||--o{ FORWARD_CONTRACT_DELIVERY : "giao theo"
+    %% =========================
+    %% 11. NANG CAO
+    %% =========================
 
-    CUSTOMER ||--|| CASH_LEDGER : "có sổ tiền"
+    REPORT_SCHEDULE {
+        bigint schedule_id PK
+        string report_type
+        string cron_expr
+        string recipient_email
+        boolean active
+        datetime last_sent_at
+    }
 
-    USER ||--o{ IMPORT_TICKET : "tạo"
-    USER ||--o{ PRICE_LOCK : "tạo"
-    USER ||--o{ EXPORT_TICKET : "tạo"
-    USER ||--o{ EXPORT_DELIVERY : "ghi nhận"
-    USER ||--o{ EXPENSE : "tạo"
-    USER ||--o{ CONSIGNMENT_TICKET : "tạo"
-    USER ||--o{ CONSIGNMENT_PRICE_LOCK : "tạo"
-    USER ||--o{ ADVANCE_PAYMENT : "tạo"
-    USER ||--o{ FORWARD_CONTRACT : "tạo"
-    USER ||--o{ FORWARD_CONTRACT_DELIVERY : "ghi nhận"
+    ALERT_RULE {
+        bigint alert_id PK
+        string alert_type
+        string party_type
+        bigint party_id
+        bigint item_id FK
+        decimal threshold_value
+        boolean active
+    }
 
-    EXPENSE ||--|{ EXPENSE_DETAIL : "gồm"
-    ITEM ||--o{ MARKET_PRICE : "có giá"
+    ITEM ||--o{ ALERT_RULE : alert_item

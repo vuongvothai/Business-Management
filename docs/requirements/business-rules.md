@@ -92,6 +92,28 @@ Backend phải khóa `SUPPLIER` khi chốt và `ITEM` khi xác nhận giao hàng
 khi cập nhật số dư. Chốt giá vượt `usable_coffee_kg` vẫn trả lỗi HTTP `409`;
 cam kết bán vượt tồn không trừ tồn và không trả lỗi tồn kho.
 
+## 8. Quy tắc mở rộng
+
+Các quy tắc dưới đây thuộc thiết kế mở rộng
+([design/README.md](../design/README.md)) và áp dụng khi code migration mới.
+
+| Mã | Quy tắc |
+|---|---|
+| BRULE-601 | `WEIGH_TICKET.net_weight_kg = gross_weight_kg − tare_weight_kg`, tự tính. |
+| BRULE-602 | `WEIGH_TICKET.standard_weight_kg` tính theo công thức quy chuẩn; client không ghi đè. |
+| BRULE-603 | `SUM(WEIGH_TICKET_LINE.weight_kg) = WEIGH_TICKET.gross_weight_kg`. |
+| BRULE-604 | `SALES_CONTRACT.contract_type = 'FROM_CONSIGNMENT'` cần `CUSTOMER_CONSIGNMENT_*`. |
+| BRULE-605 | Bán `DIRECT` trừ tồn khi xác nhận; `LOCKED` chỉ trừ khi giao. |
+| BRULE-606 | `SUM(SALES_DELIVERY.delivered_standard_kg) <= SALES_CONTRACT.committed_volume_kg`. |
+| BRULE-607 | `SALES_DELIVERY.discrepancy_kg = delivered_standard_kg − customer_standard_kg`. |
+| BRULE-608 | `SUM(PAYMENT_ALLOCATION.allocated_amount) <= PAYMENT_VOUCHER.amount`. |
+| BRULE-609 | Xác nhận `PAYMENT_VOUCHER` cập nhật công nợ qua `PAYMENT_ALLOCATION`. |
+| BRULE-610 | `ITEM.actual_stock_kg = SUM(IN) − SUM(OUT)` từ `INVENTORY_TRANSACTION`. |
+| BRULE-611 | `ITEM.standard_stock_kg` từ `standard_in_kg − standard_out_kg`. |
+| BRULE-612 | `PURCHASE_CONTRACT.remaining_volume_kg = committed − delivered`. |
+| BRULE-613 | `SALES_CONTRACT.remaining_volume_kg = committed − delivered`. |
+| BRULE-614 | `CONSIGNMENT_BALANCE.remaining_kg = total_sent − total_locked − total_withdrawn`. |
+
 Biểu đồ doanh thu/lợi nhuận và giá cà phê hôm nay là yêu cầu phiên bản kế
 tiếp. Khi triển khai phải xác định rõ doanh thu/lợi nhuận theo ngày giao đã
 xác nhận hay ngày lập `EXPORT_TICKET`; không được trộn số liệu cam kết với số

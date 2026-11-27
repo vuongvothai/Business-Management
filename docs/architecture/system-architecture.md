@@ -95,7 +95,10 @@ Các module nghiệp vụ chính:
   cấp, không phụ thuộc một phiếu nhập cụ thể.
 - `EXPORT_TICKET` liên kết trực tiếp với một `ITEM` và lưu khối lượng cam kết
   bán; `EXPORT_DELIVERY` lưu các lần giao thực tế từ nhiều lần nhập.
+  (ERD mới thay bằng `SALES_CONTRACT`/`SALES_DELIVERY`.)
 - Chỉ khi xác nhận `EXPORT_DELIVERY`, service mới trừ `ITEM.available_kg`.
+  (ERD mới: `ITEM.actual_stock_kg` / `standard_stock_kg` qua
+  `INVENTORY_TRANSACTION`.)
 - Quyền thao tác được kiểm tra theo `USER.role_id`/`ROLE.role_name`: `ADMIN`, `WEIGHER`
   hoặc `ACCOUNTANT`.
 - Khi nhập/xuất/chốt giá, service phải khóa `SUPPLIER` hoặc `ITEM` liên quan

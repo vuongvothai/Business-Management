@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Bảng Kê Khai Thuế Nông Sản</title>
+<style>
+  /* A4 DỌC, phiếu nằm nửa trên */
+  @media print {
+    @page { size: A4 portrait; margin: 0; }
+    body { margin: 0; padding: 0; background: none; display: block !important; }
+    .no-print { display: none !important; }
+    .ticket-container {
+      box-shadow: none !important;
+      border: none !important;
+      width: 210mm !important;
+      height: 148mm !important;
+      margin: 0 !important;
+      padding: 5mm 12mm !important;
+    }
+    .cut-line { display: block !important; width: 100%; border-bottom: 1px dashed #999; margin: 0; }
+  }
+
+  body {
+    font-family: "Times New Roman", Times, serif;
+    background-color: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin: 0;
+    color: #000;
+  }
+
+  .ticket-container {
+    width: 210mm;
+    height: 148mm;
+    background: #fff;
+    padding: 5mm 12mm;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-size: 13px;
+    line-height: 1.25;
+  }
+
+  .cut-line { display: none; }
+
+  /* THANH LỌC + NÚT IN (chỉ hiện trên màn hình) */
+  .toolbar {
+    width: 210mm;
+    background: #fff;
+    padding: 8px 12mm;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-end;
+    font-family: sans-serif;
+    font-size: 13px;
+  }
+  .toolbar label { display: flex; flex-direction: column; font-weight: 600; }
+  .toolbar input, .toolbar select {
+    padding: 5px 8px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    font-size: 13px;
+    min-width: 130px;
+  }
+  .btn {
+    padding: 7px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    font-family: sans-serif;
+    font-weight: 600;
+  }
+  .btn-print { background-color: #0d6efd; color: white; }
+  .btn-print:hover { background-color: #0b5ed7; }
+  .btn-clear { background-color: #6c757d; color: white; }
+  .btn-clear:hover { background-color: #5a6268; }
+
+  /* CÔNG TY */
+  .company-header {
+    text-align: left;
+    border-bottom: 1px solid #000;
+    padding-bottom: 3px;
+    margin-bottom: 4px;
+  }
+  .company-name { font-size: 15px; font-weight: bold; text-transform: uppercase; }
+  .company-info { font-size: 12px; font-style: italic; }
+
+  /* TIÊU ĐỀ */
+  .header-title {
+    text-align: center;
+    font-size: 17px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+  }
+  .header-sub { text-align: center; font-size: 12px; font-style: italic; margin-bottom: 5px; }
+
+  /* BẢNG */
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 11px; }
+  th, td { border: 1px solid #000; padding: 2px 3px; word-wrap: break-word; overflow-wrap: break-word; }
+  th { text-align: center; font-weight: bold; vertical-align: middle; line-height: 1.15; }
+  td { text-align: center; vertical-align: middle; }
+  td.text-left { text-align: left; }
+  td.text-right { text-align: right; }
+  .col-index td { font-size: 10px; padding: 1px; }
+
+  .w-date  { width: 9%; }
+  .w-name  { width: 14%; }
+  .w-addr  { width: 15%; }
+  .w-id    { width: 11%; }
+  .w-phone { width: 9%; }
+  .w-item  { width: 11%; }
+  .w-qty   { width: 8%; }
+  .w-price { width: 8%; }
+  .w-total { width: 9%; }
+  .w-note  { width: 6%; }
+
+  tfoot td { font-weight: bold; background: #f2f2f2; }
+
+  /* CHỮ KÝ */
+  .signatures {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 0 25px;
+    font-weight: bold;
+    font-size: 13px;
+  }
+
+  @media print { .toolbar { display: none !important; } }
+</style>
+</head>
+<body>
+
+  <!-- THANH LỌC + IN -->
+  <div class="toolbar no-print">
+    <label>Từ ngày
+      <input type="date" id="tuNgay" value="2026-11-01">
+    </label>
+    <label>Đến ngày
+      <input type="date" id="denNgay" value="2026-11-26">
+    </label>
+    <label>Tên / CCCD / Điện thoại
+      <input type="text" id="keyword" placeholder="Võ Thái Vương">
+    </label>
+    <label>Mặt hàng
+      <select id="matHang">
+        <option value="">Tất cả</option>
+        <option value="Cafe">Cafe</option>
+        <option value="Tieu">Tiêu</option>
+      </select>
+    </label>
+    <button class="btn btn-print" onclick="window.print()">🖨️ In</button>
+    <button class="btn btn-clear" onclick="clearFilter()">✕ Xóa lọc</button>
+  </div>
+
+  <!-- PHIẾU -->
+  <div class="ticket-container" id="bang-ke-khai-thue">
+
+    <div class="company-header">
+      <div class="company-name" id="ten_cong_ty">CÔNG TY TNHH MUA BÁN NÔNG SẢN</div>
+      <div class="company-info">
+        MST: <span id="mst">6001xxxx</span> &nbsp;|&nbsp;
+        Địa chỉ: <span id="dia_chi">Buôn Drai, Xã Ea Na, Tỉnh Đăk Lăk</span>
+      </div>
+    </div>
+
+    <div class="header-title">BẢNG KÊ KHAI THUẾ NÔNG SẢN</div>
+    <div class="header-sub" id="dieukien">Từ ngày 01/11/2026 đến ngày 26/11/2026</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2" class="w-date">Ngày mua</th>
+          <th colspan="4">Người bán</th>
+          <th colspan="4">Hàng hóa mua vào</th>
+          <th rowspan="2" class="w-note">Ghi chú</th>
+        </tr>
+        <tr>
+          <th class="w-name">Tên người bán</th>
+          <th class="w-addr">Địa chỉ</th>
+          <th class="w-id">CCCD</th>
+          <th class="w-phone">Điện thoại</th>
+          <th class="w-item">Mặt hàng</th>
+          <th class="w-qty">Số lượng (kg)</th>
+          <th class="w-price">Đơn giá</th>
+          <th class="w-total">Thành tiền</th>
+        </tr>
+        <tr class="col-index">
+          <td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr><td>10/04/2026</td><td class="text-left">Võ Thái Vương</td><td class="text-left">Ea Na</td><td>079123456789</td><td>0909123456</td><td>Cafe</td><td class="text-right">4,972.50</td><td class="text-right">115,000</td><td class="text-right">571,837,500</td><td></td></tr>
+        <tr><td>11/04/2026</td><td class="text-left">Nguyễn Văn A</td><td class="text-left">Ea Na</td><td>079987654321</td><td>0909987654</td><td>Cafe</td><td class="text-right">3,150.00</td><td class="text-right">114,000</td><td class="text-right">359,100,000</td><td></td></tr>
+        <tr><td>12/04/2026</td><td class="text-left">Trần Thị B</td><td class="text-left">Krông Ana</td><td>079111222333</td><td>0909111222</td><td>Tieu</td><td class="text-right">850.00</td><td class="text-right">210,000</td><td class="text-right">178,500,000</td><td></td></tr>
+        <tr><td>13/04/2026</td><td class="text-left">Võ Thái Vương</td><td class="text-left">Ea Na</td><td>079123456789</td><td>0909123456</td><td>Cafe</td><td class="text-right">5,400.00</td><td class="text-right">116,000</td><td class="text-right">626,400,000</td><td></td></tr>
+        <tr><td>14/04/2026</td><td class="text-left">Lê Văn C</td><td class="text-left">Ea Hing</td><td>079444555666</td><td>0909444555</td><td>Cafe</td><td class="text-right">2,000.00</td><td class="text-right">113,500</td><td class="text-right">227,000,000</td><td></td></tr>
+        <tr><td>15/04/2026</td><td class="text-left">Nguyễn Văn A</td><td class="text-left">Ea Na</td><td>079987654321</td><td>0909987654</td><td>Tieu</td><td class="text-right">620.00</td><td class="text-right">208,000</td><td class="text-right">128,960,000</td><td></td></tr>
+        <tr><td>16/04/2026</td><td class="text-left">Phạm Thị D</td><td class="text-left">Krông Ana</td><td>079777888999</td><td>0909777888</td><td>Cafe</td><td class="text-right">4,100.00</td><td class="text-right">115,500</td><td class="text-right">473,550,000</td><td></td></tr>
+        <tr><td>17/04/2026</td><td class="text-left">Võ Thái Vương</td><td class="text-left">Ea Na</td><td>079123456789</td><td>0909123456</td><td>Cafe</td><td class="text-right">3,980.00</td><td class="text-right">117,000</td><td class="text-right">465,660,000</td><td></td></tr>
+        <tr><td>18/04/2026</td><td class="text-left">Trần Thị B</td><td class="text-left">Krông Ana</td><td>079111222333</td><td>0909111222</td><td>Cafe</td><td class="text-right">2,750.00</td><td class="text-right">114,500</td><td class="text-right">314,875,000</td><td></td></tr>
+        <tr><td>19/04/2026</td><td class="text-left">Lê Văn C</td><td class="text-left">Ea Hing</td><td>079444555666</td><td>0909444555</td><td>Tieu</td><td class="text-right">410.00</td><td class="text-right">205,000</td><td class="text-right">84,050,000</td><td></td></tr>
+        <tr><td>20/04/2026</td><td class="text-left">Nguyễn Văn A</td><td class="text-left">Ea Na</td><td>079987654321</td><td>0909987654</td><td>Cafe</td><td class="text-right">6,200.00</td><td class="text-right">118,000</td><td class="text-right">731,600,000</td><td></td></tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="6" class="text-left">Tổng cộng</td>
+          <td class="text-right" id="tongSl">0</td>
+          <td></td>
+          <td class="text-right" id="tongTien">0</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="signatures">
+      <div>Người lập</div>
+      <div>Bảo vệ</div>
+      <div>Kế toán</div>
+    </div>
+  </div>
+
+  <div class="cut-line"></div>
+
+<script>
+  const rows = Array.from(document.querySelectorAll('#rows tr'));
+  const fmt = n => n.toLocaleString('vi-VN', { maximumFractionDigits: 2 });
+  const num = s => parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
+
+  function dmy(iso) {
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function applyFilter() {
+    const tu = document.getElementById('tuNgay').value;
+    const den = document.getElementById('denNgay').value;
+    const kw = document.getElementById('keyword').value.trim().toLowerCase();
+    const mh = document.getElementById('matHang').value;
+
+    let tongSl = 0, tongTien = 0;
+
+    rows.forEach(tr => {
+      const c = tr.cells;
+      const ngay = c[0].textContent.trim();
+      const ten = c[1].textContent.trim().toLowerCase();
+      const cccd = c[3].textContent.trim().toLowerCase();
+      const dt = c[4].textContent.trim().toLowerCase();
+      const hang = c[5].textContent.trim();
+
+      const [d, m, y] = ngay.split('/');
+      const iso = `${y}-${m}-${d}`;
+
+      const okNgay = (!tu || iso >= tu) && (!den || iso <= den);
+      const okKw = !kw || ten.includes(kw) || cccd.includes(kw) || dt.includes(kw);
+      const okHang = !mh || hang === mh;
+
+      const show = okNgay && okKw && okHang;
+      tr.style.display = show ? '' : 'none';
+
+      if (show) {
+        tongSl += num(c[6].textContent);
+        tongTien += num(c[8].textContent);
+      }
+    });
+
+    document.getElementById('tongSl').textContent = fmt(tongSl);
+    document.getElementById('tongTien').textContent = fmt(tongTien);
+
+    let dk = [];
+    if (tu || den) dk.push(`Từ ngày ${tu ? dmy(tu) : 'đầu'} đến ngày ${den ? dmy(den) : 'cuối'}`);
+    if (kw) dk.push(`Tìm: "${document.getElementById('keyword').value.trim()}"`);
+    if (mh) dk.push(`Mặt hàng: ${mh}`);
+    document.getElementById('dieukien').textContent = dk.length ? dk.join(' — ') : 'Tất cả';
+  }
+
+  function clearFilter() {
+    document.getElementById('tuNgay').value = '';
+    document.getElementById('denNgay').value = '';
+    document.getElementById('keyword').value = '';
+    document.getElementById('matHang').value = '';
+    applyFilter();
+  }
+
+  ['tuNgay', 'denNgay', 'keyword', 'matHang'].forEach(id => {
+    document.getElementById(id).addEventListener('input', applyFilter);
+  });
+
+  applyFilter();
+</script>
+
+</body>
+</html>

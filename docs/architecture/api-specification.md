@@ -304,7 +304,7 @@ bản kế tiếp, nhưng vẫn dùng chung hai resource trên.
 
 ## 5. API dự kiến cho phiên bản kế tiếp
 
-> Toàn bộ contract trong mục này là kế hoạch, chưa triển khai. Trường trên ERD
+> Toàn bộ contract trong mục này viết theo ERD mới.
 > chỉ trở thành khả dụng sau khi có migration, entity, DTO, API và test.
 
 ### Tìm nhà cung cấp
