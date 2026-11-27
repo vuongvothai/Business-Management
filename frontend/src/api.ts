@@ -1,13 +1,10 @@
-export async function apiFetch(input: RequestInfo | URL, init: RequestInit = {}) {
-  const token = sessionStorage.getItem('accessToken')
-  const headers = new Headers(init.headers)
-  if (token) headers.set('Authorization', `Bearer ${token}`)
+const BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8080'
 
-  const response = await fetch(input, { ...init, headers })
-  if (response.status === 401) {
-    sessionStorage.removeItem('accessToken')
-    sessionStorage.removeItem('authUser')
-    window.dispatchEvent(new Event('auth-expired'))
-  }
-  return response
+export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    ...init,
+    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+  })
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+  return res.json() as Promise<T>
 }

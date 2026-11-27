@@ -1,609 +1,167 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import './App.css'
+import { useEffect, useState } from 'react'
 import { apiFetch } from './api'
 
-type AuthUser = {
-  userId: number
-  username: string
-  fullName: string
-  role: 'ADMIN' | 'WEIGHER' | 'ACCOUNTANT'
-}
+type Page = 'dashboard' | 'weigh' | 'purchase' | 'sales' | 'stock' | 'loan' | 'report' | 'master'
 
-type LoginResponse = AuthUser & { accessToken: string; tokenType: string; expiresInSeconds: number }
+const NAV: { key: Page; label: string; icon: string }[] = [
+  { key: 'dashboard', label: 'Tổng quan', icon: '▤' },
+  { key: 'weigh', label: 'Cân hàng', icon: '⚖' },
+  { key: 'purchase', label: 'Nhập hàng', icon: '↓' },
+  { key: 'sales', label: 'Xuất hàng', icon: '↑' },
+  { key: 'stock', label: 'Kho', icon: '▣' },
+  { key: 'loan', label: 'Vay', icon: '₫' },
+  { key: 'report', label: 'Báo cáo', icon: '☰' },
+  { key: 'master', label: 'Thêm dữ liệu', icon: '✎' },
+]
 
-type InventorySummary = {
-  totalKg: number
-  valuedKg: number
-  unpricedKg: number
-  totalValue: number
-  byCategory: { category: string; totalKg: number; inventoryValue: number }[]
-}
+const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n)
+const fmtMoney = (n: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n)
 
-type ImportPage = {
-  content: {
-    id: number
-    supplierName: string
-    itemName: string
-    importDate: string
-    totalKg: number
-    numberOfBags: number
-    status: string
-  }[]
-  totalElements: number
-}
-
-type Supplier = { id: number; name: string; phone?: string; usableCoffeeKg: number }
-type Item = { id: number; name: string; category: string; unit: string }
-type Customer = { id: number; name: string; phone?: string }
-type ExportTicket = {
-  id: number
-  customerName: string
-  itemName: string
-  committedVolume: number
-  sellingPricePerKg: number
-  deliveredVolume: number
-  remainingVolume: number
-  status: string
-  exportDate: string
-  deliveries: { id: number; deliveredVolume: number; deliveryDate: string }[]
-}
-
-const formatKg = (value: number) =>
-  new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 3 }).format(value) + ' kg'
-
-const formatMoney = (value: number) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
-
-function App() {
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    const stored = sessionStorage.getItem('authUser')
-    return stored ? JSON.parse(stored) as AuthUser : null
-  })
-  const [summary, setSummary] = useState<InventorySummary | null>(null)
-  const [imports, setImports] = useState<ImportPage | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [activePage, setActivePage] = useState(() => user?.role === 'WEIGHER' ? 'imports' : 'overview')
-
-  useEffect(() => {
-    if (!user || user.role === 'WEIGHER') return
-    Promise.all([
-      apiFetch('/api/inventory/summary').then((response) => response.json()),
-      apiFetch('/api/imports?page=0&size=5').then((response) => response.json()),
-    ])
-      .then(([inventory, importPage]) => {
-        setSummary(inventory)
-        setImports(importPage)
-      })
-      .catch(() => setError('Không thể kết nối tới backend. Hãy kiểm tra Docker và API.'))
-  }, [user])
-
-  useEffect(() => {
-    const expire = () => setUser(null)
-    window.addEventListener('auth-expired', expire)
-    return () => window.removeEventListener('auth-expired', expire)
-  }, [])
-
-  const login = (response: LoginResponse) => {
-    sessionStorage.setItem('accessToken', response.accessToken)
-    const authUser: AuthUser = {
-      userId: response.userId,
-      username: response.username,
-      fullName: response.fullName,
-      role: response.role,
-    }
-    sessionStorage.setItem('authUser', JSON.stringify(authUser))
-    setUser(authUser)
-    setActivePage(authUser.role === 'WEIGHER' ? 'imports' : 'overview')
-  }
-
-  if (!user) return <LoginPage onLogin={login} />
-
+export default function App() {
+  const [page, setPage] = useState<Page>('dashboard')
   return (
-    <div className="app-shell">
-      <header className="topbar">
-        <div>
-          <div className="brand-mark">BM</div>
-          <p className="eyebrow">BUSINESS MANAGEMENT</p>
-          <h1>Quản lý cà phê nhân</h1>
-        </div>
-        <div className="user-actions">
-          <span className="user-badge">{user.fullName} · {user.role}</span>
-          <button className="logout-button" onClick={() => { sessionStorage.clear(); setUser(null) }}>Đăng xuất</button>
-        </div>
-      </header>
-
-      <nav className="main-nav" aria-label="Điều hướng chính">
-        {user.role !== 'WEIGHER' && <NavButton active={activePage === 'overview'} onClick={() => setActivePage('overview')} icon="⌂">Tổng quan</NavButton>}
-        {(user.role === 'ADMIN' || user.role === 'WEIGHER') && <NavButton active={activePage === 'imports'} onClick={() => setActivePage('imports')} icon="↓">Nhập hàng</NavButton>}
-        {user.role !== 'WEIGHER' && <NavButton active={activePage === 'price-locks'} onClick={() => setActivePage('price-locks')} icon="◈">Chốt giá</NavButton>}
-        {user.role !== 'WEIGHER' && <NavButton active={activePage === 'exports'} onClick={() => setActivePage('exports')} icon="↑">Bán & giao hàng</NavButton>}
-        {user.role === 'ADMIN' && <NavButton active={activePage === 'master-data'} onClick={() => setActivePage('master-data')} icon="≡">Danh mục</NavButton>}
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+      <nav style={{ width: 200, background: '#1f2937', color: '#fff', padding: 12 }}>
+        <div style={{ fontWeight: 700, marginBottom: 16 }}>BM</div>
+        {NAV.map(n => (
+          <button key={n.key} onClick={() => setPage(n.key)}
+            style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px',
+              marginBottom: 4, border: 'none', borderRadius: 4,
+              background: page === n.key ? '#374151' : 'transparent',
+              color: '#fff' }}>
+            {n.icon} {n.label}
+          </button>
+        ))}
       </nav>
-
-      <main>
-        {activePage === 'overview' && <Overview summary={summary} imports={imports} error={error} />}
-        {activePage === 'imports' && <ImportsPage onCreated={() => setActivePage('overview')} />}
-        {activePage === 'price-locks' && <PriceLocksPage />}
-        {activePage === 'exports' && <ExportsPage />}
-        {activePage === 'master-data' && <MasterDataPage />}
-        {activePage !== 'overview' && activePage !== 'imports' && activePage !== 'price-locks' && activePage !== 'exports' && activePage !== 'master-data' && <ModulePlaceholder page={activePage} />}
+      <main style={{ flex: 1, padding: 20 }}>
+        {page === 'dashboard' && <Dashboard />}
+        {page === 'weigh' && <Weigh />}
+        {page === 'purchase' && <Purchase />}
+        {page === 'sales' && <Sales />}
+        {page === 'stock' && <Stock />}
+        {page === 'loan' && <Loan />}
+        {page === 'report' && <Report />}
+        {page === 'master' && <Master />}
       </main>
-      <footer>Business Management · Backend Spring Boot · MySQL</footer>
     </div>
   )
 }
 
-function LoginPage({ onLogin }: { onLogin: (response: LoginResponse) => void }) {
-  const [username, setUsername] = useState('admin')
-  const [password, setPassword] = useState('password')
-  const [error, setError] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setBusy(true)
-    setError(null)
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      })
-      if (!response.ok) throw new Error('invalid')
-      onLogin(await response.json() as LoginResponse)
-    } catch {
-      setError('Tên đăng nhập hoặc mật khẩu không đúng.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return <main className="login-page">
-    <form className="login-card" onSubmit={submit}>
-      <div className="brand-mark login-mark">BM</div>
-      <p className="eyebrow">BUSINESS MANAGEMENT</p>
-      <h2>Đăng nhập hệ thống</h2>
-      <p className="muted">Sử dụng tài khoản được cấp để tiếp tục.</p>
-      <label>Tên đăng nhập<input value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" /></label>
-      <label>Mật khẩu<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" /></label>
-      {error && <div className="alert">{error}</div>}
-      <button className="primary-button login-submit" disabled={busy}>{busy ? 'Đang đăng nhập...' : 'Đăng nhập'}</button>
-      <small>Tài khoản demo: admin / password</small>
-    </form>
-  </main>
+function Card({ title, children }: { title: string; children: React.ReactNode }) {
+  return <div style={{ background: '#fff', borderRadius: 8, padding: 16, marginBottom: 16, boxShadow: '0 1px 3px rgba(0,0,0,.1)' }}>
+    <h3 style={{ margin: '0 0 12px' }}>{title}</h3>{children}
+  </div>
 }
 
-function ImportsPage({ onCreated }: { onCreated: () => void }) {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([])
-  const [items, setItems] = useState<Item[]>([])
-  const [imports, setImports] = useState<ImportPage | null>(null)
-  const [supplierId, setSupplierId] = useState('')
-  const [itemId, setItemId] = useState('')
-  const [importDate, setImportDate] = useState(new Date().toISOString().slice(0, 10))
-  const [weightKg, setWeightKg] = useState('')
-  const [bagCount, setBagCount] = useState('1')
-  const [weights, setWeights] = useState<{ weightKg: number; bagCount: number }[]>([])
-  const [notice, setNotice] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-
-  const loadData = () => Promise.all([
-    apiFetch('/api/suppliers').then((response) => response.json()),
-    apiFetch('/api/items').then((response) => response.json()),
-    apiFetch('/api/imports?page=0&size=20').then((response) => response.json()),
-  ]).then(([supplierData, itemData, importData]) => {
-    setSuppliers(supplierData)
-    setItems(itemData)
-    setImports(importData)
-    if (!supplierId && supplierData[0]) setSupplierId(String(supplierData[0].id))
-    if (!itemId && itemData[0]) setItemId(String(itemData[0].id))
-  })
-
-  useEffect(() => { loadData().catch(() => setNotice('Không thể tải dữ liệu nhập hàng.')) }, [])
-
-  const addWeight = () => {
-    const weight = Number(weightKg)
-    const bags = Number(bagCount)
-    if (!weight || weight <= 0 || ![1, 2].includes(bags)) {
-      setNotice('Khối lượng phải lớn hơn 0 và số bao mỗi lần cân là 1 hoặc 2.')
-      return
-    }
-    setWeights([...weights, { weightKg: weight, bagCount: bags }])
-    setWeightKg('')
-    setNotice(null)
-  }
-
-  const createImport = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!supplierId || !itemId || weights.length === 0) {
-      setNotice('Vui lòng chọn nhà cung cấp, mặt hàng và thêm ít nhất một lần cân.')
-      return
-    }
-    setBusy(true)
-    try {
-      const response = await apiFetch('/api/imports', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ supplierId: Number(supplierId), itemId: Number(itemId), importDate, weights }),
-      })
-      if (!response.ok) throw new Error()
-      setWeights([])
-      setNotice('Đã tạo phiếu nhập thành công.')
-      await loadData()
-      onCreated()
-    } catch { setNotice('Không thể tạo phiếu nhập. Vui lòng kiểm tra dữ liệu.') }
-    finally { setBusy(false) }
-  }
-
-  const totalKg = weights.reduce((sum, weight) => sum + weight.weightKg, 0)
-  const totalBags = weights.reduce((sum, weight) => sum + weight.bagCount, 0)
-  return <section className="module-page">
-    <div className="page-heading"><div><p className="eyebrow">NHẬP HÀNG</p><h2>Quản lý phiếu nhập</h2><p className="muted">Ghi nhận từng lần cân và cập nhật tồn kho tự động.</p></div><button className="secondary-button" type="button" onClick={() => loadData()}>Làm mới</button></div>
-    <div className="form-grid">
-      <form className="panel form-panel" onSubmit={createImport}>
-        <div className="panel-heading"><div><p className="eyebrow">TẠO MỚI</p><h3>Phiếu nhập kho</h3></div></div>
-        <div className="field-grid">
-          <label>Nhà cung cấp<select value={supplierId} onChange={(event) => setSupplierId(event.target.value)}><option value="">Chọn nhà cung cấp</option>{suppliers.map((supplier) => <option value={supplier.id} key={supplier.id}>{supplier.name}</option>)}</select></label>
-          <label>Mặt hàng<select value={itemId} onChange={(event) => setItemId(event.target.value)}><option value="">Chọn mặt hàng</option>{items.map((item) => <option value={item.id} key={item.id}>{item.name} · {item.category}</option>)}</select></label>
-          <label>Ngày nhập<input type="date" value={importDate} onChange={(event) => setImportDate(event.target.value)} /></label>
-        </div>
-        <div className="weight-entry"><label>Khối lượng (kg)<input type="number" min="0.001" step="0.001" value={weightKg} onChange={(event) => setWeightKg(event.target.value)} placeholder="120.300" /></label><label>Số bao<input type="number" min="1" max="2" value={bagCount} onChange={(event) => setBagCount(event.target.value)} /></label><button className="secondary-button add-button" type="button" onClick={addWeight}>+ Thêm lần cân</button></div>
-        <div className="weight-summary"><span>{weights.length} lần cân</span><strong>{totalBags} bao · {formatKg(totalKg)}</strong></div>
-        {weights.length > 0 && <div className="weight-list">{weights.map((weight, index) => <div key={`${weight.weightKg}-${index}`}><span>Lần cân {index + 1}</span><strong>{weight.bagCount} bao · {formatKg(weight.weightKg)}</strong><button type="button" aria-label="Xóa lần cân" onClick={() => setWeights(weights.filter((_, current) => current !== index))}>×</button></div>)}</div>}
-        {notice && <p className="form-notice">{notice}</p>}
-        <button className="primary-button" disabled={busy} type="submit">{busy ? 'Đang lưu...' : 'Tạo phiếu nhập'}</button>
-      </form>
-      <article className="panel"><div className="panel-heading"><div><p className="eyebrow">SỔ NHẬP</p><h3>Phiếu nhập gần đây</h3></div><span className="count">{imports?.totalElements ?? '—'}</span></div><div className="table-wrap"><table><thead><tr><th>Ngày</th><th>Nhà cung cấp</th><th>Số bao</th><th>Khối lượng</th></tr></thead><tbody>{imports?.content.map((item) => <tr key={item.id}><td>{item.importDate}</td><td>{item.supplierName}</td><td>{item.numberOfBags}</td><td><strong>{formatKg(item.totalKg)}</strong></td></tr>)}</tbody></table></div></article>
-    </div>
-  </section>
+function Table({ headers, rows }: { headers: string[]; rows: (string | number)[][] }) {
+  return <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+    <thead><tr>{headers.map(h => <th key={h} style={{ textAlign: 'left', borderBottom: '2px solid #e5e7eb', padding: 6 }}>{h}</th>)}</tr></thead>
+    <tbody>{rows.map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j} style={{ borderBottom: '1px solid #f3f4f6', padding: 6 }}>{c}</td>)}</tr>)}</tbody>
+  </table>
 }
 
-function Overview({ summary, imports, error }: { summary: InventorySummary | null; imports: ImportPage | null; error: string | null }) {
-  return (
-    <>
-      <section className="hero">
-          <div>
-            <p className="eyebrow">TỔNG QUAN KHO</p>
-            <h2>Theo dõi tồn kho theo thời gian thực</h2>
-            <p className="muted">Số liệu được đồng bộ từ các phiếu nhập, chốt giá và giao hàng.</p>
-          </div>
-          <div className="hero-mark">KG</div>
-        </section>
-
-      {error && <div className="alert">{error}</div>}
-
-      <section className="metrics">
-          <Metric label="Tổng tồn kho" value={summary ? formatKg(summary.totalKg) : '—'} accent="green" />
-          <Metric label="Đã chốt giá" value={summary ? formatKg(summary.valuedKg) : '—'} accent="amber" />
-          <Metric label="Chưa chốt giá" value={summary ? formatKg(summary.unpricedKg) : '—'} accent="blue" />
-          <Metric label="Giá trị tồn kho" value={summary ? formatMoney(summary.totalValue) : '—'} accent="dark" />
-      </section>
-
-      <section className="content-grid">
-          <article className="panel">
-            <div className="panel-heading">
-              <div><p className="eyebrow">PHÂN BỔ</p><h3>Tồn kho theo loại</h3></div>
-            </div>
-            <div className="category-list">
-              {summary?.byCategory.map((category) => (
-                <div className="category-row" key={category.category}>
-                  <div className="category-icon">☕</div>
-                  <div className="category-info"><strong>{category.category}</strong><span>{formatKg(category.totalKg)}</span></div>
-                  <strong>{formatMoney(category.inventoryValue)}</strong>
-                </div>
-              ))}
-              {!summary && <p className="muted">Đang tải dữ liệu...</p>}
-            </div>
-          </article>
-
-          <article className="panel">
-            <div className="panel-heading">
-              <div><p className="eyebrow">GIAO DỊCH GẦN ĐÂY</p><h3>Phiếu nhập hàng</h3></div>
-              <span className="count">{imports?.totalElements ?? '—'}</span>
-            </div>
-            <div className="table-wrap">
-              <table>
-                <thead><tr><th>Ngày</th><th>Nhà cung cấp</th><th>Khối lượng</th></tr></thead>
-                <tbody>
-                  {imports?.content.map((item) => (
-                    <tr key={item.id}><td>{item.importDate}</td><td>{item.supplierName}</td><td><strong>{formatKg(item.totalKg)}</strong></td></tr>
-                  ))}
-                  {!imports && <tr><td colSpan={3}>Đang tải dữ liệu...</td></tr>}
-                </tbody>
-              </table>
-            </div>
-          </article>
-      </section>
-    </>
-  )
-}
-
-function PriceLocksPage() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([])
-  const [items, setItems] = useState<Item[]>([])
-  const [supplierId, setSupplierId] = useState('')
-  const [itemId, setItemId] = useState('')
-  const [lockDate, setLockDate] = useState(new Date().toISOString().slice(0, 10))
-  const [volume, setVolume] = useState('')
-  const [price, setPrice] = useState('')
-  const [notice, setNotice] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-
-  const loadData = () => Promise.all([
-    apiFetch('/api/suppliers').then((response) => response.json()),
-    apiFetch('/api/items').then((response) => response.json()),
-  ]).then(([supplierData, itemData]) => {
-    setSuppliers(supplierData)
-    setItems(itemData)
-    if (!supplierId && supplierData[0]) setSupplierId(String(supplierData[0].id))
-    if (!itemId && itemData[0]) setItemId(String(itemData[0].id))
-  })
-
-  useEffect(() => { loadData().catch(() => setNotice('Không thể tải dữ liệu chốt giá.')) }, [])
-
-  const selectedSupplier = suppliers.find((supplier) => String(supplier.id) === supplierId)
-  const volumeValue = Number(volume) || 0
-  const priceValue = Number(price) || 0
-
-  const createPriceLock = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!supplierId || !itemId || volumeValue <= 0 || priceValue <= 0) {
-      setNotice('Vui lòng nhập đầy đủ supplier, mặt hàng, khối lượng và đơn giá hợp lệ.')
-      return
-    }
-    if (selectedSupplier && volumeValue > selectedSupplier.usableCoffeeKg) {
-      setNotice(`Khối lượng chốt vượt số dư hiện có (${formatKg(selectedSupplier.usableCoffeeKg)}).`)
-      return
-    }
-    setBusy(true)
-    try {
-      const response = await apiFetch('/api/price-locks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ supplierId: Number(supplierId), itemId: Number(itemId), lockDate, lockedVolume: volumeValue, lockedPricePerKg: priceValue }),
-      })
-      if (!response.ok) throw new Error()
-      const result = await response.json()
-      setNotice(`Đã chốt ${formatKg(result.lockedVolume)} · Thành tiền ${formatMoney(result.amount)}.`)
-      setVolume('')
-      setPrice('')
-      await loadData()
-    } catch { setNotice('Không thể chốt giá. Số dư có thể đã thay đổi, vui lòng tải lại.') }
-    finally { setBusy(false) }
-  }
-
-  return <section className="module-page">
-    <div className="page-heading"><div><p className="eyebrow">CHỐT GIÁ</p><h2>Chốt giá cà phê</h2><p className="muted">Chốt toàn bộ hoặc một phần số dư của nhà cung cấp.</p></div><button className="secondary-button" type="button" onClick={() => loadData()}>Làm mới</button></div>
-    <div className="form-grid">
-      <form className="panel form-panel" onSubmit={createPriceLock}>
-        <div className="panel-heading"><div><p className="eyebrow">TẠO MỚI</p><h3>Phiếu chốt giá</h3></div></div>
-        <div className="field-grid">
-          <label>Nhà cung cấp<select value={supplierId} onChange={(event) => setSupplierId(event.target.value)}><option value="">Chọn nhà cung cấp</option>{suppliers.map((supplier) => <option value={supplier.id} key={supplier.id}>{supplier.name} · {formatKg(supplier.usableCoffeeKg)}</option>)}</select></label>
-          <label>Mặt hàng<select value={itemId} onChange={(event) => setItemId(event.target.value)}><option value="">Chọn mặt hàng</option>{items.map((item) => <option value={item.id} key={item.id}>{item.name} · {item.category}</option>)}</select></label>
-          <label>Ngày chốt<input type="date" value={lockDate} onChange={(event) => setLockDate(event.target.value)} /></label>
-          <label>Khối lượng chốt (kg)<input type="number" min="0.001" step="0.001" value={volume} onChange={(event) => setVolume(event.target.value)} placeholder="500.000" /></label>
-          <label>Đơn giá (VND/kg)<input type="number" min="0.01" step="1" value={price} onChange={(event) => setPrice(event.target.value)} placeholder="42000" /></label>
-        </div>
-        <div className="weight-summary"><span>Số dư khả dụng</span><strong>{selectedSupplier ? formatKg(selectedSupplier.usableCoffeeKg) : '—'}</strong></div>
-        {notice && <p className="form-notice">{notice}</p>}
-        <button className="primary-button" disabled={busy} type="submit">{busy ? 'Đang lưu...' : 'Xác nhận chốt giá'}</button>
-      </form>
-      <article className="panel"><div className="panel-heading"><div><p className="eyebrow">TÍNH NHANH</p><h3>Giá trị phiếu chốt</h3></div></div><div className="lock-preview"><span>Khối lượng</span><strong>{formatKg(volumeValue)}</strong><span>Đơn giá</span><strong>{formatMoney(priceValue)}</strong><div className="lock-total"><span>Thành tiền dự kiến</span><strong>{formatMoney(volumeValue * priceValue)}</strong></div></div><p className="muted lock-hint">Số dư supplier sẽ được trừ ngay sau khi chốt thành công.</p></article>
-    </div>
-  </section>
-}
-
-function ExportsPage() {
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [items, setItems] = useState<Item[]>([])
-  const [exports, setExports] = useState<ExportTicket[]>([])
-  const [customerId, setCustomerId] = useState('')
-  const [itemId, setItemId] = useState('')
-  const [exportDate, setExportDate] = useState(new Date().toISOString().slice(0, 10))
-  const [committedVolume, setCommittedVolume] = useState('')
-  const [sellingPrice, setSellingPrice] = useState('')
-  const [notice, setNotice] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-  const [deliveryVolume, setDeliveryVolume] = useState<Record<number, string>>({})
-
-  const loadData = () => Promise.all([
-    apiFetch('/api/customers').then((response) => response.json()),
-    apiFetch('/api/items').then((response) => response.json()),
-    apiFetch('/api/exports').then((response) => response.json()),
-  ]).then(([customerData, itemData, exportData]) => {
-    setCustomers(customerData)
-    setItems(itemData)
-    setExports(exportData)
-    if (!customerId && customerData[0]) setCustomerId(String(customerData[0].id))
-    if (!itemId && itemData[0]) setItemId(String(itemData[0].id))
-  })
-
-  useEffect(() => { loadData().catch(() => setNotice('Không thể tải dữ liệu bán hàng.')) }, [])
-
-  const createExport = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const volume = Number(committedVolume)
-    const price = Number(sellingPrice)
-    if (!customerId || !itemId || volume <= 0 || price <= 0) {
-      setNotice('Vui lòng nhập khách hàng, mặt hàng, khối lượng và giá bán hợp lệ.')
-      return
-    }
-    setBusy(true)
-    try {
-      const response = await apiFetch('/api/exports', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId: Number(customerId), itemId: Number(itemId), committedVolume: volume, sellingPricePerKg: price, exportDate }),
-      })
-      if (!response.ok) throw new Error()
-      setCommittedVolume('')
-      setSellingPrice('')
-      setNotice('Đã tạo phiếu bán. Tồn kho chưa bị trừ.')
-      await loadData()
-    } catch { setNotice('Không thể tạo phiếu bán.') }
-    finally { setBusy(false) }
-  }
-
-  const deliver = async (ticket: ExportTicket) => {
-    const volume = Number(deliveryVolume[ticket.id])
-    if (volume <= 0 || volume > ticket.remainingVolume) {
-      setNotice(`Khối lượng giao phải lớn hơn 0 và không vượt ${formatKg(ticket.remainingVolume)}.`)
-      return
-    }
-    setBusy(true)
-    try {
-      const response = await apiFetch(`/api/exports/${ticket.id}/deliveries`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deliveredVolume: volume, deliveryDate: new Date().toISOString().slice(0, 10) }),
-      })
-      if (!response.ok) throw new Error()
-      setDeliveryVolume({ ...deliveryVolume, [ticket.id]: '' })
-      setNotice(`Đã ghi nhận giao ${formatKg(volume)}.`)
-      await loadData()
-    } catch { setNotice('Không thể ghi nhận giao hàng.') }
-    finally { setBusy(false) }
-  }
-
-  return <section className="module-page">
-    <div className="page-heading"><div><p className="eyebrow">BÁN & GIAO HÀNG</p><h2>Phiếu bán và giao hàng</h2><p className="muted">Tạo cam kết bán trước, sau đó ghi nhận từng lần giao thực tế.</p></div><button className="secondary-button" type="button" onClick={() => loadData()}>Làm mới</button></div>
-    <form className="panel export-form" onSubmit={createExport}>
-      <div className="panel-heading"><div><p className="eyebrow">TẠO MỚI</p><h3>Phiếu chốt bán</h3></div></div>
-      <div className="field-grid export-fields">
-        <label>Khách hàng<select value={customerId} onChange={(event) => setCustomerId(event.target.value)}><option value="">Chọn khách hàng</option>{customers.map((customer) => <option value={customer.id} key={customer.id}>{customer.name}</option>)}</select></label>
-        <label>Mặt hàng<select value={itemId} onChange={(event) => setItemId(event.target.value)}><option value="">Chọn mặt hàng</option>{items.map((item) => <option value={item.id} key={item.id}>{item.name} · {item.category}</option>)}</select></label>
-        <label>Ngày bán<input type="date" value={exportDate} onChange={(event) => setExportDate(event.target.value)} /></label>
-        <label>Khối lượng cam kết (kg)<input type="number" min="0.001" step="0.001" value={committedVolume} onChange={(event) => setCommittedVolume(event.target.value)} placeholder="1000.000" /></label>
-        <label>Giá bán (VND/kg)<input type="number" min="0.01" step="1" value={sellingPrice} onChange={(event) => setSellingPrice(event.target.value)} placeholder="50000" /></label>
+function Dashboard() {
+  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7))
+  const [items, setItems] = useState<{ itemId: number; name: string; actualStockKg: number; standardStockKg: number }[]>([])
+  useEffect(() => { apiFetch('/api/master/items').then(setItems).catch(() => {}) }, [])
+  return <>
+    <Card title="Tổng quan kinh doanh">
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+        <label>Tháng <input type="month" value={month} onChange={e => setMonth(e.target.value)} /></label>
       </div>
-      {notice && <p className="form-notice">{notice}</p>}
-      <button className="primary-button export-submit" disabled={busy} type="submit">{busy ? 'Đang lưu...' : 'Tạo phiếu bán'}</button>
-    </form>
-    <article className="panel export-list"><div className="panel-heading"><div><p className="eyebrow">THEO DÕI</p><h3>Phiếu bán hiện tại</h3></div><span className="count">{exports.length}</span></div>
-      <div className="export-cards">{exports.map((ticket) => <div className="export-card" key={ticket.id}><div className="export-card-head"><div><strong>{ticket.customerName}</strong><span>{ticket.itemName} · {ticket.exportDate}</span></div><span className={`status ${ticket.status.toLowerCase()}`}>{ticket.status}</span></div><div className="export-progress"><div><span>Đã giao</span><strong>{formatKg(ticket.deliveredVolume)}</strong></div><div><span>Còn nợ</span><strong>{formatKg(ticket.remainingVolume)}</strong></div><div><span>Cam kết</span><strong>{formatKg(ticket.committedVolume)}</strong></div></div>{ticket.remainingVolume > 0 && <div className="delivery-entry"><input type="number" min="0.001" max={ticket.remainingVolume} step="0.001" placeholder="Khối lượng giao lần này" value={deliveryVolume[ticket.id] ?? ''} onChange={(event) => setDeliveryVolume({ ...deliveryVolume, [ticket.id]: event.target.value })} /><button className="secondary-button" type="button" disabled={busy} onClick={() => deliver(ticket)}>Ghi nhận giao</button></div>}</div>)}</div>
-    </article>
-  </section>
+      <div style={{ display: 'flex', gap: 24 }}>
+        <Stat label="Doanh thu" value={fmtMoney(0)} />
+        <Stat label="Lợi nhuận" value={fmtMoney(0)} />
+        <Stat label="Tồn kho" value={`${fmt(items.reduce((s, i) => s + i.actualStockKg, 0))} kg`} />
+        <Stat label="Phiếu nhập/xuất" value="0 / 0" />
+      </div>
+    </Card>
+    <Card title="Nhập – xuất theo tấn">
+      <p style={{ color: '#6b7280' }}>Biểu đồ sẽ hiển thị khi có dữ liệu.</p>
+    </Card>
+    <Card title="Hoạt động gần đây">
+      <p style={{ color: '#6b7280' }}>Chưa có dữ liệu.</p>
+    </Card>
+  </>
 }
 
-function MasterDataPage() {
-  const [tab, setTab] = useState<'suppliers' | 'customers' | 'items'>('suppliers')
-  const [suppliers, setSuppliers] = useState<Supplier[]>([])
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [items, setItems] = useState<Item[]>([])
-  const [name, setName] = useState('')
-  const [category, setCategory] = useState('')
-  const [phone, setPhone] = useState('')
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
+function Stat({ label, value }: { label: string; value: string }) {
+  return <div><div style={{ color: '#6b7280', fontSize: 12 }}>{label}</div><div style={{ fontSize: 20, fontWeight: 700 }}>{value}</div></div>
+}
 
-  const loadData = () => Promise.all([
-    apiFetch('/api/suppliers').then((response) => response.json()),
-    apiFetch('/api/customers').then((response) => response.json()),
-    apiFetch('/api/items').then((response) => response.json()),
-  ]).then(([supplierData, customerData, itemData]) => {
-    setSuppliers(supplierData)
-    setCustomers(customerData)
-    setItems(itemData)
-  })
-
-  useEffect(() => { loadData().catch(() => setNotice('Không thể tải dữ liệu danh mục.')) }, [])
-
-  const createMasterData = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!name.trim() || (tab === 'items' && !category.trim())) {
-      setNotice(tab === 'items' ? 'Tên và phân loại mặt hàng là bắt buộc.' : 'Tên là bắt buộc.')
-      return
-    }
-    setBusy(true)
-    const endpoint = tab === 'suppliers' ? 'suppliers' : tab === 'customers' ? 'customers' : 'items'
-    const body = tab === 'suppliers'
-      ? { name, phone: phone || 'Chưa cập nhật' }
-      : tab === 'customers' ? { name, phone: phone || null } : { name, category, unit: 'KG' }
-    try {
-      const response = await apiFetch(`/api/${endpoint}${editingId ? `/${editingId}` : ''}`, {
-        method: editingId ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      if (!response.ok) throw new Error()
-      setName('')
-      setCategory('')
-      setPhone('')
-      setEditingId(null)
-      setNotice(editingId ? 'Đã cập nhật dữ liệu thành công.' : 'Đã thêm dữ liệu thành công.')
-      await loadData()
-    } catch { setNotice(editingId ? 'Không thể cập nhật dữ liệu.' : 'Không thể thêm dữ liệu. Vui lòng kiểm tra thông tin.') }
-    finally { setBusy(false) }
-  }
-
-  const startEditing = (record: Supplier | Customer | Item) => {
-    setEditingId(record.id)
-    setName(record.name)
-    setCategory('category' in record ? record.category : '')
-    setPhone('phone' in record ? record.phone ?? '' : '')
-    setNotice(null)
-  }
-
-  const cancelEditing = () => {
-    setEditingId(null)
-    setName('')
-    setCategory('')
-    setPhone('')
-    setNotice(null)
-  }
-
-  const deleteRecord = async (id: number) => {
-    if (!window.confirm('Bạn có chắc muốn xóa dữ liệu này?')) return
-    setBusy(true)
-    const endpoint = tab === 'suppliers' ? 'suppliers' : tab === 'customers' ? 'customers' : 'items'
-    try {
-      const response = await apiFetch(`/api/${endpoint}/${id}`, { method: 'DELETE' })
-      if (!response.ok) throw new Error()
-      if (editingId === id) cancelEditing()
-      setNotice('Đã xóa dữ liệu thành công.')
-      await loadData()
-    } catch { setNotice('Không thể xóa dữ liệu. Có thể dữ liệu đã được sử dụng trong nghiệp vụ.') }
-    finally { setBusy(false) }
-  }
-
-  return <section className="module-page">
-    <div className="page-heading"><div><p className="eyebrow">DANH MỤC</p><h2>Dữ liệu nền</h2><p className="muted">Quản lý các đối tác và mặt hàng sử dụng trong nghiệp vụ.</p></div><button className="secondary-button" type="button" onClick={() => loadData()}>Làm mới</button></div>
-    <div className="master-tabs">{(['suppliers', 'customers', 'items'] as const).map((currentTab) => <button type="button" className={tab === currentTab ? 'active' : ''} key={currentTab} onClick={() => { setTab(currentTab); setNotice(null) }}>{currentTab === 'suppliers' ? 'Nhà cung cấp' : currentTab === 'customers' ? 'Khách hàng' : 'Mặt hàng'}</button>)}</div>
-    <div className="form-grid">
-      <form className="panel form-panel" onSubmit={createMasterData}><div className="panel-heading"><div><p className="eyebrow">{editingId ? 'CHỈNH SỬA' : 'TẠO MỚI'}</p><h3>{tab === 'suppliers' ? 'Nhà cung cấp' : tab === 'customers' ? 'Khách hàng' : 'Mặt hàng'}</h3></div></div>
-        <label>Tên<input value={name} onChange={(event) => setName(event.target.value)} placeholder={tab === 'items' ? 'Cà phê nhân' : tab === 'suppliers' ? 'Tên nhà cung cấp' : 'Tên khách hàng'} /></label>
-        {tab === 'items' && <label>Phân loại<input value={category} onChange={(event) => setCategory(event.target.value)} placeholder="Loại 1" /></label>}
-        {tab !== 'items' && <label>Số điện thoại<input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="0900000000" /></label>}
-        {notice && <p className="form-notice">{notice}</p>}<div className="form-actions"><button className="primary-button" disabled={busy} type="submit">{busy ? 'Đang lưu...' : editingId ? 'Lưu thay đổi' : 'Thêm dữ liệu'}</button>{editingId && <button className="secondary-button" type="button" onClick={cancelEditing}>Hủy</button>}</div>
-      </form>
-      <article className="panel"><div className="panel-heading"><div><p className="eyebrow">DANH SÁCH</p><h3>{tab === 'suppliers' ? 'Nhà cung cấp' : tab === 'customers' ? 'Khách hàng' : 'Mặt hàng'}</h3></div><span className="count">{tab === 'suppliers' ? suppliers.length : tab === 'customers' ? customers.length : items.length}</span></div>
-        <div className="table-wrap"><table><thead><tr><th>Tên</th><th>Thông tin</th><th>Thao tác</th></tr></thead><tbody>
-          {tab === 'suppliers' && suppliers.map((supplier) => <tr key={supplier.id}><td><strong>{supplier.name}</strong></td><td>{supplier.phone || 'Chưa cập nhật'} · {formatKg(supplier.usableCoffeeKg)} khả dụng</td><td className="row-actions"><button type="button" onClick={() => startEditing(supplier)}>Sửa</button><button type="button" onClick={() => deleteRecord(supplier.id)} disabled={busy}>Xóa</button></td></tr>)}
-          {tab === 'customers' && customers.map((customer) => <tr key={customer.id}><td><strong>{customer.name}</strong></td><td>{customer.phone || 'Chưa cập nhật'}</td><td className="row-actions"><button type="button" onClick={() => startEditing(customer)}>Sửa</button><button type="button" onClick={() => deleteRecord(customer.id)} disabled={busy}>Xóa</button></td></tr>)}
-          {tab === 'items' && items.map((item) => <tr key={item.id}><td><strong>{item.name}</strong></td><td>{item.category} · {item.unit}</td><td className="row-actions"><button type="button" onClick={() => startEditing(item)}>Sửa</button><button type="button" onClick={() => deleteRecord(item.id)} disabled={busy}>Xóa</button></td></tr>)}
-        </tbody></table></div>
-      </article>
+function Weigh() {
+  const [dir, setDir] = useState('IN')
+  const [rows, setRows] = useState<any[]>([])
+  useEffect(() => { apiFetch('/api/weigh-tickets').then(setRows).catch(() => {}) }, [])
+  return <Card title="Cân hàng">
+    <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+      <select value={dir} onChange={e => setDir(e.target.value)}><option value="IN">Cân nhập</option><option value="OUT">Cân xuất</option></select>
+      <button onClick={() => window.print()}>In</button>
     </div>
-  </section>
+    <Table headers={['Mã', 'Chiều', 'Tổng bao', 'Giờ cân', 'Trạng thái']}
+      rows={rows.map(r => [r.code, r.direction, r.totalBags, r.weighedAt, r.status])} />
+  </Card>
 }
 
-function ModulePlaceholder({ page }: { page: string }) {
-  const pages: Record<string, { eyebrow: string; title: string; description: string }> = {
-    imports: { eyebrow: 'NHẬP HÀNG', title: 'Quản lý phiếu nhập', description: 'Tạo phiếu nhập, ghi nhận các lần cân và theo dõi số dư nhà cung cấp.' },
-    'price-locks': { eyebrow: 'CHỐT GIÁ', title: 'Quản lý chốt giá', description: 'Theo dõi khối lượng đã chốt, đơn giá và giá trị thanh toán.' },
-    exports: { eyebrow: 'BÁN & GIAO HÀNG', title: 'Quản lý phiếu bán', description: 'Theo dõi cam kết bán, các lần giao hàng và khối lượng còn nợ.' },
-    'master-data': { eyebrow: 'DANH MỤC', title: 'Dữ liệu nền', description: 'Quản lý nhà cung cấp, khách hàng và mặt hàng.' },
-  }
-  const content = pages[page]
-  return <section className="module-page"><p className="eyebrow">{content.eyebrow}</p><h2>{content.title}</h2><p className="muted">{content.description}</p><div className="module-card"><span className="module-icon">✦</span><div><h3>Màn hình đang được hoàn thiện</h3><p className="muted">API backend cho nghiệp vụ này đã sẵn sàng. Bước tiếp theo là kết nối biểu mẫu và bảng dữ liệu.</p></div></div></section>
+function Purchase() {
+  const [rows, setRows] = useState<any[]>([])
+  useEffect(() => { apiFetch('/api/purchase/contracts').then(setRows).catch(() => {}) }, [])
+  return <Card title="Nhập hàng (Thẳng / Chốt / Từ hàng gửi)">
+    <button onClick={() => window.print()}>In</button>
+    <Table headers={['Mã HĐ', 'NCC', 'Mặt hàng', 'Cam kết', 'Đã giao', 'Còn lại', 'Trạng thái']}
+      rows={rows.map(r => [r.contractCode, r.supplierId, r.itemId, r.committedVolumeKg, r.deliveredVolumeKg, r.remainingVolumeKg, r.status])} />
+  </Card>
 }
 
-function NavButton({ active, onClick, icon, children }: { active: boolean; onClick: () => void; icon: string; children: string }) {
-  return <button type="button" className={`nav-button${active ? ' active' : ''}`} onClick={onClick}><span>{icon}</span>{children}</button>
+function Sales() {
+  const [rows, setRows] = useState<any[]>([])
+  useEffect(() => { apiFetch('/api/sales/contracts').then(setRows).catch(() => {}) }, [])
+  return <Card title="Xuất hàng (Thẳng / Chốt / Từ hàng gửi)">
+    <button onClick={() => window.print()}>In</button>
+    <Table headers={['Mã HĐ', 'Khách', 'Loại', 'Cam kết', 'Đã giao', 'Còn lại', 'Trạng thái']}
+      rows={rows.map(r => [r.contractCode, r.customerId, r.contractType, r.committedVolumeKg, r.deliveredVolumeKg, r.remainingVolumeKg, r.status])} />
+  </Card>
 }
 
-function Metric({ label, value, accent }: { label: string; value: string; accent: string }) {
-  return <div className={`metric ${accent}`}><span className="metric-dot" /><p>{label}</p><strong>{value}</strong></div>
+function Stock() {
+  const [items, setItems] = useState<any[]>([])
+  useEffect(() => { apiFetch('/api/master/items').then(setItems).catch(() => {}) }, [])
+  return <Card title="Kho">
+    <Table headers={['Mặt hàng', 'DVT', 'Tồn thực', 'Tồn quy chuẩn']}
+      rows={items.map(i => [i.name, i.unit, i.actualStockKg, i.standardStockKg])} />
+  </Card>
 }
 
-export default App
+function Loan() {
+  const [rows, setRows] = useState<any[]>([])
+  useEffect(() => { apiFetch('/api/loan/contracts').then(setRows).catch(() => {}) }, [])
+  return <Card title="Vay (Đi vay / Cho vay)">
+    <Table headers={['Mã', 'Loại', 'Đối tượng', 'Gốc', 'Còn lại', 'Trạng thái']}
+      rows={rows.map(r => [r.code, r.loanType, r.partyId, r.principalAmount, r.outstandingPrincipal, r.status])} />
+  </Card>
+}
+
+function Report() {
+  return <>
+    <Card title="Báo cáo">
+      <ul>
+        <li>Doanh thu – lợi nhuận</li>
+        <li>Nhập – xuất – tồn</li>
+        <li>Công nợ</li>
+        <li>Cho vay / Đi vay</li>
+        <li>Hiệu quả thu mua</li>
+      </ul>
+    </Card>
+    <Card title="Kê khai thuế">
+      <button onClick={() => window.print()}>In phiếu kê khai thuế</button>
+    </Card>
+  </>
+}
+
+function Master() {
+  const [items, setItems] = useState<any[]>([])
+  useEffect(() => { apiFetch('/api/master/items').then(setItems).catch(() => {}) }, [])
+  return <Card title="Thêm dữ liệu">
+    <Table headers={['ID', 'Tên', 'DVT']} rows={items.map(i => [i.itemId, i.name, i.unit])} />
+  </Card>
+}

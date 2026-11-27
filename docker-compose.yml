@@ -32,5 +32,16 @@ services:
     ports:
       - "8080:8080"
 
+  frontend:
+    image: node:20-alpine
+    container_name: business-management-frontend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+
 volumes:
   business_management_mysql_data:
