@@ -4,20 +4,15 @@ import com.businessmanagement.master.entity.Supplier;
 import java.math.BigDecimal;
 
 public record SupplierResponse(
-        Long id,
+        Long supplierId,
         String name,
         String identityNo,
         String phone,
         String address,
-        BigDecimal usableCoffeeKg) {
-
-    public static SupplierResponse from(Supplier supplier) {
-        return new SupplierResponse(
-                supplier.getId(),
-                supplier.getName(),
-                supplier.getIdentityNo(),
-                supplier.getPhone(),
-                supplier.getAddress(),
-                supplier.getUsableCoffeeKg());
+        BigDecimal usableCoffeeKg
+) {
+    public static SupplierResponse from(Supplier s) {
+        return new SupplierResponse(s.getSupplierId(), s.getName(), s.getIdentityNo(),
+                s.getPhone(), s.getAddress(), s.getUsableCoffeeKg());
     }
 }

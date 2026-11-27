@@ -1,13 +1,6 @@
 package com.businessmanagement.master.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -18,18 +11,18 @@ public class Supplier {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "supplier_id")
-    private Long id;
+    private Long supplierId;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "identity_no", length = 50)
     private String identityNo;
 
-    @Column(nullable = false, length = 30)
+    @Column(name = "phone", nullable = false, length = 30)
     private String phone;
 
-    @Column(length = 500)
+    @Column(name = "address", length = 500)
     private String address;
 
     @Column(name = "usable_coffee_kg", nullable = false, precision = 14, scale = 3)
@@ -41,62 +34,27 @@ public class Supplier {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    protected Supplier() {
-    }
-
-    public Supplier(String name, String phone) {
-        this.name = name;
-        this.phone = phone;
-    }
-
-    public void update(String name, String identityNo, String phone, String address) {
-        this.name = name;
-        this.identityNo = identityNo;
-        this.phone = phone;
-        this.address = address;
-    }
-
     @PrePersist
     void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        createdAt = now;
-        updatedAt = now;
+        createdAt = LocalDateTime.now();
+        updatedAt = createdAt;
     }
 
     @PreUpdate
-    void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    void onUpdate() { updatedAt = LocalDateTime.now(); }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getIdentityNo() {
-        return identityNo;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public BigDecimal getUsableCoffeeKg() {
-        return usableCoffeeKg;
-    }
-
-    public void addUsableCoffeeKg(BigDecimal amount) {
-        usableCoffeeKg = usableCoffeeKg.add(amount);
-    }
-
-    public void subtractUsableCoffeeKg(BigDecimal amount) {
-        usableCoffeeKg = usableCoffeeKg.subtract(amount);
-    }
+    public Long getSupplierId() { return supplierId; }
+    public void setSupplierId(Long supplierId) { this.supplierId = supplierId; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getIdentityNo() { return identityNo; }
+    public void setIdentityNo(String identityNo) { this.identityNo = identityNo; }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+    public BigDecimal getUsableCoffeeKg() { return usableCoffeeKg; }
+    public void setUsableCoffeeKg(BigDecimal usableCoffeeKg) { this.usableCoffeeKg = usableCoffeeKg; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

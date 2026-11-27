@@ -1,16 +1,6 @@
 package com.businessmanagement.master.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,20 +10,23 @@ public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Long id;
+    private Long userId;
 
-    @Column(name = "full_name", nullable = false, length = 255)
-    private String fullName;
-
-    @Column(name = "username", nullable = false, unique = true, length = 100)
+    @Column(name = "username", nullable = false, length = 100)
     private String username;
 
     @Column(name = "password_hash", nullable = false, length = 100)
     private String passwordHash;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
+
+    @Column(name = "active", nullable = false)
+    private boolean active = true;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -41,58 +34,27 @@ public class AppUser {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    protected AppUser() {
-    }
-
-    public AppUser(String fullName, Role role) {
-        this.fullName = fullName;
-        this.role = role;
-    }
-
-    public AppUser(String username, String fullName, String passwordHash, Role role) {
-        this.username = username;
-        this.fullName = fullName;
-        this.passwordHash = passwordHash;
-        this.role = role;
-    }
-
     @PrePersist
     void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        createdAt = now;
-        updatedAt = now;
+        createdAt = LocalDateTime.now();
+        updatedAt = createdAt;
     }
 
     @PreUpdate
-    void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    void onUpdate() { updatedAt = LocalDateTime.now(); }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

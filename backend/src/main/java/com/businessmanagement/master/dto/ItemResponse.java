@@ -4,18 +4,15 @@ import com.businessmanagement.master.entity.Item;
 import java.math.BigDecimal;
 
 public record ItemResponse(
-        Long id,
+        Long itemId,
         String name,
         String category,
         String unit,
-        BigDecimal availableKg) {
-
-    public static ItemResponse from(Item item) {
-        return new ItemResponse(
-                item.getId(),
-                item.getName(),
-                item.getCategory(),
-                item.getUnit(),
-                item.getAvailableKg());
+        BigDecimal actualStockKg,
+        BigDecimal standardStockKg
+) {
+    public static ItemResponse from(Item i) {
+        return new ItemResponse(i.getItemId(), i.getName(), i.getCategory(),
+                i.getUnit(), i.getActualStockKg(), i.getStandardStockKg());
     }
 }
