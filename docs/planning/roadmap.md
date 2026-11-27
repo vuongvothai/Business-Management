@@ -38,29 +38,20 @@ Xóa toàn bộ `V1`–`V13`, viết lại từ `V1` theo ERD chuẩn
 | B9 | `loan` | sổ vay |
 | B10 | `report` | e-Report, cảnh báo, bảng kê |
 
-## 3. Frontend — 2 nhóm Mua / Bán, mỗi nhóm 3 loại
+## 3. Frontend — 7 danh mục
 
-```text
-Tổng quan
-Mua
-├── Mua thẳng        (DIRECT)
-├── Mua chốt         (LOCKED)
-└── Mua từ hàng gửi  (FROM_CONSIGNMENT)
-Bán
-├── Bán thẳng        (DIRECT)
-├── Bán chốt         (LOCKED)
-└── Bán từ hàng gửi  (FROM_CONSIGNMENT)
-Kho · Tiền · Chi phí · Gửi kho · Sổ vay · Báo cáo · Thêm dữ liệu
-```
-
-| # | Việc |
+| # | Tên |
 |---|---|
-| F1 | Tách `ImportsPage` → 3 trang Mua; `ExportsPage` → 3 trang Bán |
-| F2 | Mỗi trang: danh sách + form + in phiếu đúng loại |
-| F3 | Khu **Thêm dữ liệu**: bỏ CRUD `ITEM`, thêm quản lý kho/xe |
-| F4 | Trang Kho (NXT), Tiền (thu/chi/công nợ), Chi phí |
-| F5 | Trang Gửi kho, Sổ vay, Báo cáo (bảng kê có bộ lọc) |
-| F6 | Dashboard 3 sổ + biểu đồ |
+| 1 | Tổng quan (doanh thu, lợi nhuận, tồn kho, phiếu nhập/xuất, biểu đồ, hoạt động gần đây) |
+| 2 | Cân hàng (IN/OUT) |
+| 3 | Nhập hàng (Thẳng / Chốt / Từ hàng gửi) |
+| 4 | Xuất hàng (Thẳng / Chốt / Từ hàng gửi) |
+| 5 | Kho (tồn + chi tiết lô) |
+| 6 | Vay (đi vay / cho vay) |
+| 7 | Báo cáo (doanh thu, NXT, công nợ, vay, hiệu quả) |
+| 8 | Thêm dữ liệu |
+
+Chi tiết + in phiếu: [design/frontend.md](../design/frontend.md).
 
 ## 4. Thứ tự
 
